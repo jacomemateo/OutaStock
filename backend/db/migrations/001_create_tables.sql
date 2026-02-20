@@ -40,9 +40,14 @@ CREATE TABLE transactions (
     -- is because we get the data from a spreadsheet we get hourly or
     -- daily (idk which yet) data, and I'm going to use the data from 
     -- that spreadsheet for the transaction info.
-    date_sold TIMESTAMPTZ NOT NULL
+    date_sold TIMESTAMPTZ NOT NULL,
+    -- This prevents the "Double Upload" or "System Glitch" duplicates
+    CONSTRAINT unique_sale UNIQUE(product_id, price_at_sale, date_sold)
 );
 
+--####TRIGGERS####
+
+-- Trigger for product info
 CREATE OR REPLACE FUNCTION update_date_modified()
 RETURNS TRIGGER AS $$
 BEGIN
@@ -55,3 +60,26 @@ CREATE TRIGGER set_product_date_modified
 BEFORE UPDATE ON product_info
 FOR EACH ROW
 EXECUTE FUNCTION update_date_modified();
+
+-- Trigger to decerement current_products upon transaction
+CREATE OR REPlACE FUNCTION deduct_inventory_on_sale()
+RETURNS TRIGGER AS $$
+BEGIN
+    -- This looks for the product_id sold and reduces quantity by 1
+    -- We only target slots where the product is actually assigned.
+    UPDATE current_products
+    SET quantity = quantity - 1
+    -- And this makes sure that in case a product is in more than one
+    -- slot it decrements from the first slot it finds.
+    WHERE slot_id = (
+        SELECT slot_id
+        FROM current_products
+        WHERE product_id = NEW.product_id
+        AND quantity > 0
+        ORDER BY slot_id ASC -- empty lowest slot number first
+        LIMIT 1 -- so that we only select ONE
+    );
+
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
