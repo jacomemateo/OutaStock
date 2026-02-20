@@ -1,3 +1,5 @@
+-- code: language=postgres
+
 -- name: GetCurrentProducts :many
 SELECT
     cp.slot_id,
