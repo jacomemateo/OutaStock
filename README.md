@@ -1,4 +1,17 @@
 # OutaStock?
-Hello I have finalized creating the barebones project. For more information on the choices about the stack click on the link below. I will add more documentation about how to run this at a later date.
+***THIS READ ME IS INCOMPLETE!!***
+
+## Installing
+Make sure you have the following installed locally in your system:
+
+* Go 1.26.0
+* Docker
+
+### Running backend
+```bash
+git clone https://github.com/jacomemateo/OutaStock/
+cd OutaStock
+make backend # This will start the local PostgreSQL server in a docker container
+```
 
 ### [View Project Architecture](./docs/ARCHITECTURE.md)
