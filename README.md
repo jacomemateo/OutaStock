@@ -14,4 +14,10 @@ cd OutaStock
 make backend # This will start the local PostgreSQL server in a docker container
 ```
 
+### Running Frontend
+```
+npm install
+npm run dev
+```
+
 ### [View Project Architecture](./docs/ARCHITECTURE.md)
