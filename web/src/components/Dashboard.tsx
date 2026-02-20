@@ -10,8 +10,9 @@ const DashBoard = () => {
                 </div>
                 <nav className="sidebar-nav">
                     <ul>
-                        <li><a href="#inventory">Update Product</a></li>
+                        <li><a href="#inventory">Update Products</a></li>
                         <li><a href="#analytics">Analytics</a></li>
+                        <li><a href="#alerts">Alerts</a></li>
                         <li><a href="#settings">Settings</a></li>
                     </ul>
                 </nav>
