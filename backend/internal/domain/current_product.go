@@ -6,7 +6,7 @@ import (
 	"github.com/google/uuid"
 )
 
-type Slot struct {
+type CurrentProduct struct {
 	ID        int
 	ProductID uuid.UUID
 	Quantity  int
