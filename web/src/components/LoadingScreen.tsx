@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import "../styles/LoadingScreen.css";
-import logo from "../assets/transparent-logo.png";
+import logo from "../assets/transparent-default-logo.png";
 
 const LoadingScreen = () => {
   const navigate = useNavigate();
