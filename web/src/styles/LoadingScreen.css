@@ -1,0 +1,20 @@
+.loading-container {
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--white);
+  position: relative;
+}
+
+.loading-content {
+  position: relative;
+  text-align: center;
+  color: white;
+}
+
+.loading-content img {
+  width: 500px;
+  height: auto;
+}
