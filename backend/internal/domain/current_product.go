@@ -8,7 +8,8 @@ import (
 
 type CurrentProduct struct {
 	ID        int
-	ProductID uuid.UUID
-	Quantity  int
-	DateAdded time.Time
+	// The items below are pointers since they're nullable
+	ProductID *uuid.UUID
+	Quantity  *int
+	DateAdded *time.Time
 }

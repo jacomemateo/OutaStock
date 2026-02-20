@@ -18,13 +18,18 @@ CREATE TABLE current_products (
     -- ONE machine
     slot_id INT PRIMARY KEY CHECK (slot_id BETWEEN 1 AND 16), 
     -- Not unique since the same product could be in two diff slots
-    product_id UUID REFERENCES product_info(product_id) ON DELETE RESTRICT NOT NULL,
+    product_id UUID REFERENCES product_info(product_id) ON DELETE RESTRICT,
     -- counts the number of items currently stocked
-    quantity INT CHECK (quantity >= 0) DEFAULT 0 NOT NULL,
+    quantity INT CHECK (quantity >= 0),
     -- Since items in the machine can change, this is
     -- is to keep track when a item was added in
-    date_added TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP NOT NULL
+    date_added TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
 );
+
+-- Auto fill in the number of slots
+INSERT INTO current_products (slot_id, product_id, quantity, date_added)
+SELECT i, NULL, NULL, NULL
+FROM generate_series(1, 16) AS i;
 
 CREATE TABLE transactions (
     transaction_id UUID PRIMARY KEY DEFAULT uuidv7(),
