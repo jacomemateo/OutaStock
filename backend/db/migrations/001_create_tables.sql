@@ -37,3 +37,16 @@ CREATE TABLE transactions (
     -- that spreadsheet for the transaction info.
     date_sold TIMESTAMPTZ NOT NULL
 );
+
+CREATE OR REPLACE FUNCTION update_date_modified()
+RETURNS TRIGGER AS $$
+BEGIN
+    NEW.date_modified = NOW();
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER set_product_date_modified
+BEFORE UPDATE ON product_info
+FOR EACH ROW
+EXECUTE FUNCTION update_date_modified();
