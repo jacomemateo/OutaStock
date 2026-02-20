@@ -1,3 +1,5 @@
+-- code: language=postgres
+
 -- name: GetRecentTransactions :many
 SELECT
     t.transaction_id,

@@ -1,3 +1,5 @@
+-- code: language=postgres
+
 -- name: CreateProduct :exec
 INSERT INTO product_info (name, price)
 VALUES ( @name, @price );
