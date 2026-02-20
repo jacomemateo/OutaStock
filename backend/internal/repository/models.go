@@ -11,7 +11,7 @@ import (
 type CurrentProduct struct {
 	SlotID    int32
 	ProductID pgtype.UUID
-	Quantity  int32
+	Quantity  pgtype.Int4
 	DateAdded pgtype.Timestamptz
 }
 
