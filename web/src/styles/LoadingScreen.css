@@ -9,6 +9,10 @@
 }
 
 .loading-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
   position: relative;
   text-align: center;
   color: white;
@@ -17,4 +21,30 @@
 .loading-content img {
   width: 500px;
   height: auto;
+}
+
+.dashboard-btn {
+  margin-top: -10rem;
+  margin-bottom: 0;
+  display: flex;
+  justify-content: center;
+}
+
+.view-inventory {
+  padding: 0.75rem 2rem;
+  font-size: 1.2rem;
+  border-radius: 8px;
+  border: none;
+  background: var(--umbc-gold);
+  color: #fff;
+  font-weight: 600;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  cursor: pointer;
+  transition:
+    background 0.2s,
+    transform 0.2s;
+}
+
+.view-inventory:hover {
+  transform: translateY(-2px) scale(1.04);
 }
