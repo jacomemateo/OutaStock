@@ -7,8 +7,4 @@ sql:
       go:
         package: "repository"
         out: "backend/internal/repository"
-        # This tells sqlc to use the pgx/v5 driver (best for Postgres)
-        emit_json_tags: true
-        emit_prepared_queries: false
-        emit_interface: true
-        emit_exact_table_names: false
+        sql_package: "pgx/v5"
