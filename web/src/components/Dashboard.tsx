@@ -1,12 +1,11 @@
-import '../styles/Dashboard.css'
-
+import "../styles/Dashboard.css";
 
 const DashBoard = () => {
-   return(
-        <div>
-            <h1>Settings Page.....</h1>
-        </div>
-    )
-}
+  return (
+    <div>
+      <h1>Settings Page.....</h1>
+    </div>
+  );
+};
 
-export default DashBoard
+export default DashBoard;
