@@ -10,7 +10,6 @@
   background-color: var(--black-grey);
   padding: 2rem 0;
   box-shadow: 2px 0 8px rgba(0, 0, 0, 0.3);
-  /* line-height: 0; */
 }
 
 .sidebar-header {
@@ -34,29 +33,42 @@
   margin: 0;
 }
 
-.sidebar-nav li {
-  padding: 0;
-}
-
-.sidebar-nav a {
+/* REPLACEMENT: We target the button and reset its styles 
+*/
+.nav-link-btn {
+  width: 100%; /* Make button fill the sidebar width */
+  background: none;
+  border: none;
+  border-left: 3px solid transparent;
   display: flex;
   align-items: center;
   gap: 0.75rem;
   padding: 1rem 1.5rem;
   color: #b0b0b0;
-  text-decoration: none;
+  cursor: pointer;
+  text-align: left;
   transition: all 0.3s ease;
-  border-left: 3px solid transparent;
   font-family: var(--Montserrat);
+  font-size: 1rem; /* Adjust to match your previous font size */
 }
 
-.sidebar-nav a svg {
+.nav-link-btn svg {
   width: 24px;
   height: 24px;
   flex-shrink: 0;
 }
 
-.sidebar-nav a:hover {
+/* Hover effects */
+.nav-link-btn:hover {
+  background-color: #2a2a2a;
+  color: white;
+  border-left-color: var(--umbc-gold);
+}
+
+/* NEW: This handles the "Stay highlighted" logic 
+   using the active class we put on the <li>
+*/
+.sidebar-nav li.active .nav-link-btn {
   background-color: #2a2a2a;
   color: white;
   border-left-color: var(--umbc-gold);

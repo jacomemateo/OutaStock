@@ -1,19 +1,40 @@
 import '../styles/Template.css'
-import { useState } from 'react'
 import logo from '../assets/transparent-gold-logo.png'
 import DashboardIcon from '@mui/icons-material/Dashboard';
 import SystemUpdateIcon from '@mui/icons-material/SystemUpdate';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import AddAlertIcon from '@mui/icons-material/AddAlert';
 import SettingsIcon from '@mui/icons-material/Settings';
+
+// Page Components
 import UpdateProducts from './UpdateProducts'
 import Analytics from './Analytics'
 import Alerts from './Alerts'
 import Settings from './Settings'
 import DashBoard from './Dashboard'
 
+import '../styles/Template.css'
+import { useNavigate, useLocation, Routes, Route } from 'react-router-dom'
+
 const Template = () => {
-    const [currentPage, setCurrentPage] = useState("dashboard")
+    const navigate = useNavigate();
+    const location = useLocation();
+
+    const pages = [
+        { id: "dashboard", label: "Dashboard", icon: <DashboardIcon />, component: <DashBoard />, path: "" },
+        { id: "update-products", label: "Update Products", icon: <SystemUpdateIcon />, component: <UpdateProducts />, path: "update-products" },
+        { id: "analytics", label: "Analytics", icon: <TrendingUpIcon />, component: <Analytics />, path: "analytics" },
+        { id: "alerts", label: "Alerts", icon: <AddAlertIcon />, component: <Alerts />, path: "alerts" },
+        { id: "settings", label: "Settings", icon: <SettingsIcon />, component: <Settings />, path: "settings" },
+    ]
+
+    // Determine current ID based on the URL path
+    // We remove "/dashboard/" from the location.pathname to match our IDs
+    const currentId = location.pathname.split("/").pop() || "dashboard";
+    
+    // FIX for the 'undefined' error: Provide a fallback object
+    const activePage = pages.find(p => p.id === currentId) || pages[0];
+
     return (
         <div className="template-container">
             <aside className="sidebar">
@@ -22,28 +43,35 @@ const Template = () => {
                 </div>
                 <nav className="sidebar-nav">
                     <ul>
-                        <li><a href="#dashboard" onClick={() => setCurrentPage("dashboard")}><DashboardIcon />Dashboard</a></li>
-                        <li><a href="#update-products" onClick={() => setCurrentPage("update-products")}><SystemUpdateIcon />Update Products</a></li>
-                        <li><a href="#analytics" onClick={() => setCurrentPage("analytics")}><TrendingUpIcon />Analytics</a></li>
-                        <li><a href="#alerts" onClick={() => setCurrentPage("alerts")}><AddAlertIcon />Alerts</a></li>
-                        <li><a href="#settings" onClick={() => setCurrentPage("settings")}><SettingsIcon />Settings</a></li>
+                        {pages.map((page) => (
+                            <li key={page.id} className={currentId === page.id ? "active" : ""}>
+                                <button 
+                                    className="nav-link-btn"
+                                    onClick={() => navigate(`/dashboard/${page.path}`)}
+                                >
+                                    {page.icon} {page.label}
+                                </button>
+                            </li>
+                        ))}
                     </ul>
                 </nav>
             </aside>
+
             <main className="main-content">
                 <header className="template-header">
-                    {currentPage === "dashboard" && <h1>Dashboard</h1>}
-                    {currentPage === "update-products" && <h1>Update Products</h1>}
-                    {currentPage === "analytics" && <h1>Analytics</h1>}
-                    {currentPage === "alerts" && <h1>Alerts</h1>}
-                    {currentPage === "settings" && <h1>Settings</h1>}
+                    <h1>{activePage.label}</h1>
                 </header>
                 <div className="content">
-                    {currentPage === "dashboard" && <DashBoard />}
-                    {currentPage === "update-products" && <UpdateProducts />}
-                    {currentPage === "analytics" && <Analytics />}
-                    {currentPage === "alerts" && <Alerts />}
-                    {currentPage === "settings" && <Settings />}
+                    {/* The Routes block now decides what to show based on the URL */}
+                    <Routes>
+                        {pages.map((page) => (
+                            <Route 
+                                key={page.id} 
+                                path={page.path} 
+                                element={page.component} 
+                            />
+                        ))}
+                    </Routes>
                 </div>
             </main>
         </div>
