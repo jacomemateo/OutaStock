@@ -1,4 +1,4 @@
-import '../styles/Dashboard.css'
+import '../styles/Template.css'
 import { useState } from 'react'
 import logo from '../assets/transparent-gold-logo.png'
 import DashboardIcon from '@mui/icons-material/Dashboard';
@@ -11,7 +11,7 @@ import DashBoard from './Dashboard'
 const Template = () => {
     const [currentPage, setCurrentPage] = useState("dashboard")
     return (
-        <div className="dashboard-container">
+        <div className="template-container">
             <aside className="sidebar">
                 <div className="sidebar-header">
                     <img src={logo} alt="Company Logo"/>
@@ -27,7 +27,7 @@ const Template = () => {
                 </nav>
             </aside>
             <main className="main-content">
-                <header className="dashboard-header">
+                <header className="template-header">
                     {currentPage === "dashboard" && <h1>Dashboard</h1>}
                     {currentPage === "update-products" && <h1>Update Products</h1>}
                     {currentPage === "analytics" && <h1>Analytics</h1>}
