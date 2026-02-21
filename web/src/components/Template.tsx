@@ -2,6 +2,10 @@ import '../styles/Template.css'
 import { useState } from 'react'
 import logo from '../assets/transparent-gold-logo.png'
 import DashboardIcon from '@mui/icons-material/Dashboard';
+import SystemUpdateIcon from '@mui/icons-material/SystemUpdate';
+import TrendingUpIcon from '@mui/icons-material/TrendingUp';
+import AddAlertIcon from '@mui/icons-material/AddAlert';
+import SettingsIcon from '@mui/icons-material/Settings';
 import UpdateProducts from './UpdateProducts'
 import Analytics from './Analytics'
 import Alerts from './Alerts'
@@ -19,10 +23,10 @@ const Template = () => {
                 <nav className="sidebar-nav">
                     <ul>
                         <li><a href="#dashboard" onClick={() => setCurrentPage("dashboard")}><DashboardIcon />Dashboard</a></li>
-                        <li><a href="#update-products" onClick={() => setCurrentPage("update-products")}>Update Products</a></li>
-                        <li><a href="#analytics" onClick={() => setCurrentPage("analytics")}>Analytics</a></li>
-                        <li><a href="#alerts" onClick={() => setCurrentPage("alerts")}>Alerts</a></li>
-                        <li><a href="#settings" onClick={() => setCurrentPage("settings")}>Settings</a></li>
+                        <li><a href="#update-products" onClick={() => setCurrentPage("update-products")}><SystemUpdateIcon />Update Products</a></li>
+                        <li><a href="#analytics" onClick={() => setCurrentPage("analytics")}><TrendingUpIcon />Analytics</a></li>
+                        <li><a href="#alerts" onClick={() => setCurrentPage("alerts")}><AddAlertIcon />Alerts</a></li>
+                        <li><a href="#settings" onClick={() => setCurrentPage("settings")}><SettingsIcon />Settings</a></li>
                     </ul>
                 </nav>
             </aside>
