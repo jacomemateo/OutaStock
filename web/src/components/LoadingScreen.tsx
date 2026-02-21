@@ -14,7 +14,7 @@ const LoadingScreen = () => {
         <div className="dashboard-btn">
           <button
             className="view-inventory"
-            onClick={() => navigate("/dashboard")}
+            onClick={() => navigate("/template")}
           >
             View Inventory
           </button>
