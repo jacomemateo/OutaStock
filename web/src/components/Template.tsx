@@ -1,6 +1,7 @@
 import '../styles/Dashboard.css'
 import { useState } from 'react'
 import logo from '../assets/transparent-gold-logo.png'
+import DashboardIcon from '@mui/icons-material/Dashboard';
 import UpdateProducts from './UpdateProducts'
 import Analytics from './Analytics'
 import Alerts from './Alerts'
@@ -17,7 +18,7 @@ const Template = () => {
                 </div>
                 <nav className="sidebar-nav">
                     <ul>
-                        <li><a href="#dashboard" onClick={() => setCurrentPage("dashboard")}>Dashboard</a></li>
+                        <li><a href="#dashboard" onClick={() => setCurrentPage("dashboard")}><DashboardIcon />Dashboard</a></li>
                         <li><a href="#update-products" onClick={() => setCurrentPage("update-products")}>Update Products</a></li>
                         <li><a href="#analytics" onClick={() => setCurrentPage("analytics")}>Analytics</a></li>
                         <li><a href="#alerts" onClick={() => setCurrentPage("alerts")}>Alerts</a></li>

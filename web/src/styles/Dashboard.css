@@ -39,13 +39,21 @@
 }
 
 .sidebar-nav a {
-  display: block;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
   padding: 1rem 1.5rem;
   color: #b0b0b0;
   text-decoration: none;
   transition: all 0.3s ease;
   border-left: 3px solid transparent;
   font-family: var(--Montserrat);
+}
+
+.sidebar-nav a svg {
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
 }
 
 .sidebar-nav a:hover {
