@@ -1,5 +1,5 @@
-import '../styles/Template.css'
-import logo from '../assets/transparent-gold-logo.png'
+import '@styles/Template.css'
+import logo from '@assets/transparent-gold-logo.png'
 import DashboardIcon from '@mui/icons-material/Dashboard';
 import SystemUpdateIcon from '@mui/icons-material/SystemUpdate';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
@@ -7,13 +7,13 @@ import AddAlertIcon from '@mui/icons-material/AddAlert';
 import SettingsIcon from '@mui/icons-material/Settings';
 
 // Page Components
-import UpdateProducts from './UpdateProducts'
-import Analytics from './Analytics'
-import Alerts from './Alerts'
-import Settings from './Settings'
-import DashBoard from './Dashboard'
+import UpdateProducts from '@components/UpdateProducts'
+import Analytics from '@components/Analytics'
+import Alerts from '@components/Alerts'
+import Settings from '@components/Settings'
+import DashBoard from '@components/Dashboard'
 
-import '../styles/Template.css'
+import '@styles/Template.css'
 import { useNavigate, useLocation, Routes, Route } from 'react-router-dom'
 
 const Template = () => {
