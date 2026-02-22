@@ -7,7 +7,7 @@ import (
 )
 
 type CurrentProduct struct {
-	ID        int
+	ID int
 	// The items below are pointers since they're nullable
 	ProductID *uuid.UUID
 	Quantity  *int
