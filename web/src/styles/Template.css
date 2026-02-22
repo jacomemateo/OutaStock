@@ -33,6 +33,43 @@
   margin: 0;
 }
 
+/* Side bar fade in animation */
+.sidebar-nav li {
+    animation: navItemFadeUp 1s ease-out forwards;
+    animation-delay: calc(var(--item-index, 0) * 1s);
+    opacity: 0;
+}
+
+
+@keyframes navItemFadeUp {
+    from {
+        opacity: 0;
+        transform: translateY(-30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* header fade-in animation */
+.template-header {
+    animation: headerFadeIn 1s ease-out forwards;
+    animation-delay: calc(var(--item-index, 0) * 1s);
+    opacity: 0;
+}
+
+@keyframes headerFadeIn {
+    from {
+        opacity: 0;
+        transform: translateX(-30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
 /* REPLACEMENT: We target the button and reset its styles 
 */
 .nav-link-btn {
