@@ -1,3 +1,4 @@
+import { useState } from "react";
 import "@styles/RecentTransactions.css";
 
 const RecentTransactions = () => {
@@ -7,7 +8,31 @@ const RecentTransactions = () => {
     { id: 3, product: "Soda", price: "$2.75", date: "5/11/2025" },
     { id: 4, product: "Candy", price: "$1.99", date: "5/11/2025" },
     { id: 5, product: "Water", price: "$1.50", date: "5/10/2025" },
+    { id: 6, product: "Coffee", price: "$4.25", date: "5/10/2025" },
+    { id: 7, product: "Donut", price: "$2.50", date: "5/09/2025" },
+    { id: 8, product: "Juice", price: "$3.00", date: "5/09/2025" },
+    { id: 9, product: "Smoothie", price: "$4.50", date: "5/08/2025" },
   ];
+
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 4;
+  const totalPages = Math.ceil(transactions.length / itemsPerPage);
+
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentTransactions = transactions.slice(indexOfFirstItem, indexOfLastItem);
+
+  const handleNext = () => {
+    if (currentPage < totalPages) {
+      setCurrentPage(currentPage + 1);
+    }
+  };
+
+  const handlePrev = () => {
+    if (currentPage > 1) {
+      setCurrentPage(currentPage - 1);
+    }
+  };
 
   return (
     <div className="transactions-container">
@@ -17,7 +42,7 @@ const RecentTransactions = () => {
       </div>
 
       <div className="transaction-list">
-        {transactions.map((transaction, index) => (
+        {currentTransactions.map((transaction, index) => (
           <div
             key={transaction.id}
             className="transaction-card"
@@ -39,6 +64,26 @@ const RecentTransactions = () => {
             </div>
           </div>
         ))}
+      </div>
+
+      <div className="pagination">
+        <button 
+          className="pagination-btn" 
+          onClick={handlePrev}
+          disabled={currentPage === 1}
+        >
+          Previous
+        </button>
+        <span className="pagination-info">
+          Page {currentPage} of {totalPages}
+        </span>
+        <button 
+          className="pagination-btn" 
+          onClick={handleNext}
+          disabled={currentPage === totalPages}
+        >
+          Next
+        </button>
       </div>
     </div>
   );
