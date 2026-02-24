@@ -2,12 +2,12 @@
   width: 100vw;
   height: 100vh;
   display: flex;
-  background-color: var(--black-grey);
+  background-color: var(--lighter-black);
 }
 
 .sidebar {
   width: 250px;
-  background-color: var(--black-grey);
+  background-color: var(--lighter-black);
   padding: 2rem 0;
   box-shadow: 2px 0 8px rgba(0, 0, 0, 0.3);
 }
