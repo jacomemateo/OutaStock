@@ -7,6 +7,9 @@
     --darker-black: #1a1a1a;
     --black: #000000;
     --white: #FFFFFF;
+
+    --gold-shadow: 0px 0px 20px rgba(212, 165, 116, 0.2);
+
 }
 
 html {
