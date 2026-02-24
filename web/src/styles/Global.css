@@ -3,7 +3,19 @@
     --GoogleSansCode: 'Google Sans Code', monospace;
     --umbc-gold: #F9AD1E;
     --black-grey: rgb(72, 72, 72);
-    --lighter-black: #363535;
+    --lighter-black: #1a1a1a;
+    --darker-black: #1a1a1a;
     --black: #000000;
     --white: #FFFFFF;
+}
+
+html {
+  font-family: var(--GoogleSansCode);
+}
+
+button,
+input,
+textarea,
+select {
+  font-family: inherit;
 }

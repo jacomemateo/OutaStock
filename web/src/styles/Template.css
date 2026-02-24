@@ -2,12 +2,12 @@
   width: 100vw;
   height: 100vh;
   display: flex;
-  background-color: var(--lighter-black);
+  background-color: var(--darker-black);
 }
 
 .sidebar {
   width: 250px;
-  background-color: var(--lighter-black);
+  background-color: var(--darker-black);
   padding: 2rem 0;
   box-shadow: 2px 0 8px rgba(0, 0, 0, 0.3);
 }
@@ -85,7 +85,6 @@
   cursor: pointer;
   text-align: left;
   transition: all 0.3s ease;
-  font-family: var(--Montserrat);
   font-size: 1rem; /* Adjust to match your previous font size */
 }
 
@@ -127,7 +126,6 @@
   color: white;
   margin: 0;
   font-size: 2rem;
-  font-family: var(--Montserrat);
 }
 
 .content {
