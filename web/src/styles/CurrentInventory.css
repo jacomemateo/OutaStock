@@ -9,9 +9,13 @@
   display: flex;
   flex-direction: column;
   /* height: fit-content; */
+<<<<<<< HEAD
   max-height: 95vh;
+=======
+  
+  max-height: 700px;
+>>>>>>> a93c3f535ea74bb15d027b7f2206d9d5fe4a59d6
 }
-
 
 .current-inventory-header{
     margin-bottom: 1.5rem;
