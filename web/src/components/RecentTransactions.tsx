@@ -12,6 +12,9 @@ const RecentTransactions = () => {
     { id: 7, product: "Donut", price: "$2.50", date: "5/09/2025" },
     { id: 8, product: "Juice", price: "$3.00", date: "5/09/2025" },
     { id: 9, product: "Smoothie", price: "$4.50", date: "5/08/2025" },
+    { id: 10, product: "Energy Drink", price: "$3.75", date: "5/08/2025" }, 
+    { id: 11, product: "Gum", price: "$0.99", date: "5/07/2025" },
+    { id: 12, product: "Mints", price: "$1.25", date: "5/07/2025" },
   ];
 
   const [currentPage, setCurrentPage] = useState(1);
