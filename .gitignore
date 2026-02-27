@@ -85,3 +85,6 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+temp.tsx
+

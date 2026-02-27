@@ -12,22 +12,90 @@
   max-height: 95vh;
 }
 
-.current-inventory-header{
-    margin-bottom: 1.5rem;
-    border-bottom: 1px solid #2a2a2a;
-    padding-bottom: 1rem;
+.current-inventory-header {
+  margin-bottom: 1.5rem;
+  /* border-bottom: 1px solid #2a2a2a; */
+  padding-bottom: 1rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
 }
 
 .current-inventory-header h2 {
-    font-size: 1.5rem;
-    font-weight: 700;
-    color: #ffffff;
-    margin: 0 0 0.25rem 0;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #ffffff;
+  margin: 0 0 0.3rem 0;
 }
 
 .current-inventory-subtitle {
-    font-size: 0.9rem;
-    color: #888;
-    margin: 0;
-    font-weight: 500;
+  font-size: 0.9rem;
+  color: #888;
+  margin-top: 0rem;
+  font-weight: 500;
+}
+
+.current-inventory-header {
+  margin-bottom: 32px;
+}
+
+
+
+.add-btn {
+  background-color: var(--umbc-gold);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  width: 36px;
+  height: 36px;
+  font-size: 24px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.2s;
+  top: 20px;
+  left: 20px;
+}
+
+.add-btn:hover {
+  opacity: 0.7;
+}
+
+
+.products-list {
+  margin-top: 1.5rem;
+}
+
+.empty-state {
+  text-align: center;
+  color: #888;
+  padding: 2rem;
+}
+
+.products-table {
+  width: 100%;
+  border-collapse: collapse;
+  color: #ffffff;
+}
+
+.products-table thead {
+  border-bottom: 1px solid #2a2a2a;
+}
+
+.products-table th {
+  padding: 1rem;
+  text-align: left;
+  font-weight: 600;
+  color: var(--umbc-gold);
+}
+
+.products-table td {
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid #2a2a2a;
+}
+
+.products-table tbody tr:hover {
+  background-color: #252525;
 }
