@@ -2,11 +2,9 @@ package service
 
 import (
 	"context"
-	"log"
 
 	"github.com/google/uuid"
 	"github.com/jacomemateo/OutaStock/backend/internal/domain"
-	"github.com/shopspring/decimal"
 )
 
 type TransactionsService struct {
@@ -36,20 +34,13 @@ func (s *TransactionsService) GetRecentTransactions(ctx context.Context, limit i
 			transactionID = row.TransactionID.Bytes
 		}
 
-		var priceAtSale decimal.Decimal
-		err := row.PriceAtSale.Scan(&priceAtSale)  // Direct scan!
-		if err != nil {
-			log.Printf("Error converting price: %v", err)
-			continue
-		}
-
 		// Convert pgtype.Timestamptz to time.Time
 		dateSold := row.DateSold.Time
 
 		transaction := &domain.Transaction{
 			ID:          transactionID,
 			ProductName: row.Name,
-			PriceAtSale: priceAtSale,
+			PriceAtSaleCents: row.PriceAtSaleCents,
 			DateSold:    dateSold,
 		}
 		transactions = append(transactions, transaction)

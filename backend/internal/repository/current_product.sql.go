@@ -12,26 +12,28 @@ import (
 )
 
 const getCurrentProducts = `-- name: GetCurrentProducts :many
+
 SELECT
     cp.slot_id,
     cp.quantity,
     cp.date_added,
     pi.name,
-    pi.price,
+    pi.price_cents,
     pi.product_id
 FROM current_products cp
 LEFT JOIN product_info pi ON cp.product_id = pi.product_id
 `
 
 type GetCurrentProductsRow struct {
-	SlotID    int32
-	Quantity  pgtype.Int4
-	DateAdded pgtype.Timestamptz
-	Name      pgtype.Text
-	Price     pgtype.Numeric
-	ProductID pgtype.UUID
+	SlotID     int32
+	Quantity   pgtype.Int4
+	DateAdded  pgtype.Timestamptz
+	Name       pgtype.Text
+	PriceCents pgtype.Int4
+	ProductID  pgtype.UUID
 }
 
+// code: language=postgres
 func (q *Queries) GetCurrentProducts(ctx context.Context) ([]GetCurrentProductsRow, error) {
 	rows, err := q.db.Query(ctx, getCurrentProducts)
 	if err != nil {
@@ -46,7 +48,7 @@ func (q *Queries) GetCurrentProducts(ctx context.Context) ([]GetCurrentProductsR
 			&i.Quantity,
 			&i.DateAdded,
 			&i.Name,
-			&i.Price,
+			&i.PriceCents,
 			&i.ProductID,
 		); err != nil {
 			return nil, err

@@ -12,9 +12,10 @@ import (
 )
 
 const getRecentTransactions = `-- name: GetRecentTransactions :many
+
 SELECT
     t.transaction_id,
-    t.price_at_sale,
+    t.price_at_sale_cents,
     t.date_sold,
     p.name
 FROM transactions as t
@@ -24,12 +25,13 @@ LIMIT $1
 `
 
 type GetRecentTransactionsRow struct {
-	TransactionID pgtype.UUID
-	PriceAtSale   pgtype.Numeric
-	DateSold      pgtype.Timestamptz
-	Name          string
+	TransactionID    pgtype.UUID
+	PriceAtSaleCents int32
+	DateSold         pgtype.Timestamptz
+	Name             string
 }
 
+// code: language=postgres
 func (q *Queries) GetRecentTransactions(ctx context.Context, numRows int32) ([]GetRecentTransactionsRow, error) {
 	rows, err := q.db.Query(ctx, getRecentTransactions, numRows)
 	if err != nil {
@@ -41,7 +43,7 @@ func (q *Queries) GetRecentTransactions(ctx context.Context, numRows int32) ([]G
 		var i GetRecentTransactionsRow
 		if err := rows.Scan(
 			&i.TransactionID,
-			&i.PriceAtSale,
+			&i.PriceAtSaleCents,
 			&i.DateSold,
 			&i.Name,
 		); err != nil {

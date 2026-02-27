@@ -4,7 +4,6 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/shopspring/decimal"
 )
 
 // TransactionResponse is the "Output" DTO.
@@ -12,7 +11,7 @@ import (
 type TransactionResponse struct {
 	ID          uuid.UUID       `json:"id"`
 	ProductName string          `json:"productName"` // From the JOIN
-	PriceAtSale decimal.Decimal `json:"priceAtSale"`
+	PriceAtSaleCents int32           `json:"priceAtSaleCents"`  // Changed from decimal.Decimal to int32 to represent price in cents
 	DateSold    time.Time       `json:"dateSold"`
 }
 
@@ -21,6 +20,6 @@ type TransactionResponse struct {
 // map CSV rows into a slice of these to send to the Repository.
 type CreateTransactionRequest struct {
 	ProductID   uuid.UUID       `json:"productId"`
-	PriceAtSale decimal.Decimal `json:"priceAtSale"`
+	PriceAtSaleCents int32           `json:"priceAtSaleCents"`  // Changed from decimal.Decimal to int32 to represent price in cents
 	DateSold    time.Time       `json:"dateSold"`
 }

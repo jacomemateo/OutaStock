@@ -3,7 +3,7 @@
 CREATE TABLE product_info (
     product_id UUID PRIMARY KEY DEFAULT uuidv7(),
     name TEXT NOT NULL,
-    price NUMERIC(10, 2) CHECK (price >= 0) NOT NULL,
+    price_cents INTEGER CHECK (price_cents >= 0) NOT NULL,  -- price in cents to avoid floating point issues
     date_created TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP NOT NULL,
     -- I know I need a trigger but idk how to implement
     date_modified TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP NOT NULL
@@ -35,14 +35,14 @@ CREATE TABLE transactions (
     transaction_id UUID PRIMARY KEY DEFAULT uuidv7(),
     product_id UUID REFERENCES product_info(product_id) ON DELETE RESTRICT NOT NULL,
     -- Snapshot of the price
-    price_at_sale NUMERIC(10, 2) CHECK (price_at_sale >= 0) NOT NULL,
+    price_at_sale_cents INTEGER CHECK (price_at_sale_cents >= 0) NOT NULL,  -- price in cents to avoid floating point issues
     -- The reason that this does not have a DEFAULT CURRENT_TIMESTAMP
     -- is because we get the data from a spreadsheet we get hourly or
     -- daily (idk which yet) data, and I'm going to use the data from 
     -- that spreadsheet for the transaction info.
     date_sold TIMESTAMPTZ NOT NULL,
     -- This prevents the "Double Upload" or "System Glitch" duplicates
-    CONSTRAINT unique_sale UNIQUE(product_id, price_at_sale, date_sold)
+    CONSTRAINT unique_sale UNIQUE(product_id, price_at_sale_cents, date_sold)  
 );
 
 --####TRIGGERS####

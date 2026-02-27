@@ -6,7 +6,7 @@ SELECT
     cp.quantity,
     cp.date_added,
     pi.name,
-    pi.price,
+    pi.price_cents,
     pi.product_id
 FROM current_products cp
 LEFT JOIN product_info pi ON cp.product_id = pi.product_id;

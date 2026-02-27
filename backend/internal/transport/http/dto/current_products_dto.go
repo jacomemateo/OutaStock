@@ -4,7 +4,6 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/shopspring/decimal"
 )
 
 // InventorySlot is the "Output" DTO.
@@ -13,7 +12,7 @@ type InventorySlot struct {
 	SlotID      int32           `json:"slotId"`
 	Quantity    int32           `json:"quantity"`
 	ProductName string          `json:"productName"` 
-	Price       decimal.Decimal `json:"price"`       
+	PriceCents  int32           `json:"priceCents"`       
 	ProductID   *uuid.UUID      `json:"productId"`   
 	DateAdded   *time.Time      `json:"dateAdded"`   
 }

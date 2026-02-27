@@ -46,7 +46,7 @@ func (h *TransactionsHandler) GetRecentTransactions(c *echo.Context) error {
 		response = append(response, dto.TransactionResponse{
 			ID:          t.ID,
 			ProductName: t.ProductName,
-			PriceAtSale: t.PriceAtSale,
+			PriceAtSaleCents: t.PriceAtSaleCents,
 			DateSold:    t.DateSold,
 		})
 	}

@@ -3,7 +3,7 @@
 -- name: GetRecentTransactions :many
 SELECT
     t.transaction_id,
-    t.price_at_sale,
+    t.price_at_sale_cents,
     t.date_sold,
     p.name
 FROM transactions as t

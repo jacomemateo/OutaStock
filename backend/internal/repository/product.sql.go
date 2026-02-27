@@ -12,17 +12,19 @@ import (
 )
 
 const createProduct = `-- name: CreateProduct :exec
-INSERT INTO product_info (name, price)
+
+INSERT INTO product_info (name, price_cents)
 VALUES ( $1, $2 )
 `
 
 type CreateProductParams struct {
-	Name  string
-	Price pgtype.Numeric
+	Name       string
+	PriceCents int32
 }
 
+// code: language=postgres
 func (q *Queries) CreateProduct(ctx context.Context, arg CreateProductParams) error {
-	_, err := q.db.Exec(ctx, createProduct, arg.Name, arg.Price)
+	_, err := q.db.Exec(ctx, createProduct, arg.Name, arg.PriceCents)
 	return err
 }
 
@@ -37,7 +39,7 @@ func (q *Queries) DeleteProduct(ctx context.Context, productID pgtype.UUID) erro
 }
 
 const getProducts = `-- name: GetProducts :many
-SELECT product_id, name, price, date_created, date_modified FROM product_info
+SELECT product_id, name, price_cents, date_created, date_modified FROM product_info
 `
 
 func (q *Queries) GetProducts(ctx context.Context) ([]ProductInfo, error) {
@@ -52,7 +54,7 @@ func (q *Queries) GetProducts(ctx context.Context) ([]ProductInfo, error) {
 		if err := rows.Scan(
 			&i.ProductID,
 			&i.Name,
-			&i.Price,
+			&i.PriceCents,
 			&i.DateCreated,
 			&i.DateModified,
 		); err != nil {
@@ -68,16 +70,16 @@ func (q *Queries) GetProducts(ctx context.Context) ([]ProductInfo, error) {
 
 const updatePrice = `-- name: UpdatePrice :exec
 UPDATE product_info
-SET price = $1
+SET price_cents = $1
 WHERE product_id = $2
 `
 
 type UpdatePriceParams struct {
-	Price     pgtype.Numeric
-	ProductID pgtype.UUID
+	PriceCents int32
+	ProductID  pgtype.UUID
 }
 
 func (q *Queries) UpdatePrice(ctx context.Context, arg UpdatePriceParams) error {
-	_, err := q.db.Exec(ctx, updatePrice, arg.Price, arg.ProductID)
+	_, err := q.db.Exec(ctx, updatePrice, arg.PriceCents, arg.ProductID)
 	return err
 }
