@@ -13,6 +13,26 @@ type Router struct {
 func (r *Router) Init() {
 	r.echo = echo.New()
 	r.echo.Use(middleware.RequestLogger())
+
+    r.echo.Use(middleware.CORSWithConfig(middleware.CORSConfig{
+        AllowOrigins: []string{
+			"http://localhost:5173/",   // Vite dev server,
+        },
+        AllowMethods: []string{
+            http.MethodGet,
+            http.MethodPost,
+            http.MethodPut,
+            http.MethodDelete,
+            http.MethodOptions,
+        },
+        AllowHeaders: []string{
+            echo.HeaderOrigin,
+            echo.HeaderContentType,
+            echo.HeaderAccept,
+            echo.HeaderAuthorization,
+        },
+        AllowCredentials: true,
+    }))
 }
 
 func (r *Router) Start() {
