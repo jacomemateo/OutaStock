@@ -4,19 +4,26 @@ import (
 	"net/http"
 	"github.com/labstack/echo/v5"
 	"github.com/labstack/echo/v5/middleware"
+
+	"github.com/jacomemateo/OutaStock/backend/internal/transport/http/handlers"
+	"github.com/jacomemateo/OutaStock/backend/internal/service"
+
 )
 
 type Router struct {
 	echo *echo.Echo
+	database            *service.Database  // Just store the Database, not the raw pool
+	transactionsHandler  *handlers.TransactionsHandler
 }
 
-func (r *Router) Init() {
+func (r *Router) Init(database *service.Database) {
+	r.database = database
 	r.echo = echo.New()
 	r.echo.Use(middleware.RequestLogger())
 
     r.echo.Use(middleware.CORSWithConfig(middleware.CORSConfig{
         AllowOrigins: []string{
-			"http://localhost:5173/",   // Vite dev server,
+			"http://localhost:5173",   // Vite dev server,
         },
         AllowMethods: []string{
             http.MethodGet,
@@ -33,6 +40,12 @@ func (r *Router) Init() {
         },
         AllowCredentials: true,
     }))
+
+	// Initialize services (using database.queries)
+	transactionsService := service.NewTransactionsService(r.database)
+	
+	// Initialize handlers
+	r.transactionsHandler = handlers.NewTransactionsHandler(transactionsService)
 }
 
 func (r *Router) Start() {
@@ -49,4 +62,11 @@ func (r *Router) addRoutes() {
 	r.echo.GET("/", func(c *echo.Context) error {
 		return c.String(http.StatusOK, "Hello, World!")
 	})
+
+	// API routes group
+	api := r.echo.Group("/api")
+	
+	// Transaction routes
+	transactions := api.Group("/transactions")
+	transactions.GET("/recent", r.transactionsHandler.GetRecentTransactions)
 }

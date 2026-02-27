@@ -22,7 +22,7 @@ func NewTransactionsHandler(transactionsService *service.TransactionsService) *T
 }
 
 // GetRecentTransactions handles GET /api/transactions/recent?limit=10
-func (h *TransactionsHandler) GetRecentTransactions(c echo.Context) error {
+func (h *TransactionsHandler) GetRecentTransactions(c *echo.Context) error {
 	// Get limit from query param, default to 10
 	limitStr := c.QueryParam("limit")
 	limit := 10 // default
