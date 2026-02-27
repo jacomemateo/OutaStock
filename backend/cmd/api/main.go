@@ -1,7 +1,11 @@
 package main
 
-import "fmt"
+import (
+	"github.com/jacomemateo/OutaStock/backend/internal/transport"
+)
 
 func main() {
-	fmt.Println("Chud")
+	router := transport.Router{}
+	router.Init()
+	router.Start()
 }
