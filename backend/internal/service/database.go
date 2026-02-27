@@ -5,6 +5,7 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 	"log"
 	"github.com/jacomemateo/OutaStock/backend/internal/repository"
+	"fmt"
 )
 
 type Database struct {
@@ -30,6 +31,14 @@ func (d *Database) Connect() {
     log.Println("Connected to database successfully!")
 	d.queries = repository.New(d.dbPool)
 
+}
+
+// Add a Ping method to check database connectivity
+func (d *Database) Ping(ctx context.Context) error {
+	if d.dbPool == nil {
+		return fmt.Errorf("database connection not initialized")
+	}
+	return d.dbPool.Ping(ctx)
 }
 
 // Add a Close method to be called when the app shuts down

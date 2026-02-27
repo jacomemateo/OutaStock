@@ -1,6 +1,7 @@
 package transport
 
 import (
+	"time"
 	"net/http"
 	"github.com/labstack/echo/v5"
 	"github.com/labstack/echo/v5/middleware"
@@ -59,8 +60,23 @@ func (r *Router) Start() {
 }
 
 func (r *Router) addRoutes() {
-	r.echo.GET("/", func(c *echo.Context) error {
-		return c.String(http.StatusOK, "Hello, World!")
+	// Health check endpoint
+	r.echo.GET("/health", func(c *echo.Context) error {
+		// Check if database is connected
+		ctx := c.Request().Context()
+		if err := r.database.Ping(ctx); err != nil {
+			return c.JSON(http.StatusServiceUnavailable, map[string]string{
+				"status": "unhealthy",
+				"db":     "disconnected",
+				"error":  err.Error(),
+			})
+		}
+		
+		return c.JSON(http.StatusOK, map[string]string{
+			"status": "healthy",
+			"db":     "connected",
+			"time":   time.Now().String(),
+		})
 	})
 
 	// API routes group
