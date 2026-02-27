@@ -18,14 +18,14 @@ type CurrentProduct struct {
 type ProductInfo struct {
 	ProductID    pgtype.UUID
 	Name         string
-	Price        pgtype.Numeric
+	PriceCents   int32
 	DateCreated  pgtype.Timestamptz
 	DateModified pgtype.Timestamptz
 }
 
 type Transaction struct {
-	TransactionID pgtype.UUID
-	ProductID     pgtype.UUID
-	PriceAtSale   pgtype.Numeric
-	DateSold      pgtype.Timestamptz
+	TransactionID    pgtype.UUID
+	ProductID        pgtype.UUID
+	PriceAtSaleCents int32
+	DateSold         pgtype.Timestamptz
 }

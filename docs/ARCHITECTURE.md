@@ -37,6 +37,8 @@ We use a **Mono-repo** design. This allows us to keep our frontend and backend i
 
 ```
 
+
+
 ---
 
 ## 3. Data Flow & Layered Logic
@@ -44,6 +46,13 @@ We use a **Mono-repo** design. This allows us to keep our frontend and backend i
 Our backend follows a clean, layered architecture to separate concerns. This is vital because our "Inventory Inference Engine" will be complex.
 
 * **Transport (Echo Handlers):** Only handles HTTP requests and JSON responses.
+  
+  *  **router.go**: Where we'll define the routes, entry point for JSON data, hands off data to correct handler
+  
+  * **HTTP**: This folder handles HTTP connections.
+    * **DTO (Data Transfer Objects)** The actual structs that we'll be sending back and forth between the front end and the backend.
+    * **Handlers** Functions that decide what do do with the DTOs. Communicates with the service layer.
+
 * **Service (Business Logic):** The "Brain." This layer will deduce inventory levels based on transaction prices and mapping probabilities.
 * **Repository (Data Access):** Uses **sqlc** generated code to perform type-safe SQL queries.
 * **Domain (Models):** Defines our shared structs (e.g., `Machine`, `Product`, `Transaction`) used across all layers.

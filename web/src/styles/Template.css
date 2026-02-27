@@ -9,7 +9,8 @@
   width: 250px;
   background-color: var(--darker-black);
   padding: 2rem 0;
-  box-shadow: 2px 0 8px rgba(0, 0, 0, 0.3);
+  box-shadow: var(--gold-shadow);
+
 }
 
 .sidebar-header {

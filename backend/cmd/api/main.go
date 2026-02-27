@@ -1,7 +1,17 @@
 package main
 
-import "fmt"
+import (
+	"github.com/jacomemateo/OutaStock/backend/internal/transport"
+	"github.com/jacomemateo/OutaStock/backend/internal/service"
+)
 
 func main() {
-	fmt.Println("Chud")
+	db := service.Database{}
+	db.Connect()
+
+	router := transport.Router{}
+	router.Init(&db)
+	router.Start()
+
+	db.Close()
 }
