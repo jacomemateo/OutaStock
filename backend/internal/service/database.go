@@ -22,10 +22,7 @@ func (d *Database) Connect() {
         log.Fatal("Failed to connect to database:", err)
     }
 
-	// Ensure the connection pool is closed when the application exits
-	defer d.dbPool.Close()
-
-	    // 2. Test the connection
+	// 2. Test the connection
     if err := d.dbPool.Ping(context.Background()); err != nil {
         log.Fatal("Failed to ping database:", err)
     }
@@ -33,4 +30,12 @@ func (d *Database) Connect() {
     log.Println("Connected to database successfully!")
 	d.queries = repository.New(d.dbPool)
 
+}
+
+// Add a Close method to be called when the app shuts down
+func (d *Database) Close() {
+	if d.dbPool != nil {
+		d.dbPool.Close()
+		log.Println("Database connection closed")
+	}
 }
