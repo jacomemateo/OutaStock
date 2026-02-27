@@ -10,6 +10,7 @@ import (
 type Transaction struct {
 	ID          uuid.UUID
 	ProductID   uuid.UUID
+	ProductName string
 	PriceAtSale decimal.Decimal
 	DateSold    time.Time
 }
