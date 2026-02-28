@@ -8,7 +8,7 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
-type CurrentProduct struct {
+type Inventory struct {
 	SlotID    int32
 	ProductID pgtype.UUID
 	Quantity  pgtype.Int4

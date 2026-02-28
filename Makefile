@@ -28,5 +28,6 @@ backend-run: create_db deps
 	cd backend && go run ./cmd/api
 
 seed:
+	docker exec -i vending-db psql -U postgres -d vending < db/migrations/001_create_tables.sql
 	docker exec -i vending-db psql -U postgres -d vending < db/seeds/01_products.sql
 	docker exec -i vending-db psql -U postgres -d vending < db/seeds/02_transactions.sql

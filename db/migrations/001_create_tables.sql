@@ -9,7 +9,7 @@ CREATE TABLE product_info (
     date_modified TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP NOT NULL
 );
 
-CREATE TABLE current_products (
+CREATE TABLE inventory (
     -- I'm making this an INT since there's a set number of
     -- slots in the machine.
     --
@@ -27,7 +27,7 @@ CREATE TABLE current_products (
 );
 
 -- Auto fill in the number of slots
-INSERT INTO current_products (slot_id, product_id, quantity, date_added)
+INSERT INTO inventory (slot_id, product_id, quantity, date_added)
 SELECT i, NULL, NULL, NULL
 FROM generate_series(1, 16) AS i;
 
@@ -61,19 +61,19 @@ BEFORE UPDATE ON product_info
 FOR EACH ROW
 EXECUTE FUNCTION update_date_modified();
 
--- Trigger to decerement current_products upon transaction
+-- Trigger to decerement inventory upon transaction
 CREATE OR REPlACE FUNCTION deduct_inventory_on_sale()
 RETURNS TRIGGER AS $$
 BEGIN
     -- This looks for the product_id sold and reduces quantity by 1
     -- We only target slots where the product is actually assigned.
-    UPDATE current_products
+    UPDATE inventory
     SET quantity = quantity - 1
     -- And this makes sure that in case a product is in more than one
     -- slot it decrements from the first slot it finds.
     WHERE slot_id = (
         SELECT slot_id
-        FROM current_products
+        FROM inventory
         WHERE product_id = NEW.product_id
         AND quantity > 0
         ORDER BY slot_id ASC -- empty lowest slot number first

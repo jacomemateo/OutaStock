@@ -8,11 +8,11 @@ SELECT
     pi.name,
     pi.price_cents,
     pi.product_id
-FROM current_products cp
+FROM inventory cp
 LEFT JOIN product_info pi ON cp.product_id = pi.product_id;
 
 -- name: InsertProduct :exec
-UPDATE current_products
+UPDATE inventory
 SET
     product_id = @product_id,
     quantity = @quantity,
@@ -20,7 +20,7 @@ SET
 WHERE slot_id = @slot_id;
 
 -- name: UnassignSlot :exec
-UPDATE current_products
+UPDATE inventory
 SET
     product_id = NULL,
     quantity = NULL,
@@ -28,6 +28,6 @@ SET
 WHERE slot_id = @slot_id;
 
 -- name: UpdateQuantity :exec
-UPDATE current_products
+UPDATE inventory
 SET quantity = @quantity
 WHERE slot_id = @slot_id;
