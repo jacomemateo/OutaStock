@@ -11,7 +11,7 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
-const getCurrentProducts = `-- name: GetCurrentProducts :many
+const getInventory = `-- name: GetInventory :many
 
 SELECT
     cp.slot_id,
@@ -24,7 +24,7 @@ FROM inventory cp
 LEFT JOIN product_info pi ON cp.product_id = pi.product_id
 `
 
-type GetCurrentProductsRow struct {
+type GetInventoryRow struct {
 	SlotID     int32
 	Quantity   pgtype.Int4
 	DateAdded  pgtype.Timestamptz
@@ -34,15 +34,15 @@ type GetCurrentProductsRow struct {
 }
 
 // code: language=postgres
-func (q *Queries) GetCurrentProducts(ctx context.Context) ([]GetCurrentProductsRow, error) {
-	rows, err := q.db.Query(ctx, getCurrentProducts)
+func (q *Queries) GetInventory(ctx context.Context) ([]GetInventoryRow, error) {
+	rows, err := q.db.Query(ctx, getInventory)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []GetCurrentProductsRow
+	var items []GetInventoryRow
 	for rows.Next() {
-		var i GetCurrentProductsRow
+		var i GetInventoryRow
 		if err := rows.Scan(
 			&i.SlotID,
 			&i.Quantity,
