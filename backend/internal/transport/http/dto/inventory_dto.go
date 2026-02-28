@@ -13,7 +13,7 @@ type InventorySlot struct {
 	Quantity    int32           `json:"quantity"`
 	ProductName string          `json:"productName"` 
 	PriceCents  int32           `json:"priceCents"`       
-	ProductID   *uuid.UUID      `json:"productId"`   
+	ProductID   string          `json:"productId"`   
 	DateAdded   *time.Time      `json:"dateAdded"`   
 }
 

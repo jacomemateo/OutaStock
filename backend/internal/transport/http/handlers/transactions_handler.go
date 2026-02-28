@@ -6,9 +6,7 @@ import (
 	"strconv"
 
 	"github.com/labstack/echo/v5"
-
 	"github.com/jacomemateo/OutaStock/backend/internal/service"
-	"github.com/jacomemateo/OutaStock/backend/internal/transport/http/dto"
 )
 
 type TransactionsHandler struct {
@@ -32,7 +30,7 @@ func (h *TransactionsHandler) GetRecentTransactions(c *echo.Context) error {
 		}
 	}
 
-	// Call service
+	// Call service - now returns DTOs directly
 	transactions, err := h.transactionsService.GetRecentTransactions(c.Request().Context(), int32(limit))
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, map[string]string{
@@ -40,16 +38,6 @@ func (h *TransactionsHandler) GetRecentTransactions(c *echo.Context) error {
 		})
 	}
 
-	// Convert domain models to response DTOs
-	var response []dto.TransactionResponse
-	for _, t := range transactions {
-		response = append(response, dto.TransactionResponse{
-			ID:          t.ID,
-			ProductName: t.ProductName,
-			PriceAtSaleCents: t.PriceAtSaleCents,
-			DateSold:    t.DateSold,
-		})
-	}
-
-	return c.JSON(http.StatusOK, response)
+	// No conversion needed - transactions are already DTOs!
+	return c.JSON(http.StatusOK, transactions)
 }

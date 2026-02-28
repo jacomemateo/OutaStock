@@ -5,8 +5,7 @@ import (
 	"context"
 	"log"
 
-	"github.com/google/uuid"
-	"github.com/jacomemateo/OutaStock/backend/internal/domain"
+	"github.com/jacomemateo/OutaStock/backend/internal/transport/http/dto"
 )
 
 type TransactionsService struct {
@@ -19,41 +18,34 @@ func NewTransactionsService(database *Database) *TransactionsService {
 	}
 }
 
-// GetRecentTransactions gets the most recent transactions
-func (s *TransactionsService) GetRecentTransactions(ctx context.Context, limit int32) ([]*domain.Transaction, error) {
+// GetRecentTransactions gets the most recent transactions and returns DTOs directly
+func (s *TransactionsService) GetRecentTransactions(ctx context.Context, limit int32) ([]dto.TransactionResponse, error) {
 	// Call repository
 	rows, err := s.database.queries.GetRecentTransactions(ctx, limit)
 	if err != nil {
-		log.Printf("ERROR: Failed to query transactions: %v", err)  // ADD THIS
+		log.Printf("ERROR: Fai2led to query transactions: %v", err)
 		return nil, err
 	}
 
-	log.Printf("DEBUG: Found %d rows from database", len(rows))  // ADD THIS
+	log.Printf("DEBUG: Found %d rows from database", len(rows))
 
-	// Convert repository rows to domain models
-	var transactions []*domain.Transaction
+	// Convert repository rows directly to DTOs
+	var transactions []dto.TransactionResponse
 	for _, row := range rows {
 		log.Printf("DEBUG: Row - TransactionID.Valid=%v, PriceAtSaleCents=%v, Name=%s", 
-			row.TransactionID.Valid, row.PriceAtSaleCents, row.Name)  // ADD THIS
+			row.TransactionID.Valid, row.PriceAtSaleCents, row.Name)
 
-		// Convert pgtype.UUID to uuid.UUID
-		var transactionID uuid.UUID
-		if row.TransactionID.Valid {
-			transactionID = row.TransactionID.Bytes
-		} else {
-			log.Printf("WARNING: TransactionID is null, skipping row")
-			continue
-		}
+		uuidString := convertPgtypeUUIDToString(row.TransactionID)
 
-		transaction := &domain.Transaction{
-			ID:               transactionID,
+		transaction := dto.TransactionResponse{
+			ID:               uuidString,
 			ProductName:      row.Name,
 			PriceAtSaleCents: row.PriceAtSaleCents,
-			DateSold:         row.DateSold.Time,
+			DateSold:         &row.DateSold.Time,
 		}
 		transactions = append(transactions, transaction)
 	}
 
-	log.Printf("DEBUG: Returning %d transactions", len(transactions))  // ADD THIS
+	log.Printf("DEBUG: Returning %d transactions", len(transactions))
 	return transactions, nil
 }
