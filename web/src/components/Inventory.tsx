@@ -1,7 +1,7 @@
-import "@styles/CurrentInventory.css";
+import "@styles/Inventory.css";
 import AddIcon from "@mui/icons-material/Add";
 import { useState } from "react";
-import AddCurrentProductModal from "@components/AddCurrentProductModal";
+import AddInventoryModal from "@/components/AddInventoryModal";
 
 interface Product {
   id: string;
@@ -11,7 +11,7 @@ interface Product {
   price: number;
 }
 
-const CurrentInventory = () => {
+const Inventory = () => {
   const [FormModalOpen, setFormModalOpen] = useState<boolean>(false);
   const [products, setProducts] = useState<Product[]>([]);
 
@@ -28,11 +28,11 @@ const CurrentInventory = () => {
   };
 
   return (
-    <div className="current-inventory-container">
-      <div className="current-inventory-header">
+    <div className="inventory-container">
+      <div className="inventory-header">
         <div>
-          <h2>Current Inventory</h2>
-          <p className="current-inventory-subtitle">
+          <h2>Inventory</h2>
+          <p className="inventory-subtitle">
             Products currently in the vending machine
           </p>
         </div>
@@ -69,7 +69,7 @@ const CurrentInventory = () => {
         )}
       </div>
 
-      <AddCurrentProductModal
+      <AddInventoryModal
         isOpen={FormModalOpen}
         onClose={() => setFormModalOpen(false)}
         onAddProduct={handleAddProduct}
@@ -78,4 +78,4 @@ const CurrentInventory = () => {
   );
 }; 
 
-export default CurrentInventory;
+export default Inventory;

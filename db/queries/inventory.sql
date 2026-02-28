@@ -1,6 +1,6 @@
 -- code: language=postgres
 
--- name: GetCurrentProducts :many
+-- name: GetInventory :many
 SELECT
     cp.slot_id,
     cp.quantity,

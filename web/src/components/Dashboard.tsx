@@ -1,6 +1,6 @@
 import "@styles/Dashboard.css";
 import RecentTransactions from "@components/RecentTransactions";
-import CurrentInventory from "@components/CurrentInventory";
+import Inventory from "@/components/Inventory";
 
 const DashBoard = () => {
   return (
@@ -11,7 +11,7 @@ const DashBoard = () => {
         <RecentTransactions />
 
         {/* Current Inventory Box */}
-        <CurrentInventory />
+        <Inventory />
 
       </div>
     </div>

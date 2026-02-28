@@ -1,13 +1,13 @@
 import {useState} from "react"
-import "@styles/AddCurrentProductModal.css";
+import "@styles/AddInventoryModal.css";
 
-interface AddCurrentProductModalProps {
+interface AddInventoryModalProps {
     isOpen: boolean;
     onClose: () => void;
     onAddProduct: (productName: string, quantity: number, location: string, price: number) => void;
 }
 
-const AddCurrentProductModal = ({ isOpen, onClose, onAddProduct }: AddCurrentProductModalProps) => {
+const AddInventoryModal = ({ isOpen, onClose, onAddProduct }: AddInventoryModalProps) => {
     const [formData, setFormData] = useState({
         productName: "",
         quantity: "",
@@ -68,4 +68,4 @@ const AddCurrentProductModal = ({ isOpen, onClose, onAddProduct }: AddCurrentPro
     )
 }
 
-export default AddCurrentProductModal;
+export default AddInventoryModal;

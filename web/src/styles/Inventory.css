@@ -1,4 +1,4 @@
-.current-inventory-container {
+.inventory-container {
   background: #1a1a1a;
   border-radius: 12px;
   padding: 2rem;
@@ -12,7 +12,7 @@
   max-height: 95vh;
 }
 
-.current-inventory-header {
+.inventory-header {
   margin-bottom: 1.5rem;
   border-bottom: 1px solid #2a2a2a;
   padding-bottom: 1rem;
@@ -22,21 +22,21 @@
   gap: 16px;
 }
 
-.current-inventory-header h2 {
+.inventory-header h2 {
   font-size: 1.5rem;
   font-weight: 700;
   color: #ffffff;
   margin: 0 0 0.3rem 0;
 }
 
-.current-inventory-subtitle {
+.inventory-subtitle {
   font-size: 0.9rem;
   color: #888;
   margin-top: 0rem;
   font-weight: 500;
 }
 
-.current-inventory-header {
+.inventory-header {
   margin-bottom: 32px;
 }
 
