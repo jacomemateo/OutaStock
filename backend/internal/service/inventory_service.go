@@ -35,6 +35,19 @@ func (s *InventoryService) GetAllInventory(ctx context.Context) ([]dto.Inventory
 			row.SlotID, row.Quantity, row.DateAdded, row.Name, row.PriceCents, row.ProductID)
 
 
+		if !row.ProductID.Valid {
+			inventorySlot := dto.InventorySlot{
+				SlotID:	  row.SlotID,
+				Quantity: 0,
+				ProductName: "",
+				PriceCents: 0,
+				ProductID:  "",
+				DateAdded:  nil,
+			}
+			inventoryItems = append(inventoryItems, inventorySlot)
+			continue
+		}
+
 		uuidString := convertPgtypeUUIDToString(row.ProductID)
 
 		inventorySlot := dto.InventorySlot{

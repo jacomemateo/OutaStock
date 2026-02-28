@@ -45,14 +45,11 @@ func (r *Router) Init(database *service.Database) {
 
 	// Initialize services (using database.queries)
 	transactionsService := service.NewTransactionsService(r.database)
+	inventoryService := service.NewInventoryService(r.database)
 	
 	// Initialize handlers
 	r.transactionsHandler = handlers.NewTransactionsHandler(transactionsService)
-
-	inventoryService := service.NewInventoryService(r.database)
 	r.inventoryHandler = handlers.NewInventoryHandler(inventoryService)
-
-	
 }
 
 func (r *Router) Start() {
