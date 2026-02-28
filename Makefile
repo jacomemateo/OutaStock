@@ -33,4 +33,4 @@ seed:
 
 # Frontend development
 frontend:
-	cd frontend && npm install && npm run dev
+	cd web && npm install && npm run dev
