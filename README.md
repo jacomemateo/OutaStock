@@ -36,22 +36,22 @@ This project aims to simulate a real-world inventory and sales tracking system w
 ## Installing
 Make sure you have the following installed locally in your system:
 
-* Go 1.26.0
-* Docker
-* NPM
+* Go `v1.26.0`
+* Docker `v28.5.2`
+* npm `11.6.0`
+* Air `v1.64.5`
 
-### Running backend
+### Running
 ```bash
 git clone https://github.com/jacomemateo/OutaStock/
+cd OutaStock
 
 # Running backend
-cd OutaStock
 make backend # This will start the local PostgreSQL server in a docker container
+make seed # To get test data into postgresql
 
 # Running frontend
-cd web
-npm install
-npm run dev
+make frontend
 ```
 
 ### [View Project Architecture](./docs/ARCHITECTURE.md)

@@ -1,4 +1,4 @@
-.PHONY: generate_sqlc create_db connect_db nuke_db backend deps seed
+.PHONY: generate_sqlc create_db connect_db nuke_db backend deps seed frontend
 
 generate_sqlc:
 	docker run --rm -v $(shell pwd):/src -w /src sqlc/sqlc generate
@@ -28,6 +28,9 @@ backend-run: create_db deps
 	cd backend && go run ./cmd/api
 
 seed:
-	docker exec -i vending-db psql -U postgres -d vending < db/migrations/001_create_tables.sql
 	docker exec -i vending-db psql -U postgres -d vending < db/seeds/01_products.sql
 	docker exec -i vending-db psql -U postgres -d vending < db/seeds/02_transactions.sql
+
+# Frontend development
+frontend:
+	cd frontend && npm install && npm run dev
