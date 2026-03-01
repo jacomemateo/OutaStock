@@ -40,7 +40,7 @@ func (s *TransactionsService) GetRecentTransactions(ctx context.Context, limit i
 		transaction := dto.TransactionResponse{
 			ID:               uuidString,
 			ProductName:      row.Name,
-			PriceAtSaleCents: row.PriceAtSaleCents,
+			PriceAtSaleCents: int(row.PriceAtSaleCents),
 			DateSold:         &row.DateSold.Time,
 		}
 		transactions = append(transactions, transaction)

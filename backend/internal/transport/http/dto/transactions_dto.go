@@ -11,7 +11,7 @@ import (
 type TransactionResponse struct {
 	ID          string      `json:"id"`
 	ProductName string          `json:"productName"` // From the JOIN
-	PriceAtSaleCents int32           `json:"priceAtSaleCents"`  // Changed from decimal.Decimal to int32 to represent price in cents
+	PriceAtSaleCents int           `json:"priceAtSaleCents"`  // Changed from decimal.Decimal to int to represent price in cents
 	DateSold    *time.Time       `json:"dateSold"`
 }
 
@@ -20,6 +20,6 @@ type TransactionResponse struct {
 // map CSV rows into a slice of these to send to the Repository.
 type CreateTransactionRequest struct {
 	ProductID   *uuid.UUID       `json:"productId"`
-	PriceAtSaleCents int32           `json:"priceAtSaleCents"`  // Changed from decimal.Decimal to int32 to represent price in cents
+	PriceAtSaleCents int           `json:"priceAtSaleCents"`  // Changed from decimal.Decimal to int to represent price in cents
 	DateSold    *time.Time       `json:"dateSold"`
 }

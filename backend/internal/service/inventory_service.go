@@ -37,7 +37,7 @@ func (s *InventoryService) GetAllInventory(ctx context.Context) ([]dto.Inventory
 
 		if !row.ProductID.Valid {
 			inventorySlot := dto.InventorySlot{
-				SlotID:	  row.SlotID,
+				SlotID:	  int(row.SlotID),
 				Quantity: 0,
 				ProductName: "",
 				PriceCents: 0,
@@ -51,10 +51,10 @@ func (s *InventoryService) GetAllInventory(ctx context.Context) ([]dto.Inventory
 		uuidString := convertPgtypeUUIDToString(row.ProductID)
 
 		inventorySlot := dto.InventorySlot{
-			SlotID:	  row.SlotID,
-			Quantity: row.Quantity.Int32,
+			SlotID:	  int(row.SlotID),
+			Quantity: int(row.Quantity.Int32),
 			ProductName: row.Name.String,
-			PriceCents: row.PriceCents.Int32,
+			PriceCents: int(row.PriceCents.Int32),
 			ProductID:  uuidString,
 			DateAdded:  &row.DateAdded.Time,
 		}
