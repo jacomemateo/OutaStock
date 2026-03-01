@@ -23,7 +23,7 @@ func (s *TransactionsService) GetRecentTransactions(ctx context.Context, limit i
 	// Call repository
 	rows, err := s.database.queries.GetRecentTransactions(ctx, limit)
 	if err != nil {
-		log.Printf("ERROR: Fai2led to query transactions: %v", err)
+		log.Printf("ERROR: Failed to query transactions: %v", err)
 		return nil, err
 	}
 
