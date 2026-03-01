@@ -29,7 +29,8 @@ func (s *InventoryService) GetAllInventory(ctx context.Context) ([]dto.Inventory
 
 	log.Printf("DEBUG: Found %d rows from database", len(rows))  // ADD THIS
 
-	var inventoryItems []dto.InventorySlot   
+	inventoryItems := make([]dto.InventorySlot, 0, len(rows))  // Initialize with capacity to avoid multiple allocations
+
 	for _, row := range rows {
 		log.Printf("DEBUG: Row - SlotID=%v, Quantity=%v, DateAdded=%v, Name=%s, PriceCents=%v, ProductID=%v", 
 			row.SlotID, row.Quantity, row.DateAdded, row.Name, row.PriceCents, row.ProductID)

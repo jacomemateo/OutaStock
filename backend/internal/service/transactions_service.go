@@ -30,7 +30,7 @@ func (s *TransactionsService) GetRecentTransactions(ctx context.Context, limit i
 	log.Printf("DEBUG: Found %d rows from database", len(rows))
 
 	// Convert repository rows directly to DTOs
-	var transactions []dto.TransactionResponse
+	transactions := make([]dto.TransactionResponse, 0, len(rows)) // Initialize with capacity to avoid multiple allocations
 	for _, row := range rows {
 		log.Printf("DEBUG: Row - TransactionID.Valid=%v, PriceAtSaleCents=%v, Name=%s", 
 			row.TransactionID.Valid, row.PriceAtSaleCents, row.Name)
