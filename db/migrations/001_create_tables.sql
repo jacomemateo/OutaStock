@@ -83,3 +83,44 @@ BEGIN
     RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
+
+-- Trigger that enforces that the inventory cannot contain different products with the same price.
+CREATE OR REPLACE FUNCTION enforce_unique_price_in_inventory()
+RETURNS TRIGGER AS $$
+DECLARE
+    new_price INTEGER;
+BEGIN
+    -- If slot is being cleared, allow it
+    IF NEW.product_id IS NULL THEN
+        RETURN NEW;
+    END IF;
+
+    -- Get price of product being inserted/updated
+    SELECT price_cents INTO new_price
+    FROM product_info
+    WHERE product_id = NEW.product_id;
+
+    -- Check if another slot already contains a different product
+    -- with the same price
+    IF EXISTS (
+        SELECT 1
+        FROM inventory i
+        JOIN product_info p ON i.product_id = p.product_id
+        WHERE i.slot_id <> NEW.slot_id
+          AND i.product_id IS NOT NULL
+          AND p.price_cents = new_price
+          AND i.product_id <> NEW.product_id
+    ) THEN
+        RAISE EXCEPTION 
+        'Inventory cannot contain different products with the same price (% cents).',
+        new_price;
+    END IF;
+
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER enforce_unique_price_inventory_trigger
+BEFORE INSERT OR UPDATE ON inventory
+FOR EACH ROW
+EXECUTE FUNCTION enforce_unique_price_in_inventory();
