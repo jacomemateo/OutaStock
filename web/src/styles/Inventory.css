@@ -70,6 +70,14 @@
   scrollbar-color: var(--umbc-gold) #1a1a1a;
 }
 
+
+.products-table thead th {
+  position: sticky;
+  top: 0;
+  background: #1a1a1a;   /* important so rows don't show through */
+  z-index: 1;
+}
+
 .products-list::-webkit-scrollbar {
   width: 8px;
 }
