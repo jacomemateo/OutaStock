@@ -3,7 +3,6 @@ package service
 import (
 	"context"
 	"github.com/jackc/pgx/v5/pgxpool"
-	"log"
 	"github.com/jacomemateo/OutaStock/backend/internal/repository"
 	"fmt"
 )
@@ -27,7 +26,6 @@ func NewDatabase(ctx context.Context, connString string) (*Database, error) {
         return nil, fmt.Errorf("ping database: %v", err)
     }
 
-    log.Println("Connected to database successfully!")
 	d := &Database{
 		pool:    pool,
 		queries: repository.New(pool),

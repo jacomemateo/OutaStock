@@ -1,7 +1,6 @@
 package transport
 
 import (
-	"log"
 	"net/http"
 	"time"
 	"strings"
@@ -73,7 +72,6 @@ func NewRouter(database *service.Database) *Router {
 
 func (r *Router) Start() error {
     r.addRoutes()
-	log.Printf("Starting ECHO server on :8080")
     return r.echo.Start(":8080")
 }
 

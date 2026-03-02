@@ -3,7 +3,9 @@ package service
 
 import (
 	"context"
-	"log"
+
+	"github.com/rs/zerolog"
+	"github.com/rs/zerolog/log"
 
 	"github.com/jacomemateo/OutaStock/backend/internal/transport/http/dto"
 )
@@ -23,16 +25,15 @@ func (s *InventoryService) GetAllInventory(ctx context.Context) ([]dto.Inventory
 	// Call repository
 	rows, err := s.database.queries.GetInventory(ctx)
 	if err != nil {
-		log.Printf("ERROR: Failed to query inventory: %v", err)  // ADD THIS
 		return nil, err
 	}
 
-	log.Printf("DEBUG: Found %d rows from database", len(rows))  // ADD THIS
+	log.Debug().Msgf("Found %d rows from database", len(rows))  // ADD THIS
 
 	inventoryItems := make([]dto.InventorySlot, 0, len(rows))  // Initialize with capacity to avoid multiple allocations
 
 	for _, row := range rows {
-		log.Printf("DEBUG: Row - SlotID=%v, Quantity=%v, DateAdded=%v, Name=%s, PriceCents=%v, ProductID=%v", 
+		log.Debug().Msgf("Row - SlotID=%v, Quantity=%v, DateAdded=%v, Name=%s, PriceCents=%v, ProductID=%v", 
 			row.SlotID, row.Quantity, row.DateAdded, row.Name, row.PriceCents, row.ProductID)
 
 
@@ -62,6 +63,6 @@ func (s *InventoryService) GetAllInventory(ctx context.Context) ([]dto.Inventory
 		
 		inventoryItems = append(inventoryItems, inventorySlot)
 	}
-	log.Printf("DEBUG: Returning %d inventory items", len(inventoryItems))
+	log.Debug().Msgf("Returning %d inventory items", len(inventoryItems))
 	return inventoryItems, nil
 }
