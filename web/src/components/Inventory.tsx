@@ -1,31 +1,81 @@
 import "@styles/Inventory.css";
-import AddIcon from "@mui/icons-material/Add";
+import EditIcon from '@mui/icons-material/Edit';
 import { useState } from "react";
 import AddInventoryModal from "@/components/AddInventoryModal";
+import { fetchProducts } from "@/services/api";
+import { useEffect } from "react";
 
-interface Product {
-  id: string;
-  productName: string;
+// interface Product {
+//   id: string;
+//   productName: string;
+//   quantity: number;
+//   location: string;
+// }
+
+interface ProductSlot {
+  slotId: number;
   quantity: number;
-  location: string;
-  price: number;
+  productName: string;
+  priceCents: number;
+  productId: string;
+  dateAdded: string | null;
 }
 
 const Inventory = () => {
   const [FormModalOpen, setFormModalOpen] = useState<boolean>(false);
-  const [products, setProducts] = useState<Product[]>([]);
+  const [products, setProducts] = useState<ProductSlot[]>(() => {
+    // Initialize 16 empty slots
+    return Array.from({ length: 16 }, (_, i) => ({
+      slotId: i + 1,
+      quantity: 0,
+      productName: "",
+      priceCents: 0,
+      productId: "",
+      dateAdded: null,
+    }));
+  });
+  const [allProducts, setAllProducts] = useState<string[]>([]);
 
-  const handleAddProduct = (productName: string, quantity: number, location: string, price: number) => {
-    const newProduct: Product = {
-      id: Date.now().toString(),
-      productName,
-      quantity,
-      location,
-      price
-    };
-    setProducts([...products, newProduct]);
-    console.log("Adding product:", newProduct);
+  // Fetch products from the backend API
+  const loadProducts = async () => {
+    try {
+      const data = await fetchProducts();
+      setProducts(data);
+      console.log("Products data:", data);
+
+      //Make array of all product names
+      const productNames = data.map(
+        (productInfo: ProductSlot) => productInfo.productName,
+      );
+      setAllProducts(productNames);
+
+    } catch (error) {
+      console.error("Failed to load products");
+    }
   };
+
+  useEffect(() => {
+    console.log("All Products", allProducts);
+  }, [allProducts]);
+
+  useEffect(() => {
+    loadProducts();
+  }, []);
+
+  // const handleAddProduct = (
+  //   productName: string,
+  //   quantity: number,
+  //   location: string,
+  // ) => {
+  //   const newProduct: Product = {
+  //     id: Date.now().toString(),
+  //     productName,
+  //     quantity,
+  //     location,
+  //   };
+  //   setProducts([...products, newProduct]);
+  //   console.log("Adding product:", newProduct);
+  // };
 
   return (
     <div className="inventory-container">
@@ -37,45 +87,32 @@ const Inventory = () => {
           </p>
         </div>
         <button className="add-btn" onClick={() => setFormModalOpen(true)}>
-          <AddIcon />
+          <EditIcon />
         </button>
       </div>
 
-      {/* Product List */}
       <div className="products-list">
-        {products.length === 0 ? (
-          <p className="empty-state">No products added yet</p>
-        ) : (
-          <table className="products-table">
-            <thead>
-              <tr>
-                <th>Product Name</th>
-                <th>Quantity</th>
-                <th>Location</th>
-                <th>Price</th>
+        <table className="products-table">
+          <thead>
+            <tr>
+              <th>Location</th>
+              <th>Product Name</th>
+              <th>Quantity</th>
+            </tr>
+          </thead>
+          <tbody>
+            {products.map((product) => (
+              <tr key={product.slotId}>
+                <td>{product.slotId}</td>
+                <td></td>
+                <td></td>
               </tr>
-            </thead>
-            <tbody>
-              {products.map((product) => (
-                <tr key={product.id}>
-                  <td>{product.productName}</td>
-                  <td>{product.quantity}</td>
-                  <td>{product.location}</td>
-                  <td>${product.price.toFixed(2)}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        )}
+            ))}
+          </tbody>
+        </table>
       </div>
-
-      <AddInventoryModal
-        isOpen={FormModalOpen}
-        onClose={() => setFormModalOpen(false)}
-        onAddProduct={handleAddProduct}
-      />
     </div>
   );
-}; 
+};
 
 export default Inventory;

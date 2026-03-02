@@ -16,7 +16,7 @@ const RecentTransactions = () => {
 
   const loadTransactions = async () => {
     try {
-      const data = await fetchRecentTransactions(60); // Fetch more than we need for pagination
+      const data = await fetchRecentTransactions(60); //Fetch more than we need for pagination
       setTransactions(data);
     } catch (error) {
       console.error("Failed to load transactions");
