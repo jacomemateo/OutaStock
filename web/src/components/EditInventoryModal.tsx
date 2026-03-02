@@ -1,26 +1,24 @@
 import {useState} from "react"
 import "@styles/EditInventoryModal.css";
 
-interface AddInventoryModalProps {
+interface EditInventoryModalProps {
     isOpen: boolean;
     onClose: () => void;
-    onAddProduct: (productName: string, quantity: number, location: string, price: number) => void;
+    onEdit: (productName: string, quantity: number) => void;
 }
 
-const AddInventoryModal = ({ isOpen, onClose, onAddProduct }: AddInventoryModalProps) => {
+const EditInventoryModal = ({ isOpen, onClose, onEdit }: EditInventoryModalProps) => {
     const [formData, setFormData] = useState({
         productName: "",
         quantity: "",
-        location: "",
-        price: "",
     });
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault()
         if (formData.productName.trim()) {
-            // When submitting make the quantity and price numbers instead of strings   
-            onAddProduct(formData.productName, parseInt(formData.quantity) || 0, formData.location, parseFloat(formData.price) || 0)
-            setFormData({ productName: "", quantity: "", location: "", price: "" })
+            // When submitting make the quantity a number instead of a string   
+            onEdit(formData.productName, parseInt(formData.quantity) || 0)
+            setFormData({ productName: "", quantity: "" })
             onClose()
         }
     }
@@ -31,7 +29,7 @@ const AddInventoryModal = ({ isOpen, onClose, onAddProduct }: AddInventoryModalP
         <div className="modal-overlay" onClick={onClose}>
             <div className="modal-content" onClick={(e) => e.stopPropagation()}>
                 <div className="modal-header">
-                    <h2>Add New Product</h2>
+                    <h2>Edit</h2>
                     <button className="modal-close" onClick={onClose}>✕</button>
                 </div>
                 <form onSubmit={handleSubmit}>
@@ -48,24 +46,11 @@ const AddInventoryModal = ({ isOpen, onClose, onAddProduct }: AddInventoryModalP
                         value={formData.quantity}
                         onChange={(e) => setFormData({ ...formData, quantity: e.target.value })}
                     />
-                    <input
-                        type="text"
-                        placeholder="Location"
-                        value={formData.location}
-                        onChange={(e) => setFormData({ ...formData, location: e.target.value })}
-                    />
-                    <input
-                        type="number"
-                        placeholder="Price"
-                        step="0.01"
-                        value={formData.price}
-                        onChange={(e) => setFormData({ ...formData, price: e.target.value })}
-                    />
-                    <button type="submit">Add Product</button>
+                    <button type="submit">Save Changes</button>
                 </form>
             </div>
         </div>
     )
 }
 
-export default AddInventoryModal;
+export default EditInventoryModal;

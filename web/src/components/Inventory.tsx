@@ -1,5 +1,5 @@
 import "@styles/Inventory.css";
-import EditIcon from '@mui/icons-material/Edit';
+import EditIcon from "@mui/icons-material/Edit";
 import { useState } from "react";
 import AddInventoryModal from "@/components/EditInventoryModal";
 import { fetchProducts } from "@/services/api";
@@ -22,7 +22,9 @@ interface ProductSlot {
 }
 
 const Inventory = () => {
-  const [FormModalOpen, setFormModalOpen] = useState<boolean>(false);
+  const [editingSlotID, setEditingSlotID] = useState<number | null>(null);
+  const [isEditMode, setIsEditMode] = useState<boolean>(false);
+  const [formModalOpen, setFormModalOpen] = useState<boolean>(false);
   const [products, setProducts] = useState<ProductSlot[]>(() => {
     // Initialize 16 empty slots
     return Array.from({ length: 16 }, (_, i) => ({
@@ -48,7 +50,6 @@ const Inventory = () => {
         (productInfo: ProductSlot) => productInfo.productName,
       );
       setAllProducts(productNames);
-
     } catch (error) {
       console.error("Failed to load products");
     }
@@ -62,21 +63,6 @@ const Inventory = () => {
     loadProducts();
   }, []);
 
-  // const handleAddProduct = (
-  //   productName: string,
-  //   quantity: number,
-  //   location: string,
-  // ) => {
-  //   const newProduct: Product = {
-  //     id: Date.now().toString(),
-  //     productName,
-  //     quantity,
-  //     location,
-  //   };
-  //   setProducts([...products, newProduct]);
-  //   console.log("Adding product:", newProduct);
-  // };
-
   return (
     <div className="inventory-container">
       <div className="inventory-header">
@@ -86,7 +72,7 @@ const Inventory = () => {
             Products currently in the vending machine
           </p>
         </div>
-        <button className="add-btn" onClick={() => setFormModalOpen(true)}>
+        <button className="add-btn" onClick= {() => setIsEditMode(!isEditMode)} >
           <EditIcon />
         </button>
       </div>
@@ -98,6 +84,8 @@ const Inventory = () => {
               <th>Location</th>
               <th>Product Name</th>
               <th>Quantity</th>
+              <th> </th>
+              
             </tr>
           </thead>
           <tbody>
@@ -106,6 +94,13 @@ const Inventory = () => {
                 <td>{product.slotId}</td>
                 <td></td>
                 <td></td>
+                <td>
+                  {isEditMode && (
+                    <button className="edit-btn-row" onClick={() => setEditingSlotID(product.slotId)}>
+                      <EditIcon sx={{ fontSize: 20 }} />
+                    </button>
+                  )}
+                </td>
               </tr>
             ))}
           </tbody>
