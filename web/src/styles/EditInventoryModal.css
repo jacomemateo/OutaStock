@@ -23,11 +23,11 @@
 }
 
 .modal-content {
-  background-color: #1a1a1a;
+  background-color: var( --darker-black );
   border-radius: 12px;
   padding: 2rem;
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
-  border: 1px solid #2a2a2a;
+  border: 1px solid var( --lighter-black );
   max-width: 500px;
   width: 90%;
   animation: slideUp 0.3s ease-out;
@@ -49,14 +49,14 @@
   justify-content: space-between;
   align-items: center;
   margin-bottom: 1.5rem;
-  border-bottom: 1px solid #2a2a2a;
+  border-bottom: 1px solid var( --lighter-black );
   padding-bottom: 1rem;
 }
 
 .modal-header h2 {
   font-size: 1.5rem;
   font-weight: 700;
-  color: #ffffff;
+  color: var( --white );
   margin: 0;
 }
 
@@ -76,7 +76,7 @@
 }
 
 .modal-close:hover {
-  color: #ffffff;
+  color: var( --white );
 }
 
 .modal-content form {
@@ -87,10 +87,10 @@
 
 .modal-content input {
   padding: 0.75rem;
-  background-color: #2a2a2a;
-  border: 1px solid #3a3a3a;
+  background-color: var( --lighter-black );
+  border: 1px solid var(--darker-black);
   border-radius: 6px;
-  color: #ffffff;
+  color: var( --white );
   font-size: 0.95rem;
   font-family: inherit;
   transition:
@@ -101,7 +101,7 @@
 .modal-content input:focus {
   outline: none;
   border-color: var(--umbc-gold);
-  background-color: #333333;
+  background-color: var(--lighter-black);
 }
 
 .modal-content input::placeholder {
@@ -111,7 +111,7 @@
 .modal-content button[type="submit"] {
   padding: 0.75rem;
   background-color: var(--umbc-gold);
-  color: #1a1a1a;
+  color: var( --darker-black );
   border: none;
   border-radius: 6px;
   font-size: 1rem;
@@ -131,8 +131,8 @@
 
 /* Product Select Dropdown Styling */
 .product-select .MuiOutlinedInput-root {
-  color: #ffffff;
-  background-color: #2a2a2a;
+  color: var( --white );
+  background-color: var( --lighter-black );
 }
 
 .product-select .MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline {
@@ -146,7 +146,8 @@
 }
 
 .product-select .MuiOutlinedInput-notchedOutline {
-  border-color: #3a3a3a;
+  border-color: #3a3a3a; 
+  /* WILL CHANGER LATER */
   transition: border-color 0.2s;
 }
 
@@ -159,23 +160,23 @@
 }
 
 .product-select .MuiPaper-root {
-  background-color: #1a1a1a;
+  background-color: var( --darker-black );
 }
 
 .product-select .MuiMenuItem-root {
-  color: #ffffff;
-  background-color: #1a1a1a;
+  color: var( --white );
+  background-color: var( --darker-black );
   transition: all 0.2s;
 }
 
 .product-select .MuiMenuItem-root:hover {
-  background-color: #2a2a2a;
+  background-color: var( --lighter-black );
   color: var(--umbc-gold);
 }
 
 .product-select .MuiMenuItem-root.Mui-selected {
   background-color: var(--umbc-gold) !important;
-  color: #000000;
+  color: var( --black )0;
   font-weight: 600;
 }
 

@@ -97,7 +97,7 @@
 
 /* Hover effects */
 .nav-link-btn:hover {
-  background-color: #2a2a2a;
+  background-color: var( --lighter-black );
   color: white;
   border-left-color: var(--umbc-gold);
 }
@@ -106,7 +106,7 @@
    using the active class we put on the <li>
 */
 .sidebar-nav li.active .nav-link-btn {
-  background-color: #2a2a2a;
+  background-color: var( --lighter-black );
   color: white;
   border-left-color: var(--umbc-gold);
 }

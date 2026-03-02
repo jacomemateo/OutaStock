@@ -1,9 +1,9 @@
 .transactions-container {
-  background: var(--lighter-black);
+  background: var(--darker-black);
   border-radius: 12px;
   padding: 2rem;
   box-shadow: var(--gold-shadow);
-  border: 1px solid #2a2a2a;
+  border: 1px solid var( --lighter-black );
   animation: boxFadeIn 0.6s ease-out;
   display: flex;
   flex-direction: column;
@@ -12,14 +12,14 @@
 
 .transactions-header {
   margin-bottom: 1.5rem;
-  border-bottom: 1px solid #2a2a2a;
+  border-bottom: 1px solid var( --lighter-black );
   padding-bottom: 1rem;
 }
 
 .transactions-header h2 {
   font-size: 1.5rem;
   font-weight: 700;
-  color: #ffffff;
+  color: var( --white );
   margin: 0 0 0.25rem 0;
 }
 
@@ -38,7 +38,7 @@
 }
 
 .transaction-card {
-  background: var(--lighter-black);
+  background: var(--darker-black);
   border-radius: 0px;
   padding: 1.25rem;
   border: 0px solid;
@@ -58,7 +58,7 @@
   transform: translateX(6px);
   box-shadow: var(--gold-shadow);
   border-color: var(--umbc-gold);
-  background: #2a2a2a;
+  background: var( --lighter-black );
 }
 
 .transaction-content {
@@ -97,7 +97,7 @@
 .product-name {
   font-size: 1rem;
   font-weight: 600;
-  color: #ffffff;
+  color: var( --white );
   margin: 0;
 }
 
@@ -125,7 +125,7 @@
   align-items: center;
   gap: 1.5rem;
   padding-top: 1rem;
-  border-top: 1px solid #2a2a2a;
+  border-top: 1px solid var( --lighter-black );
 }
 
 .pagination-btn {
@@ -133,7 +133,7 @@
   border-radius: 8px;
   border: 1px solid #333;
   background: #242424;
-  color: #ffffff;
+  color: var( --white );
   font-weight: 600;
   font-size: 0.95rem;
   cursor: pointer;
@@ -142,7 +142,7 @@
 
 .pagination-btn:hover:not(:disabled) {
   background: var(--umbc-gold);
-  color: #1a1a1a;
+  color: var( --darker-black );
   border-color: var(--umbc-gold);
   box-shadow: var(--gold-shadow);
 }

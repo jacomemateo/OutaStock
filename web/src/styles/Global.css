@@ -1,9 +1,11 @@
 :root{
     --Montserrat: 'Montserrat', sans-serif;
     --GoogleSansCode: 'Google Sans Code', monospace;
+    --light-gold: #e8c547;
     --umbc-gold: #F9AD1E;
     --black-grey: rgb(72, 72, 72);
-    --lighter-black: #1a1a1a;
+    --even-lighter-black: #888;
+    --lighter-black: #2a2a2a;
     --darker-black: #1a1a1a;
     --black: #000000;
     --white: #FFFFFF;
