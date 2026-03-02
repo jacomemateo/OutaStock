@@ -1,14 +1,16 @@
 package transport
 
 import (
-	"time"
+	"log"
 	"net/http"
+	"time"
+	"strings"
+
 	"github.com/labstack/echo/v5"
 	"github.com/labstack/echo/v5/middleware"
 
-	"github.com/jacomemateo/OutaStock/backend/internal/transport/http/handlers"
 	"github.com/jacomemateo/OutaStock/backend/internal/service"
-
+	"github.com/jacomemateo/OutaStock/backend/internal/transport/http/handlers"
 )
 
 type Router struct {
@@ -18,12 +20,27 @@ type Router struct {
 	inventoryHandler     *handlers.InventoryHandler
 }
 
-func (r *Router) Init(database *service.Database) {
+func NewRouter(database *service.Database) *Router {
+	r := Router{}
 	r.database = database
 	r.echo = echo.New()
-	r.echo.Use(middleware.RequestLogger())
 
-    r.echo.Use(middleware.CORSWithConfig(middleware.CORSConfig{
+	// Middleware
+	r.echo.Use(middleware.RequestLogger())
+	
+	r.echo.Use(middleware.GzipWithConfig(
+		middleware.GzipConfig{
+			Level: 5, // Compression level (1-9)
+			MinLength: 1024,
+			Skipper: func(c *echo.Context) bool {
+				// Skip compression for health check endpoint
+				return strings.Contains(c.Path(), "health")
+
+			},
+		},
+	))
+
+    r.echo.Use(middleware.CORSWithConfig(middleware.CORSConfig {
         AllowOrigins: []string{
 			"http://localhost:5173",   // Vite dev server,
         },
@@ -50,16 +67,14 @@ func (r *Router) Init(database *service.Database) {
 	// Initialize handlers
 	r.transactionsHandler = handlers.NewTransactionsHandler(transactionsService)
 	r.inventoryHandler = handlers.NewInventoryHandler(inventoryService)
+
+	return &r
 }
 
-func (r *Router) Start() {
-	r.addRoutes()
-
-	if err := r.echo.Start(":8080"); err != nil {
-		r.echo.Logger.Error("Failed to start server: " + err.Error())
-	}
-
-	r.echo.Logger.Info("Started server on :8080")
+func (r *Router) Start() error {
+    r.addRoutes()
+	log.Printf("Starting ECHO server on :8080")
+    return r.echo.Start(":8080")
 }
 
 func (r *Router) addRoutes() {
