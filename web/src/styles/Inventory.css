@@ -62,12 +62,13 @@
 }
 
 .products-list {
-  margin-top: 1.5rem;
+  margin-top: 0px;
   max-height: 500px;
   overflow-y: auto;
   border: 1px solid #2a2a2a;
   border-radius: 8px;
   scrollbar-color: var(--umbc-gold) #1a1a1a;
+  /* max-height: 00px; */
 }
 
 
