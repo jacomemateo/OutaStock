@@ -1,128 +1,184 @@
 .modal-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    /* semi-transparent black background */
-    background-color: rgba(0, 0, 0, 0.5);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 1000;
-    animation: fadeIn 0.3s ease-out;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  /* semi-transparent black background */
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  animation: fadeIn 0.3s ease-out;
 }
 
 @keyframes fadeIn {
-    from {
-        opacity: 0;
-    }
-    to {
-        opacity: 1;
-    }
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 .modal-content {
-    background-color: #1a1a1a;
-    border-radius: 12px;
-    padding: 2rem;
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
-    border: 1px solid #2a2a2a;
-    max-width: 500px;
-    width: 90%;
-    animation: slideUp 0.3s ease-out;
+  background-color: #1a1a1a;
+  border-radius: 12px;
+  padding: 2rem;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+  border: 1px solid #2a2a2a;
+  max-width: 500px;
+  width: 90%;
+  animation: slideUp 0.3s ease-out;
 }
 
 @keyframes slideUp {
-    from {
-        transform: translateY(20px);
-        opacity: 0;
-    }
-    to {
-        transform: translateY(0);
-        opacity: 1;
-    }
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
 }
 
 .modal-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 1.5rem;
-    border-bottom: 1px solid #2a2a2a;
-    padding-bottom: 1rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  border-bottom: 1px solid #2a2a2a;
+  padding-bottom: 1rem;
 }
 
 .modal-header h2 {
-    font-size: 1.5rem;
-    font-weight: 700;
-    color: #ffffff;
-    margin: 0;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #ffffff;
+  margin: 0;
 }
 
 .modal-close {
-    background: none;
-    border: none;
-    color: #888;
-    font-size: 1.5rem;
-    cursor: pointer;
-    padding: 0;
-    width: 32px;
-    height: 32px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: color 0.2s;
+  background: none;
+  border: none;
+  color: #888;
+  font-size: 1.5rem;
+  cursor: pointer;
+  padding: 0;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.2s;
 }
 
 .modal-close:hover {
-    color: #ffffff;
+  color: #ffffff;
 }
 
 .modal-content form {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
 }
 
 .modal-content input {
-    padding: 0.75rem;
-    background-color: #2a2a2a;
-    border: 1px solid #3a3a3a;
-    border-radius: 6px;
-    color: #ffffff;
-    font-size: 0.95rem;
-    font-family: inherit;
-    transition: border-color 0.2s, background-color 0.2s;
+  padding: 0.75rem;
+  background-color: #2a2a2a;
+  border: 1px solid #3a3a3a;
+  border-radius: 6px;
+  color: #ffffff;
+  font-size: 0.95rem;
+  font-family: inherit;
+  transition:
+    border-color 0.2s,
+    background-color 0.2s;
 }
 
 .modal-content input:focus {
-    outline: none;
-    border-color: var(--umbc-gold);
-    background-color: #333333;
+  outline: none;
+  border-color: var(--umbc-gold);
+  background-color: #333333;
 }
 
 .modal-content input::placeholder {
-    color: #666;
+  color: #666;
 }
 
 .modal-content button[type="submit"] {
-    padding: 0.75rem;
-    background-color: var(--umbc-gold);
-    color: #1a1a1a;
-    border: none;
-    border-radius: 6px;
-    font-size: 1rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: opacity 0.2s;
-    margin-top: 0.5rem;
+  padding: 0.75rem;
+  background-color: var(--umbc-gold);
+  color: #1a1a1a;
+  border: none;
+  border-radius: 6px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.2s;
+  margin-top: 0.5rem;
 }
 
 .modal-content button[type="submit"]:hover {
-    opacity: 0.9;
+  opacity: 0.9;
 }
 
 .modal-content button[type="submit"]:active {
-    opacity: 0.8;
+  opacity: 0.8;
+}
+
+/* Product Select Dropdown Styling */
+.product-select .MuiOutlinedInput-root {
+  color: #ffffff;
+  background-color: #2a2a2a;
+}
+
+.product-select .MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline {
+  border-color: var(--umbc-gold);
+}
+
+.product-select
+  .MuiOutlinedInput-root.Mui-focused
+  .MuiOutlinedInput-notchedOutline {
+  border-color: var(--umbc-gold);
+}
+
+.product-select .MuiOutlinedInput-notchedOutline {
+  border-color: #3a3a3a;
+  transition: border-color 0.2s;
+}
+
+.product-select .MuiInputLabel-root {
+  color: var(--umbc-gold) !important;
+}
+
+.product-select .MuiSvgIcon-root {
+  color: var(--umbc-gold);
+}
+
+.product-select .MuiPaper-root {
+  background-color: #1a1a1a;
+}
+
+.product-select .MuiMenuItem-root {
+  color: #ffffff;
+  background-color: #1a1a1a;
+  transition: all 0.2s;
+}
+
+.product-select .MuiMenuItem-root:hover {
+  background-color: #2a2a2a;
+  color: var(--umbc-gold);
+}
+
+.product-select .MuiMenuItem-root.Mui-selected {
+  background-color: var(--umbc-gold) !important;
+  color: #000000;
+  font-weight: 600;
+}
+
+.product-select .MuiMenuItem-root.Mui-selected:hover {
+  background-color: #e8c547 !important;
 }

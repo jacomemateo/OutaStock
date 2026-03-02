@@ -1,7 +1,7 @@
 import "@styles/Inventory.css";
 import EditIcon from "@mui/icons-material/Edit";
 import { useState } from "react";
-import AddInventoryModal from "@/components/EditInventoryModal";
+import EditInventoryModal from "@/components/EditInventoryModal";
 import { fetchProducts } from "@/services/api";
 import { useEffect } from "react";
 
@@ -22,8 +22,8 @@ interface ProductSlot {
 }
 
 const Inventory = () => {
-  const [editingSlotID, setEditingSlotID] = useState<number | null>(null);
-  const [isEditMode, setIsEditMode] = useState<boolean>(false);
+  const [editingSlotID, setEditingSlotID] = useState<number | null>(null); // State to track which slot is being edited
+  const [isEditMode, setIsEditMode] = useState<boolean>(false); // State to show the edit button in each row
   const [formModalOpen, setFormModalOpen] = useState<boolean>(false);
   const [products, setProducts] = useState<ProductSlot[]>(() => {
     // Initialize 16 empty slots
@@ -63,6 +63,18 @@ const Inventory = () => {
     loadProducts();
   }, []);
 
+  //Get Slot being edited
+  const editingSlotInfo = products.find((slot) => slot.slotId === editingSlotID);
+  console.log("Editing Slot:",  editingSlotInfo);
+  const handleSave = (slotId: number, productName: string, quantity: number) => {
+    setProducts(products.map(p =>
+      p.slotId === slotId
+        ? { ...p, productName, quantity }
+        : p
+    ));
+    setEditingSlotID(null); // Close modal after save
+  };
+
   return (
     <div className="inventory-container">
       <div className="inventory-header">
@@ -72,7 +84,7 @@ const Inventory = () => {
             Products currently in the vending machine
           </p>
         </div>
-        <button className="add-btn" onClick= {() => setIsEditMode(!isEditMode)} >
+        <button className="add-btn" onClick={() => setIsEditMode(!isEditMode)}>
           <EditIcon />
         </button>
       </div>
@@ -85,18 +97,23 @@ const Inventory = () => {
               <th>Product Name</th>
               <th>Quantity</th>
               <th> </th>
-              
             </tr>
           </thead>
           <tbody>
             {products.map((product) => (
               <tr key={product.slotId}>
                 <td>{product.slotId}</td>
-                <td></td>
-                <td></td>
-                <td>
+                <td>{product.productName}</td>
+                <td>{product.quantity}</td>
+                <td className="edit-btn-cell">
                   {isEditMode && (
-                    <button className="edit-btn-row" onClick={() => setEditingSlotID(product.slotId)}>
+                    <button
+                      className="edit-btn-row"
+                      onClick={() => {
+                        console.log("Selected slot:", product.slotId);
+                        setEditingSlotID(product.slotId);
+                      }}
+                    >
                       <EditIcon sx={{ fontSize: 20 }} />
                     </button>
                   )}
@@ -106,7 +123,20 @@ const Inventory = () => {
           </tbody>
         </table>
       </div>
+      {editingSlotInfo && (
+      <EditInventoryModal
+        isOpen={editingSlotID !== null}
+        onClose={() => setEditingSlotID(null)}
+        onSave={handleSave}
+        allProducts={allProducts}
+        slotID={editingSlotInfo.slotId}
+        currentProductName={editingSlotInfo.productName}
+        currentQuantity={editingSlotInfo.quantity}
+      />
+    )}
     </div>
+
+    
   );
 };
 

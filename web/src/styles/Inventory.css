@@ -126,7 +126,9 @@
 .products-table tbody tr:hover {
   background-color: #252525;
 }
-
+.edit-btn-cell{
+  width: 10px !important;
+}
 .edit-btn-row {
   background-color: transparent;
   color: #888;
