@@ -30,6 +30,7 @@ backend-run: create_db deps
 seed:
 	docker exec -i vending-db psql -U postgres -d vending < db/seeds/01_products.sql
 	docker exec -i vending-db psql -U postgres -d vending < db/seeds/02_transactions.sql
+	docker exec -i vending-db psql -U postgres -d vending < db/seeds/03_inventory.sql 
 
 # Frontend development
 frontend:
