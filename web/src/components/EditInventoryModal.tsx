@@ -1,5 +1,5 @@
 import {useState} from "react"
-import "@styles/AddInventoryModal.css";
+import "@styles/EditInventoryModal.css";
 
 interface AddInventoryModalProps {
     isOpen: boolean;

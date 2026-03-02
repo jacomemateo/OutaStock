@@ -1,7 +1,7 @@
 import "@styles/Inventory.css";
 import EditIcon from '@mui/icons-material/Edit';
 import { useState } from "react";
-import AddInventoryModal from "@/components/AddInventoryModal";
+import AddInventoryModal from "@/components/EditInventoryModal";
 import { fetchProducts } from "@/services/api";
 import { useEffect } from "react";
 
