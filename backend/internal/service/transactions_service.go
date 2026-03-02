@@ -3,7 +3,8 @@ package service
 
 import (
 	"context"
-	"log"
+    "github.com/rs/zerolog/log"
+    "fmt"
 
 	"github.com/jacomemateo/OutaStock/backend/internal/transport/http/dto"
 )
@@ -23,17 +24,17 @@ func (s *TransactionsService) GetRecentTransactions(ctx context.Context, limit i
 	// Call repository
 	rows, err := s.database.queries.GetRecentTransactions(ctx, limit)
 	if err != nil {
-		log.Printf("ERROR: Failed to query transactions: %v", err)
-		return nil, err
+		return nil, fmt.Errorf("Failed to query transactions: %v", err)
 	}
 
-	log.Printf("DEBUG: Found %d rows from database", len(rows))
+	log.Debug().Msgf("Found %d rows from database query", len(rows))
 
 	// Convert repository rows directly to DTOs
 	transactions := make([]dto.TransactionResponse, 0, len(rows)) // Initialize with capacity to avoid multiple allocations
 	for _, row := range rows {
-		log.Printf("DEBUG: Row - TransactionID.Valid=%v, PriceAtSaleCents=%v, Name=%s", 
-			row.TransactionID.Valid, row.PriceAtSaleCents, row.Name)
+		log.Debug().Msgf("Row - TransactionID.Valid=%v, PriceAtSaleCents=%v, Name=%s", 
+			row.TransactionID.Valid, row.PriceAtSaleCents, row.Name,
+		)
 
 		uuidString := convertPgtypeUUIDToString(row.TransactionID)
 
@@ -46,6 +47,6 @@ func (s *TransactionsService) GetRecentTransactions(ctx context.Context, limit i
 		transactions = append(transactions, transaction)
 	}
 
-	log.Printf("DEBUG: Returning %d transactions", len(transactions))
+	log.Debug().Msgf("Returning %d transactions", len(transactions))
 	return transactions, nil
 }

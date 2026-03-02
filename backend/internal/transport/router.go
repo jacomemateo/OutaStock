@@ -1,11 +1,10 @@
 package transport
 
 import (
-	"log"
 	"net/http"
+	"context"
 	"time"
 	"strings"
-
 	"github.com/labstack/echo/v5"
 	"github.com/labstack/echo/v5/middleware"
 
@@ -20,7 +19,7 @@ type Router struct {
 	inventoryHandler     *handlers.InventoryHandler
 }
 
-func NewRouter(database *service.Database) *Router {
+func NewRouter(database *service.Database, origins []string) *Router {
 	r := Router{}
 	r.database = database
 	r.echo = echo.New()
@@ -41,9 +40,7 @@ func NewRouter(database *service.Database) *Router {
 	))
 
     r.echo.Use(middleware.CORSWithConfig(middleware.CORSConfig {
-        AllowOrigins: []string{
-			"http://localhost:5173",   // Vite dev server,
-        },
+        AllowOrigins: origins,
         AllowMethods: []string{
             http.MethodGet,
             http.MethodPost,
@@ -71,11 +68,21 @@ func NewRouter(database *service.Database) *Router {
 	return &r
 }
 
-func (r *Router) Start() error {
+func (r *Router) Start(ctx context.Context, address string) error {
     r.addRoutes()
-	log.Printf("Starting ECHO server on :8080")
-    return r.echo.Start(":8080")
+
+	sc := echo.StartConfig{
+		Address:         address,
+		GracefulTimeout: 10 * time.Second,
+		HideBanner: false,
+		HidePort: false,
+        OnShutdownError: func(err error) {
+            r.echo.Logger.Error("graceful shutdown failed", "error", err)
+        },
+	}
+	return sc.Start(ctx, r.echo)
 }
+
 
 func (r *Router) addRoutes() {
 	// Health check endpoint
