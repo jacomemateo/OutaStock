@@ -40,7 +40,7 @@ func NewRouter(database *service.Database) *Router {
 		},
 	))
 
-    r.echo.Use(middleware.CORSWithConfig(middleware.CORSConfig{
+    r.echo.Use(middleware.CORSWithConfig(middleware.CORSConfig {
         AllowOrigins: []string{
 			"http://localhost:5173",   // Vite dev server,
         },

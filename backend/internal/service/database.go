@@ -9,42 +9,46 @@ import (
 )
 
 type Database struct {
-	dbPool *pgxpool.Pool
+	pool *pgxpool.Pool
 	queries *repository.Queries
 }
 
-func (d *Database) Connect() {
-	var err error
+func NewDatabase(ctx context.Context, connString string) (*Database, error) {
 	// 1. Connect to the database
-	d.dbPool, err = pgxpool.New(context.Background(), "postgres://postgres:secret@localhost:5432/vending?sslmode=disable")
+	pool, err := pgxpool.New(ctx, connString)
 
 	// Handle connection errors
 	if err != nil {
-        log.Fatal("Failed to connect to database:", err)
+        return nil, fmt.Errorf("create pool: %v", err)
     }
 
 	// 2. Test the connection
-    if err := d.dbPool.Ping(context.Background()); err != nil {
-        log.Fatal("Failed to ping database:", err)
+    if err := pool.Ping(ctx); err != nil {
+        return nil, fmt.Errorf("ping database: %v", err)
     }
 
     log.Println("Connected to database successfully!")
-	d.queries = repository.New(d.dbPool)
+	d := &Database{
+		pool:    pool,
+		queries: repository.New(pool),
+	}
 
+	return d, nil
 }
+
+
 
 // Add a Ping method to check database connectivity
 func (d *Database) Ping(ctx context.Context) error {
-	if d.dbPool == nil {
+	if d.pool == nil {
 		return fmt.Errorf("database connection not initialized")
 	}
-	return d.dbPool.Ping(ctx)
+	return d.pool.Ping(ctx)
 }
 
 // Add a Close method to be called when the app shuts down
 func (d *Database) Close() {
-	if d.dbPool != nil {
-		d.dbPool.Close()
-		log.Println("Database connection closed")
+	if d.pool != nil {
+		d.pool.Close()
 	}
 }
