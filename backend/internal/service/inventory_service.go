@@ -4,7 +4,6 @@ package service
 import (
 	"context"
 
-	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 
 	"github.com/jacomemateo/OutaStock/backend/internal/transport/http/dto"
