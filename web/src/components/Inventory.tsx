@@ -84,7 +84,7 @@ const Inventory = () => {
               <th>Location</th>
               <th>Product Name</th>
               <th>Quantity</th>
-              {isEditMode && <th> </th>}
+              <th> </th>
               
             </tr>
           </thead>
