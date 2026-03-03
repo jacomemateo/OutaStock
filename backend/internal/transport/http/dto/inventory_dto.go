@@ -29,5 +29,4 @@ type UpdateQuantityRequest struct {
 type AssignProductRequest struct {
 	SlotID    int     `json:"slotId"`
 	ProductID uuid.UUID `json:"productId"`
-	Quantity  int     `json:"quantity"`
 }

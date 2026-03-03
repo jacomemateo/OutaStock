@@ -5,8 +5,11 @@ import (
 	"context"
 
 	"github.com/rs/zerolog/log"
+	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5/pgtype"
 
 	"github.com/jacomemateo/OutaStock/backend/internal/transport/http/dto"
+	"github.com/jacomemateo/OutaStock/backend/internal/repository"
 )
 
 type InventoryService struct {
@@ -64,4 +67,26 @@ func (s *InventoryService) GetAllInventory(ctx context.Context) ([]dto.Inventory
 	}
 	log.Debug().Msgf("Returning %d inventory items", len(inventoryItems))
 	return inventoryItems, nil
+}
+
+func (s *InventoryService) AssignSlot(ctx context.Context, slotID int, productUUID uuid.UUID) error {
+	// Convert uuid.UUID to 
+	pgtypeUUID := pgtype.UUID {
+		Bytes:  productUUID,
+		Valid: true,
+	}
+
+	args := repository.AssignSlotParams{
+		ProductID: pgtypeUUID,
+		SlotID:    int32(slotID),
+	}
+
+	err := s.database.queries.AssignSlot(ctx, args)
+	if err != nil {
+		return err
+	}
+
+	log.Debug().Msgf("Assigned slot %d to product %s", slotID, productUUID.String())
+
+	return nil
 }

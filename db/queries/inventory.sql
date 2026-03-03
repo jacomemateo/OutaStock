@@ -11,11 +11,11 @@ SELECT
 FROM inventory cp
 LEFT JOIN product_info pi ON cp.product_id = pi.product_id;
 
--- name: InsertProduct :exec
+-- name: AssignSlot :exec
 UPDATE inventory
 SET
     product_id = @product_id,
-    quantity = @quantity,
+    quantity = 0, -- Initialize quantity to 0 when assigning a slot
     date_added = NOW()
 WHERE slot_id = @slot_id;
 

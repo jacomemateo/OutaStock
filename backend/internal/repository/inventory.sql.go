@@ -11,6 +11,25 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
+const assignSlot = `-- name: AssignSlot :exec
+UPDATE inventory
+SET
+    product_id = $1,
+    quantity = 0, -- Initialize quantity to 0 when assigning a slot
+    date_added = NOW()
+WHERE slot_id = $2
+`
+
+type AssignSlotParams struct {
+	ProductID pgtype.UUID
+	SlotID    int32
+}
+
+func (q *Queries) AssignSlot(ctx context.Context, arg AssignSlotParams) error {
+	_, err := q.db.Exec(ctx, assignSlot, arg.ProductID, arg.SlotID)
+	return err
+}
+
 const getInventory = `-- name: GetInventory :many
 
 SELECT
@@ -59,26 +78,6 @@ func (q *Queries) GetInventory(ctx context.Context) ([]GetInventoryRow, error) {
 		return nil, err
 	}
 	return items, nil
-}
-
-const insertProduct = `-- name: InsertProduct :exec
-UPDATE inventory
-SET
-    product_id = $1,
-    quantity = $2,
-    date_added = NOW()
-WHERE slot_id = $3
-`
-
-type InsertProductParams struct {
-	ProductID pgtype.UUID
-	Quantity  pgtype.Int4
-	SlotID    int32
-}
-
-func (q *Queries) InsertProduct(ctx context.Context, arg InsertProductParams) error {
-	_, err := q.db.Exec(ctx, insertProduct, arg.ProductID, arg.Quantity, arg.SlotID)
-	return err
 }
 
 const unassignSlot = `-- name: UnassignSlot :exec
