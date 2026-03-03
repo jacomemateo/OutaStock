@@ -33,13 +33,14 @@ func (s *InventoryService) GetAllInventory(ctx context.Context) ([]dto.Inventory
 	inventoryItems := make([]dto.InventorySlot, 0, len(rows))  // Initialize with capacity to avoid multiple allocations
 
 	for _, row := range rows {
-		log.Debug().Msgf("Row - SlotID=%v, Quantity=%v, DateAdded=%v, Name=%s, PriceCents=%v, ProductID=%v", 
+		log.Debug().Msgf("Row - SlotID=%v, SlotLabel=%s, Quantity=%v, DateAdded=%v, Name=%s, PriceCents=%v, ProductID=%v", 
 			row.SlotID, row.Quantity, row.DateAdded, row.Name, row.PriceCents, row.ProductID)
 
 
 		if !row.ProductID.Valid {
 			inventorySlot := dto.InventorySlot{
 				SlotID:	  int(row.SlotID),
+				SlotLabel:  "",
 				Quantity: 0,
 				ProductName: "",
 				PriceCents: 0,
@@ -54,6 +55,7 @@ func (s *InventoryService) GetAllInventory(ctx context.Context) ([]dto.Inventory
 
 		inventorySlot := dto.InventorySlot{
 			SlotID:	  int(row.SlotID),
+			SlotLabel: row.SlotLabel,
 			Quantity: int(row.Quantity.Int32),
 			ProductName: row.Name.String,
 			PriceCents: int(row.PriceCents.Int32),

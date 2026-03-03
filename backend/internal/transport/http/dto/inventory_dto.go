@@ -10,6 +10,7 @@ import (
 // It represents a single physical slot in the vending machine.
 type InventorySlot struct {
 	SlotID      int           `json:"slotId"`
+	SlotLabel   string          `json:"slotLabel"`
 	Quantity    int           `json:"quantity"`
 	ProductName string          `json:"productName"` 
 	PriceCents  int           `json:"priceCents"`       

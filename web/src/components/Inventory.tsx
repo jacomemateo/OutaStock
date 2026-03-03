@@ -1,20 +1,13 @@
 import "@styles/Inventory.css";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from '@mui/icons-material/Delete';
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import EditInventoryModal from "@/components/EditInventoryModal";
 import { fetchInventory } from "@/services/api";
-import { useEffect } from "react";
-
-// interface Product {
-//   id: string;
-//   productName: string;
-//   quantity: number;
-//   location: string;
-// }
 
 interface ProductSlot {
   slotId: number;
+  slotLabel: string;
   quantity: number;
   productName: string;
   priceCents: number;
@@ -23,33 +16,20 @@ interface ProductSlot {
 }
 
 const Inventory = () => {
-  const [editingSlotID, setEditingSlotID] = useState<number | null>(null); // State to track which slot is being edited
-  const [isEditMode, setIsEditMode] = useState<boolean>(false); // State to show the edit button in each row
-  const [formModalOpen, setFormModalOpen] = useState<boolean>(false);
-  const [products, setProducts] = useState<ProductSlot[]>(() => {
-    // Initialize 16 empty slots
-    return Array.from({ length: 16 }, (_, i) => ({
-      slotId: i + 1,
-      quantity: 0,
-      productName: "",
-      priceCents: 0,
-      productId: "",
-      dateAdded: null,
-    }));
-  });
+  const [editingSlotID, setEditingSlotID] = useState<number | null>(null);
+  const [isEditMode, setIsEditMode] = useState<boolean>(false);
+  const [products, setProducts] = useState<ProductSlot[]>([]);
   const [allProducts, setAllProducts] = useState<string[]>([]);
 
   // Fetch products from the backend API
   const loadProducts = async () => {
     try {
       const data = await fetchInventory();
-      setProducts(data);
+      setProducts(data || []); // default to empty array if backend returns null
       console.log("Products data:", data);
 
-      //Make array of all product names
-      const productNames = data.map(
-        (productInfo: ProductSlot) => productInfo.productName,
-      );
+      // Make array of all product names (for dropdown)
+      const productNames = (data || []).map((p) => p.productName);
       setAllProducts(productNames);
     } catch (error) {
       console.error("Failed to load products");
@@ -57,23 +37,29 @@ const Inventory = () => {
   };
 
   useEffect(() => {
-    console.log("All Products", allProducts);
-  }, [allProducts]);
-
-  useEffect(() => {
     loadProducts();
   }, []);
 
-  //Get Slot being edited
+  // Slot currently being edited
   const editingSlotInfo = products.find((slot) => slot.slotId === editingSlotID);
-  // console.log("Editing Slot:",  editingSlotInfo);
+
+  // Handle save from modal
   const handleSave = (slotId: number, productName: string, quantity: number) => {
     setProducts(products.map(p =>
       p.slotId === slotId
         ? { ...p, productName, quantity }
         : p
     ));
-    setEditingSlotID(null); // Close modal after save
+    setEditingSlotID(null);
+  };
+
+  // Handle remove product
+  const handleRemove = (slotId: number) => {
+    setProducts(products.map(p =>
+      p.slotId === slotId
+        ? { ...p, productName: "", quantity: 0, productId: "", priceCents: 0, dateAdded: null }
+        : p
+    ));
   };
 
   return (
@@ -103,55 +89,45 @@ const Inventory = () => {
           <tbody>
             {products.map((product) => (
               <tr key={product.slotId}>
-                <td>{product.slotId}</td>
+                <td>{product.slotLabel}</td>
                 <td>{product.productName}</td>
                 <td>{product.quantity}</td>
-                <td className="edit-btn-cell">
-                  {isEditMode && (
+                {isEditMode && (
+                  <td className="edit-btn-cell">
                     <div className="action-btns">
-                    <button
-                      className="edit-btn-row"
-                      onClick={() => {
-                        console.log("Selected slot:", product.slotId);
-                        setEditingSlotID(product.slotId);
-                      }}
-                    >
-                      <EditIcon sx={{ fontSize: 20 }} />
-                    </button>
-
-                    <button className="delete-btn-row" onClick={() => {
-                      // For now just clear the slot, but eventually we can add a confirmation modal and delete the product from the database
-                      setProducts(products.map(p =>
-                        p.slotId === product.slotId
-                          ? { ...p, productName: "", quantity: 0 }
-                          : p
-                      ));
-                    }}>
+                      <button
+                        className="edit-btn-row"
+                        onClick={() => setEditingSlotID(product.slotId)}
+                      >
+                        <EditIcon sx={{ fontSize: 20 }} />
+                      </button>
+                      <button
+                        className="delete-btn-row"
+                        onClick={() => handleRemove(product.slotId)}
+                      >
                         <DeleteIcon sx={{ fontSize: 20 }} />
-                    </button>
+                      </button>
                     </div>
-                  )}
-                </td>
-
+                  </td>
+                )}
               </tr>
             ))}
           </tbody>
         </table>
       </div>
-      {editingSlotInfo && (
-      <EditInventoryModal
-        isOpen={editingSlotID !== null}
-        onClose={() => setEditingSlotID(null)}
-        onSave={handleSave}
-        allProducts={allProducts}
-        slotID={editingSlotInfo.slotId}
-        currentProductName={editingSlotInfo.productName}
-        currentQuantity={editingSlotInfo.quantity}
-      />
-    )}
-    </div>
 
-    
+      {editingSlotInfo && (
+        <EditInventoryModal
+          isOpen={editingSlotID !== null}
+          onClose={() => setEditingSlotID(null)}
+          onSave={handleSave}
+          allProducts={allProducts}
+          slotID={editingSlotInfo.slotId}
+          currentProductName={editingSlotInfo.productName}
+          currentQuantity={editingSlotInfo.quantity}
+        />
+      )}
+    </div>
   );
 };
 
