@@ -3,13 +3,15 @@
 -- name: GetInventory :many
 SELECT
     cp.slot_id,
+    cp.slot_label,
     cp.quantity,
     cp.date_added,
     pi.name,
     pi.price_cents,
     pi.product_id
 FROM inventory cp
-LEFT JOIN product_info pi ON cp.product_id = pi.product_id;
+LEFT JOIN product_info pi ON cp.product_id = pi.product_id
+ORDER BY cp.slot_id;
 
 -- name: UpdateInventory :exec
 UPDATE inventory

@@ -3,7 +3,7 @@ import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from '@mui/icons-material/Delete';
 import { useState } from "react";
 import EditInventoryModal from "@/components/EditInventoryModal";
-import { fetchProducts } from "@/services/api";
+import { fetchInventory } from "@/services/api";
 import { useEffect } from "react";
 
 // interface Product {
@@ -42,7 +42,7 @@ const Inventory = () => {
   // Fetch products from the backend API
   const loadProducts = async () => {
     try {
-      const data = await fetchProducts();
+      const data = await fetchInventory();
       setProducts(data);
       console.log("Products data:", data);
 

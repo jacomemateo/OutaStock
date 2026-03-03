@@ -1,4 +1,27 @@
 -- Auto fill in the number of slots
-INSERT INTO inventory (slot_id, product_id, quantity, date_added)
-SELECT i, NULL, NULL, NULL
-FROM generate_series(1, 16) AS i;
+INSERT INTO inventory (slot_id, slot_label, product_id, quantity, date_added) VALUES
+(1, 'A0', NULL, NULL, NULL),
+(2, 'A2', NULL, NULL, NULL),
+(3, 'A4', NULL, NULL, NULL),
+(4, 'A6', NULL, NULL, NULL),
+(5, 'B0', NULL, NULL, NULL),
+(6, 'B2', NULL, NULL, NULL),
+(7, 'B4', NULL, NULL, NULL),
+(8, 'B6', NULL, NULL, NULL),
+(9, 'C0', NULL, NULL, NULL),
+(10, 'C2', NULL, NULL, NULL),
+(11, 'C4', NULL, NULL, NULL),
+(12, 'C6', NULL, NULL, NULL),
+(13, 'D0', NULL, NULL, NULL),
+(14, 'D1', NULL, NULL, NULL),
+(15, 'D3', NULL, NULL, NULL),
+(16, 'D4', NULL, NULL, NULL),
+(17, 'D6', NULL, NULL, NULL),
+(18, 'E0', NULL, NULL, NULL),
+(19, 'E2', NULL, NULL, NULL),
+(20, 'E4', NULL, NULL, NULL),
+(21, 'E6', NULL, NULL, NULL),
+(22,'F0',NULL,NULL,NULL),
+(23,'F2',NULL,NULL,NULL),
+(24,'F4',NULL,NULL,NULL),
+(25,'F6',NULL,NULL,NULL);

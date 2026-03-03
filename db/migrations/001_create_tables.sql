@@ -16,7 +16,8 @@ CREATE TABLE inventory (
     -- BTW idk what the limit is i just put in 16 as a dummy value
     -- it being hardcoded is fine for now since we're only working on
     -- ONE machine
-    slot_id INT PRIMARY KEY CHECK (slot_id BETWEEN 1 AND 16), 
+    slot_id INT PRIMARY KEY,
+    slot_label VARCHAR(2) UNIQUE NOT NULL,  -- e.g. A1, B2, etc.
     -- Not unique since the same product could be in two diff slots
     product_id UUID REFERENCES product_info(product_id) ON DELETE RESTRICT,
     -- counts the number of items currently stocked

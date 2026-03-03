@@ -28,6 +28,7 @@ const getInventory = `-- name: GetInventory :many
 
 SELECT
     cp.slot_id,
+    cp.slot_label,
     cp.quantity,
     cp.date_added,
     pi.name,
@@ -35,10 +36,12 @@ SELECT
     pi.product_id
 FROM inventory cp
 LEFT JOIN product_info pi ON cp.product_id = pi.product_id
+ORDER BY cp.slot_id
 `
 
 type GetInventoryRow struct {
 	SlotID     int32
+	SlotLabel  string
 	Quantity   pgtype.Int4
 	DateAdded  pgtype.Timestamptz
 	Name       pgtype.Text
@@ -58,6 +61,7 @@ func (q *Queries) GetInventory(ctx context.Context) ([]GetInventoryRow, error) {
 		var i GetInventoryRow
 		if err := rows.Scan(
 			&i.SlotID,
+			&i.SlotLabel,
 			&i.Quantity,
 			&i.DateAdded,
 			&i.Name,

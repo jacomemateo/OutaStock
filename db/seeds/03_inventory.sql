@@ -4,13 +4,13 @@ SET product_id = NULL,
     quantity = NULL,
     date_added = NULL;
 
--- Fill 16 slots using products with unique prices
+-- Fill 25 slots using products with unique prices
 WITH unique_price_products AS (
     SELECT DISTINCT ON (price_cents)
         product_id
     FROM product_info
     ORDER BY price_cents, random()
-    LIMIT 16
+    LIMIT 25
 ),
 numbered_products AS (
     SELECT 

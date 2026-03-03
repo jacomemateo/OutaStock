@@ -10,6 +10,7 @@ import (
 
 type Inventory struct {
 	SlotID    int32
+	SlotLabel string
 	ProductID pgtype.UUID
 	Quantity  pgtype.Int4
 	DateAdded pgtype.Timestamptz
