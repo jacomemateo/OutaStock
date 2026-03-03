@@ -68,6 +68,15 @@ func (s *InventoryService) GetAllInventory(ctx context.Context) ([]dto.Inventory
 }
 
 func (s *InventoryService) UpdateInventory(ctx context.Context, slotID int, req dto.UpdateInventoryRequest) error {
+	if req.ProductID == nil && req.Quantity == nil {
+		err := s.database.queries.ClearInventorySlot(ctx, int32(slotID))
+		if err != nil {
+			return err
+		}
+		log.Debug().Msgf("Cleared inventory slot %d", slotID)
+		return nil
+	}
+
 	// Convert uuid.UUID to pgtype.UUID
 	var pgtypeUUID pgtype.UUID
 	if req.ProductID == nil {
@@ -101,9 +110,9 @@ func (s *InventoryService) UpdateInventory(ctx context.Context, slotID int, req 
 	}
 
 	if req.ProductID != nil {
-		log.Debug().Msgf("Updated slot %d with product %s", slotID, req.ProductID.String())
+		log.Debug().Msgf("Assigned slot %d with product %s", slotID, req.ProductID.String())
 	} else {
-		log.Debug().Msgf("Updated slot %d with no product (unassigned)", slotID)
+		log.Debug().Msgf("Updated quantity of slot %d to %d", slotID, *req.Quantity)
 	}
 	
 	return nil

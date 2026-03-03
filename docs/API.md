@@ -131,7 +131,7 @@ Update an inventory slot (assign, unassign, or update quantity).
 ```bash
 curl -X PATCH "http://localhost:8080/api/inventory/1" \
   -H "Content-Type: application/json" \
-  -d '{"productUUID": "019cac06-f112-7c18-874f-78fc806fd57e", "quantity": 0}'
+  -d '{"productUUID": "019cac06-f112-7f43-a509-42a3ed771d70", "quantity": 0}'
 ```
 
 **Example Request: Unassign product**
@@ -140,6 +140,13 @@ curl -X PATCH "http://localhost:8080/api/inventory/1" \
 curl -X PATCH "http://localhost:8080/api/inventory/1" \
   -H "Content-Type: application/json" \
   -d '{"productUUID": null, "quantity": null}'
+```
+
+**Example Request: Update Quantity**
+```bash
+curl -X PATCH "http://localhost:8080/api/inventory/1" \
+  -H "Content-Type: application/json" \
+  -d '{"productUUID": null, "quantity": 50}'
 ```
 
 **Response**

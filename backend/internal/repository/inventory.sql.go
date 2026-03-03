@@ -11,6 +11,19 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
+const clearInventorySlot = `-- name: ClearInventorySlot :exec
+UPDATE inventory
+SET
+    product_id = NULL,
+    quantity   = NULL
+WHERE slot_id = $1
+`
+
+func (q *Queries) ClearInventorySlot(ctx context.Context, slotID int32) error {
+	_, err := q.db.Exec(ctx, clearInventorySlot, slotID)
+	return err
+}
+
 const getInventory = `-- name: GetInventory :many
 
 SELECT
@@ -62,9 +75,6 @@ func (q *Queries) GetInventory(ctx context.Context) ([]GetInventoryRow, error) {
 }
 
 const updateInventory = `-- name: UpdateInventory :exec
-
-
-
 UPDATE inventory
 SET
     product_id = COALESCE($1, product_id),
@@ -78,28 +88,6 @@ type UpdateInventoryParams struct {
 	SlotID    int32
 }
 
-// -- name: AssignSlot :exec
-// UPDATE inventory
-// SET
-//
-//	product_id = @product_id,
-//	quantity = 0, -- Initialize quantity to 0 when assigning a slot
-//	date_added = NOW()
-//
-// WHERE slot_id = @slot_id;
-// -- name: UnassignSlot :exec
-// UPDATE inventory
-// SET
-//
-//	product_id = NULL,
-//	quantity = NULL,
-//	date_added = NULL
-//
-// WHERE slot_id = @slot_id;
-// -- name: UpdateQuantity :exec
-// UPDATE inventory
-// SET quantity = @quantity
-// WHERE slot_id = @slot_id;
 func (q *Queries) UpdateInventory(ctx context.Context, arg UpdateInventoryParams) error {
 	_, err := q.db.Exec(ctx, updateInventory, arg.ProductID, arg.Quantity, arg.SlotID)
 	return err

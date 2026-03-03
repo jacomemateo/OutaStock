@@ -17,3 +17,10 @@ SET
     product_id = COALESCE(@product_id, product_id),
     quantity   = COALESCE(@quantity, quantity)
 WHERE slot_id = @slot_id;
+
+-- name: ClearInventorySlot :exec
+UPDATE inventory
+SET
+    product_id = NULL,
+    quantity   = NULL
+WHERE slot_id = @slot_id;
