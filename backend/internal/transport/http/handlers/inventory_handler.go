@@ -5,9 +5,9 @@ import (
 	"strconv"
 
 	"github.com/labstack/echo/v5"
-
+	"github.com/rs/zerolog/log"
 	"github.com/jacomemateo/OutaStock/backend/internal/service"
-	"github.com/google/uuid"
+	"github.com/jacomemateo/OutaStock/backend/internal/transport/http/dto"
 )
 
 type InventoryHandler struct {
@@ -31,10 +31,10 @@ func (h *InventoryHandler) GetAllInventory(c *echo.Context) error {
 	return c.JSON(http.StatusOK, inventory)
 }
 
-func (h *InventoryHandler) AssignSlot(c *echo.Context) error {
+func (h *InventoryHandler) UpdateInventory(c *echo.Context) error {
 	slotIDStr := c.Param("slotID")
-	productUUIDStr := c.QueryParam("productUUID")
 
+	// Getting slotID from params
 	slotIdInt, err := strconv.ParseInt(slotIDStr, 10, 32)
 	if err != nil {
 		log.Debug().Msgf("Failed to parse slotID parameter: %s", slotIDStr)
@@ -43,25 +43,24 @@ func (h *InventoryHandler) AssignSlot(c *echo.Context) error {
 		})
 	}
 
-	// Converting to "domain type" uuid.UUID for better type safety in the service layer
-	// and for code consistency since product IDs are UUIDs. The service layer can
-	// still accept uuid.UUID and convert to a pgtype.UUID type.
-	prodcutUUID, err := uuid.Parse(productUUIDStr)
-	if err != nil {
+	// Binding request body to DTO
+	var req dto.UpdateInventoryRequest
+	if err := c.Bind(&req); err != nil {
+		log.Debug().Msgf("Failed to bind request body: %v", err)
 		return c.JSON(http.StatusBadRequest, map[string]string{
-			"error": "Invalid productUUID parameter",
+			"error": "Invalid request body",
 		})
 	}
 
-	err = h.inventoryService.AssignSlot(c.Request().Context(), int(slotIdInt), prodcutUUID)
+	err = h.inventoryService.UpdateInventory(c.Request().Context(), int(slotIdInt), req)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, map[string]string{
-			"error": "Failed to assign slot",
+			"error": "Failed to update inventory",
 		})
 	}
 
 	return c.JSON(http.StatusOK, map[string]string{
-		"message": "Slot assigned successfully",
+		"message": "Slot updated successfully",
 	})
 }
 

@@ -114,5 +114,4 @@ func (r *Router) addRoutes() {
 	// Invetory routes
 	inventory := api.Group("/inventory")
 	inventory.GET("/all", r.inventoryHandler.GetAllInventory)
-	inventory.PATCH("/assignSlot", r.inventoryHandler.AssignSlot)
-}
+	inventory.PATCH("/:slotID", r.inventoryHandler.UpdateInventory)}

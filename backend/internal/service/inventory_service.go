@@ -1,11 +1,9 @@
-// internal/service/transactions_service.go
 package service
 
 import (
 	"context"
 
 	"github.com/rs/zerolog/log"
-	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgtype"
 
 	"github.com/jacomemateo/OutaStock/backend/internal/transport/http/dto"
@@ -69,24 +67,44 @@ func (s *InventoryService) GetAllInventory(ctx context.Context) ([]dto.Inventory
 	return inventoryItems, nil
 }
 
-func (s *InventoryService) AssignSlot(ctx context.Context, slotID int, productUUID uuid.UUID) error {
-	// Convert uuid.UUID to 
-	pgtypeUUID := pgtype.UUID {
-		Bytes:  productUUID,
-		Valid: true,
+func (s *InventoryService) UpdateInventory(ctx context.Context, slotID int, req dto.UpdateInventoryRequest) error {
+	// Convert uuid.UUID to pgtype.UUID
+	var pgtypeUUID pgtype.UUID
+	if req.ProductID == nil {
+		pgtypeUUID = pgtype.UUID { Valid: false }
+	} else {
+		pgtypeUUID = pgtype.UUID {
+			Bytes:  *req.ProductID,
+			Valid: true,
+		}
 	}
 
-	args := repository.AssignSlotParams{
+	var quantity pgtype.Int4
+	if req.Quantity == nil {
+		quantity = pgtype.Int4{ Valid: false }
+	} else {
+		quantity = pgtype.Int4{
+			Int32: int32(*req.Quantity),
+			Valid: true,
+		}
+	}
+
+	args := repository.UpdateInventoryParams{
 		ProductID: pgtypeUUID,
+		Quantity: quantity,
 		SlotID:    int32(slotID),
 	}
 
-	err := s.database.queries.AssignSlot(ctx, args)
+	err := s.database.queries.UpdateInventory(ctx, args)
 	if err != nil {
 		return err
 	}
 
-	log.Debug().Msgf("Assigned slot %d to product %s", slotID, productUUID.String())
-
+	if req.ProductID != nil {
+		log.Debug().Msgf("Updated slot %d with product %s", slotID, req.ProductID.String())
+	} else {
+		log.Debug().Msgf("Updated slot %d with no product (unassigned)", slotID)
+	}
+	
 	return nil
 }
