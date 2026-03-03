@@ -1,5 +1,6 @@
 import "@styles/Inventory.css";
 import EditIcon from "@mui/icons-material/Edit";
+import DeleteIcon from '@mui/icons-material/Delete';
 import { useState } from "react";
 import EditInventoryModal from "@/components/EditInventoryModal";
 import { fetchProducts } from "@/services/api";
@@ -65,7 +66,7 @@ const Inventory = () => {
 
   //Get Slot being edited
   const editingSlotInfo = products.find((slot) => slot.slotId === editingSlotID);
-  console.log("Editing Slot:",  editingSlotInfo);
+  // console.log("Editing Slot:",  editingSlotInfo);
   const handleSave = (slotId: number, productName: string, quantity: number) => {
     setProducts(products.map(p =>
       p.slotId === slotId
@@ -96,7 +97,7 @@ const Inventory = () => {
               <th>Location</th>
               <th>Product Name</th>
               <th>Quantity</th>
-              <th> </th>
+              {isEditMode && <th>Actions</th>}
             </tr>
           </thead>
           <tbody>
@@ -107,6 +108,7 @@ const Inventory = () => {
                 <td>{product.quantity}</td>
                 <td className="edit-btn-cell">
                   {isEditMode && (
+                    <div className="action-btns">
                     <button
                       className="edit-btn-row"
                       onClick={() => {
@@ -116,8 +118,21 @@ const Inventory = () => {
                     >
                       <EditIcon sx={{ fontSize: 20 }} />
                     </button>
+
+                    <button className="delete-btn-row" onClick={() => {
+                      // For now just clear the slot, but eventually we can add a confirmation modal and delete the product from the database
+                      setProducts(products.map(p =>
+                        p.slotId === product.slotId
+                          ? { ...p, productName: "", quantity: 0 }
+                          : p
+                      ));
+                    }}>
+                        <DeleteIcon sx={{ fontSize: 20 }} />
+                    </button>
+                    </div>
                   )}
                 </td>
+
               </tr>
             ))}
           </tbody>

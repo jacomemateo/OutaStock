@@ -124,10 +124,10 @@
 .products-table tbody tr:hover {
   background-color: var(--darker-black);
 }
-.edit-btn-cell{
+.edit-btn-cell, .delete-btn-cell {
   width: 10px !important;
 }
-.edit-btn-row {
+.edit-btn-row, .delete-btn-row {
   background-color: transparent;
   color: var(--even-lighter-black);
   border: none;
@@ -135,4 +135,12 @@
   padding: 0;
   transition: color 0.2s;
   font-size: small;
+}
+
+.edit-btn-row:hover, .delete-btn-row:hover {
+  color: var(--white);
+}
+
+.edit-btn-row {
+  margin-right: 8px;
 }
