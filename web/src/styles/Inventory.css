@@ -80,6 +80,11 @@
   width: 8px;
 }
 
+.no-product {
+  color: rgb(241, 64, 64);
+  font-weight: bold;
+}
+
 .products-list::-webkit-scrollbar-track {
   background: var( --darker-black );
 }

@@ -40,7 +40,7 @@ func (s *InventoryService) GetAllInventory(ctx context.Context) ([]dto.Inventory
 		if !row.ProductID.Valid {
 			inventorySlot := dto.InventorySlot{
 				SlotID:	  int(row.SlotID),
-				SlotLabel:  "",
+				SlotLabel:  row.SlotLabel,
 				Quantity: 0,
 				ProductName: "",
 				PriceCents: 0,

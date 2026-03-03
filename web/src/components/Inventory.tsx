@@ -86,33 +86,49 @@ const Inventory = () => {
               {isEditMode && <th>Actions</th>}
             </tr>
           </thead>
-          <tbody>
-            {products.map((product) => (
-              <tr key={product.slotId}>
-                <td>{product.slotLabel}</td>
-                <td>{product.productName}</td>
-                <td>{product.quantity}</td>
-                {isEditMode && (
-                  <td className="edit-btn-cell">
-                    <div className="action-btns">
-                      <button
-                        className="edit-btn-row"
-                        onClick={() => setEditingSlotID(product.slotId)}
-                      >
-                        <EditIcon sx={{ fontSize: 20 }} />
-                      </button>
-                      <button
-                        className="delete-btn-row"
-                        onClick={() => handleRemove(product.slotId)}
-                      >
-                        <DeleteIcon sx={{ fontSize: 20 }} />
-                      </button>
-                    </div>
-                  </td>
-                )}
-              </tr>
-            ))}
-          </tbody>
+            <tbody>
+              {products.map((product) => {
+                const isEmpty = !product.productId; // slot has no product
+
+                return (
+                  <tr key={product.slotId}>
+                    {/* Slot label stays normal */}
+                    <td>{product.slotLabel}</td>
+
+                    {/* Product name: show "NO PRODUCT" in bold red if empty */}
+                    <td className={isEmpty ? "no-product" : ""}>
+                      {isEmpty ? "NO PRODUCT" : product.productName}
+                    </td>
+
+                    {/* Quantity: show empty string if slot is empty */}
+                    <td
+                    >
+                      {isEmpty ? "" : product.quantity}
+                    </td>
+
+                                {/* Actions */}
+                      {isEditMode && (
+                        <td className="edit-btn-cell">
+                          <div className="action-btns">
+                            <button
+                              className="edit-btn-row"
+                              onClick={() => setEditingSlotID(product.slotId)}
+                            >
+                              <EditIcon sx={{ fontSize: 20 }} />
+                            </button>
+                            <button
+                              className="delete-btn-row"
+                              onClick={() => handleRemove(product.slotId)}
+                            >
+                              <DeleteIcon sx={{ fontSize: 20 }} />
+                            </button>
+                          </div>
+                        </td>
+                      )}
+                    </tr>
+                  );
+                })}
+              </tbody>
         </table>
       </div>
 
