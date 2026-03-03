@@ -24,7 +24,7 @@ rerun = false
 rerun_delay = 500
 send_interrupt = true
 kill_delay = 500
-stop_on_error = false
+stop_on_error = true
 
 
 [color]
