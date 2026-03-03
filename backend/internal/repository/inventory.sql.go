@@ -11,25 +11,6 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
-const assignSlot = `-- name: AssignSlot :exec
-UPDATE inventory
-SET
-    product_id = $1,
-    quantity = 0, -- Initialize quantity to 0 when assigning a slot
-    date_added = NOW()
-WHERE slot_id = $2
-`
-
-type AssignSlotParams struct {
-	ProductID pgtype.UUID
-	SlotID    int32
-}
-
-func (q *Queries) AssignSlot(ctx context.Context, arg AssignSlotParams) error {
-	_, err := q.db.Exec(ctx, assignSlot, arg.ProductID, arg.SlotID)
-	return err
-}
-
 const getInventory = `-- name: GetInventory :many
 
 SELECT
@@ -80,32 +61,46 @@ func (q *Queries) GetInventory(ctx context.Context) ([]GetInventoryRow, error) {
 	return items, nil
 }
 
-const unassignSlot = `-- name: UnassignSlot :exec
+const updateInventory = `-- name: UpdateInventory :exec
+
+
+
 UPDATE inventory
 SET
-    product_id = NULL,
-    quantity = NULL,
-    date_added = NULL
-WHERE slot_id = $1
+    product_id = COALESCE($1, product_id),
+    quantity   = COALESCE($2, quantity)
+WHERE slot_id = $3
 `
 
-func (q *Queries) UnassignSlot(ctx context.Context, slotID int32) error {
-	_, err := q.db.Exec(ctx, unassignSlot, slotID)
-	return err
+type UpdateInventoryParams struct {
+	ProductID pgtype.UUID
+	Quantity  pgtype.Int4
+	SlotID    int32
 }
 
-const updateQuantity = `-- name: UpdateQuantity :exec
-UPDATE inventory
-SET quantity = $1
-WHERE slot_id = $2
-`
-
-type UpdateQuantityParams struct {
-	Quantity pgtype.Int4
-	SlotID   int32
-}
-
-func (q *Queries) UpdateQuantity(ctx context.Context, arg UpdateQuantityParams) error {
-	_, err := q.db.Exec(ctx, updateQuantity, arg.Quantity, arg.SlotID)
+// -- name: AssignSlot :exec
+// UPDATE inventory
+// SET
+//
+//	product_id = @product_id,
+//	quantity = 0, -- Initialize quantity to 0 when assigning a slot
+//	date_added = NOW()
+//
+// WHERE slot_id = @slot_id;
+// -- name: UnassignSlot :exec
+// UPDATE inventory
+// SET
+//
+//	product_id = NULL,
+//	quantity = NULL,
+//	date_added = NULL
+//
+// WHERE slot_id = @slot_id;
+// -- name: UpdateQuantity :exec
+// UPDATE inventory
+// SET quantity = @quantity
+// WHERE slot_id = @slot_id;
+func (q *Queries) UpdateInventory(ctx context.Context, arg UpdateInventoryParams) error {
+	_, err := q.db.Exec(ctx, updateInventory, arg.ProductID, arg.Quantity, arg.SlotID)
 	return err
 }
