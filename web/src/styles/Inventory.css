@@ -13,9 +13,6 @@
 }
 
 .inventory-header {
-  margin-bottom: 1.5rem;
-  /* border-bottom: 1px solid var( --lighter-black ); */
-  padding-bottom: 1rem;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -63,7 +60,7 @@
 
 .products-list {
   /* margin-top: 0px; */
-  max-height: 500px;
+  max-height: 600px;
   overflow-y: auto;
   border: 1px solid var( --lighter-black );
   border-radius: 8px;
