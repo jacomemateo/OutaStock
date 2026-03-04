@@ -81,7 +81,7 @@
 }
 
 .no-product {
-  color: rgb(241, 64, 64);
+  color: var(--error-red);
   font-weight: bold;
 }
 
