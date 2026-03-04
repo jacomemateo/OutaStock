@@ -55,3 +55,4 @@ make frontend
 ```
 
 ### [View Project Architecture](./docs/ARCHITECTURE.md)
+### [View API Specification](./docs/API.md)

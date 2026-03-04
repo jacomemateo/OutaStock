@@ -1,3 +1,8 @@
+# Load environment variables from .env file
+ifneq (,$(wildcard .env))
+    include .env
+    export
+endif
 .PHONY: generate_sqlc create_db connect_db nuke_db backend deps seed frontend
 
 generate_sqlc:
@@ -7,7 +12,7 @@ create_db:
 	docker compose up -d
 
 connect_db:
-	docker exec -it vending-db psql -U postgres -d vending
+	docker exec -it vending-db psql -U $(POSTGRES_USER) -d $(POSTGRES_DB)
 
 nuke_db:
 	docker compose down -v
@@ -28,9 +33,9 @@ backend-run: create_db deps
 	cd backend && go run ./cmd/api
 
 seed:
-	docker exec -i vending-db psql -U postgres -d vending < db/seeds/01_products.sql
-	docker exec -i vending-db psql -U postgres -d vending < db/seeds/02_transactions.sql
-	docker exec -i vending-db psql -U postgres -d vending < db/seeds/03_inventory.sql 
+	docker exec -i vending-db psql -U $(POSTGRES_USER) -d $(POSTGRES_DB) < db/seeds/01_products.sql
+	docker exec -i vending-db psql -U $(POSTGRES_USER) -d $(POSTGRES_DB) < db/seeds/02_transactions.sql
+	docker exec -i vending-db psql -U $(POSTGRES_USER) -d $(POSTGRES_DB) < db/seeds/03_inventory.sql 
 
 # Frontend development
 frontend:

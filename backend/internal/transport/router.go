@@ -72,7 +72,7 @@ func (r *Router) Start(ctx context.Context, address string) error {
     r.addRoutes()
 
 	sc := echo.StartConfig{
-		Address:         address,
+		Address:     address,
 		GracefulTimeout: 10 * time.Second,
 		HideBanner: false,
 		HidePort: false,

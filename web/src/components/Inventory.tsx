@@ -29,7 +29,7 @@ const Inventory = () => {
       console.log("Products data:", data);
 
       // Make array of all product names (for dropdown)
-      const productNames = (data || []).map((p) => p.productName);
+      const productNames = (data || []).map((p: ProductSlot) => p.productName);
       setAllProducts(productNames);
     } catch (error) {
       console.error("Failed to load products");
