@@ -19,7 +19,7 @@ const Inventory = () => {
   const [editingSlotID, setEditingSlotID] = useState<number | null>(null);
   const [isEditMode, setIsEditMode] = useState<boolean>(false);
   const [products, setProducts] = useState<ProductSlot[]>([]);
-  const [inventory, setInventory] = useState<string[]>([]);
+  const [_, setInventory] = useState<string[]>([]);
   const [allProducts, setAllProducts] = useState<string[]>([]);
 
 
@@ -132,22 +132,24 @@ const Inventory = () => {
               {isEditMode && <th>Actions</th>}
             </tr>
           </thead>
-          <tbody>
-            {products.map((product) => {
-              const isEmpty = !product.productId; // slot has no product
+<tbody>
+  {products.map((product, index) => {
+    const isEmpty = !product.productId;
 
-              return (
-                <tr key={product.slotId}>
-                  {/* Slot label stays normal */}
-                  <td>{product.slotLabel}</td>
+    return (
+      <tr
+        key={product.slotId}
+        className="product-row"
+        style={{ "--row-index": index } as React.CSSProperties}
+      >
+        <td>{product.slotLabel}</td>
 
-                  {/* Product name: show "NO PRODUCT" in bold red if empty */}
-                  <td className={isEmpty ? "no-product" : ""}>
-                    {isEmpty ? "NO PRODUCT" : product.productName}
-                  </td>
+        <td className={isEmpty ? "no-product" : ""}>
+          {isEmpty ? "NO PRODUCT" : product.productName}
+        </td>
 
-                  {/* Quantity: show empty string if slot is empty */}
-                  <td>{isEmpty ? "" : product.quantity}</td>
+        <td>{isEmpty ? "" : product.quantity}</td>
+
 
                   {/* Actions */}
                   {isEditMode && (
@@ -171,10 +173,10 @@ const Inventory = () => {
                       </div>
                     </td>
                   )}
-                </tr>
-              );
-            })}
-          </tbody>
+      </tr>
+    );
+  })}
+</tbody>
         </table>
       </div>
 

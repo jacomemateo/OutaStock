@@ -1,4 +1,3 @@
-import { title } from "process";
 import "@styles/ConfirmationModal.css";
 import WarningIcon from "@mui/icons-material/Warning";
 

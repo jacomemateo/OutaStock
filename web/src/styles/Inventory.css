@@ -6,6 +6,8 @@
   border: 1px solid var(--lighter-black);
   display: flex;
   flex-direction: column;
+  animation: boxFadeIn 0.6s ease-out;
+
 }
 
 .inventory-header {
@@ -54,13 +56,30 @@
   opacity: 0.7;
 }
 
+
+
+
 .products-list {
-  /* margin-top: 0px; */
   max-height: 60vh;
   overflow-y: auto;
-  border: 1px solid var( --lighter-black );
+  border: 1px solid var(--lighter-black);
   border-radius: 8px;
   scrollbar-color: var(--umbc-gold) var( --darker-black );
+
+  opacity: 0;
+  animation: tableFadeIn 0.5s ease-out forwards;
+  animation-delay: 0.15s;
+}
+
+@keyframes tableFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 
@@ -143,4 +162,14 @@
 
 .edit-btn-row {
   margin-right: 8px;
+}
+
+.product-row {
+  opacity: 0; /* start hidden */
+  animation: cardFadeIn 0.5s ease-out forwards;
+  animation-delay: calc(var(--row-index, 0) * 0.1s);
+}
+
+ .inventory-container {
+  animation: boxFadeIn 0.2s ease-out;
 }
