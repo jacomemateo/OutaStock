@@ -5,11 +5,11 @@
 
 .dashboard-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 2rem;
-  max-width: 1400px;
+  grid-template-columns: 1.25fr 2fr;
+  gap: 4rem;
   margin: 0 auto;
 }
+
 
 .dashboard-box {
   background: var( --white);
