@@ -8,6 +8,7 @@ interface EditInventoryModalProps {
   onSave: (slotID: number, productName: string, quantity: number) => void;
   inventory: string[]; // List of all product names for the dropdown
   slotID: number; // ID of the slot being edited
+  slotLabel: string; // Label of the slot being edited (e.g., "Slot 1")
   currentProductName: string;
   currentQuantity: number;
 }
@@ -18,6 +19,7 @@ const EditInventoryModal = ({
   onSave,
   inventory,
   slotID,
+  slotLabel,
   currentProductName,
   currentQuantity,
 }: EditInventoryModalProps) => {
@@ -42,7 +44,7 @@ const EditInventoryModal = ({
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal-content" onClick={(e) => e.stopPropagation()}>
         <div className="modal-header">
-          <h2>Editing Slot {slotID}</h2>
+          <h2>Editing Slot {slotLabel}</h2>
           <button className="modal-close" onClick={onClose}>
             ✕
           </button>
