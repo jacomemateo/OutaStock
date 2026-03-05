@@ -40,3 +40,7 @@ seed:
 # Frontend development
 frontend:
 	cd web && npm install && npm run dev
+
+pretty:
+	cd web && npm run pretty
+	cd backend && gofumpt -w . && goimports -w .

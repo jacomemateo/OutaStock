@@ -74,6 +74,12 @@ go install mvdan.cc/gofumpt@latest
 go install golang.org/x/tools/cmd/goimports@latest
 ```
 
+To see which packages ur not using run this
+```bash
+npx knip
+```
+
+
 Then run
 ```bash
 cd backend/
