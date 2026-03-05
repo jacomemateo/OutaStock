@@ -3,7 +3,6 @@ testdata_dir = "testdata"
 tmp_dir = "tmp"
 
 [build]
-pre_cmd = ["ln -s ../.env .env"]
 args_bin = []
 entrypoint = "./tmp/main"
 cmd = "go build -o ./tmp/main ./cmd/api"

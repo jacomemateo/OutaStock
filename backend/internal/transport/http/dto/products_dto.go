@@ -9,7 +9,7 @@ import (
 // ProductResponse is the "Output" DTO.
 // This represents a product in your catalog.
 type ProductResponse struct {
-	ID          *uuid.UUID       `json:"id"`
+	ID          string       `json:"id"`
 	Name        string          `json:"name"`
 	PriceCents  int           `json:"priceCents"`  // Changed from decimal.Decimal to int to represent price in cents
 	DateCreated *time.Time       `json:"dateCreated"`

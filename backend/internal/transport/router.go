@@ -17,6 +17,7 @@ type Router struct {
 	database            *service.Database  // Just store the Database, not the raw pool
 	transactionsHandler  *handlers.TransactionsHandler
 	inventoryHandler     *handlers.InventoryHandler
+	productsHandler      *handlers.ProductsHandler
 }
 
 func NewRouter(database *service.Database, origins []string) *Router {
@@ -60,10 +61,12 @@ func NewRouter(database *service.Database, origins []string) *Router {
 	// Initialize services (using database.queries)
 	transactionsService := service.NewTransactionsService(r.database)
 	inventoryService := service.NewInventoryService(r.database)
-	
+	productsService := service.NewProductsService(r.database)
+
 	// Initialize handlers
 	r.transactionsHandler = handlers.NewTransactionsHandler(transactionsService)
 	r.inventoryHandler = handlers.NewInventoryHandler(inventoryService)
+	r.productsHandler = handlers.NewProductsHandler(productsService)
 
 	return &r
 }
@@ -114,4 +117,9 @@ func (r *Router) addRoutes() {
 	// Invetory routes
 	inventory := api.Group("/inventory")
 	inventory.GET("/all", r.inventoryHandler.GetAllInventory)
-	inventory.PATCH("/:slotID", r.inventoryHandler.UpdateInventory)}
+	inventory.PATCH("/:slotID", r.inventoryHandler.UpdateInventory)
+
+
+	products := api.Group("/products")
+	products.GET("/all", r.productsHandler.GetAllProducts)
+}
