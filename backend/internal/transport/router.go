@@ -48,6 +48,7 @@ func NewRouter(database *service.Database, origins []string) *Router {
             http.MethodPut,
             http.MethodDelete,
             http.MethodOptions,
+			http.MethodPatch,
         },
         AllowHeaders: []string{
             echo.HeaderOrigin,
