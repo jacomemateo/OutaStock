@@ -42,5 +42,8 @@ frontend:
 	cd web && npm install && npm run dev
 
 pretty:
+	@echo "Formatting frontend..."
 	cd web && npm run pretty
+	@echo "Formatting backend..."
 	cd backend && gofumpt -w . && goimports -w .
+	@echo "All done ✅"
