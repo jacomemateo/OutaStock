@@ -1,10 +1,10 @@
 import "@styles/Inventory.css";
 import EditIcon from "@mui/icons-material/Edit";
-import DeleteIcon from '@mui/icons-material/Delete';
+import DeleteIcon from "@mui/icons-material/Delete";
 import { useState, useEffect } from "react";
 import EditInventoryModal from "@/components/EditInventoryModal";
 import { fetchInventory, unassignProductFromSlot } from "@/services/api";
-
+import  ConfirmationModal from "@/components/ConfirmationModal";
 interface ProductSlot {
   slotId: number;
   slotLabel: string;
@@ -20,6 +20,10 @@ const Inventory = () => {
   const [isEditMode, setIsEditMode] = useState<boolean>(false);
   const [products, setProducts] = useState<ProductSlot[]>([]);
   const [allProducts, setAllProducts] = useState<string[]>([]);
+
+  // Confirmation modal state
+  const [confirmationOpen, setConfirmationOpen] = useState<boolean>(false);
+  const [slotToDelete, setSlotToDelete] = useState<number | null>(null);
 
   // Fetch products from the backend API
   const loadProducts = async () => {
@@ -41,15 +45,21 @@ const Inventory = () => {
   }, []);
 
   // Slot currently being edited
-  const editingSlotInfo = products.find((slot) => slot.slotId === editingSlotID);
+  const editingSlotInfo = products.find(
+    (slot) => slot.slotId === editingSlotID,
+  );
 
   // Handle save from modal
-  const handleSave = (slotId: number, productName: string, quantity: number) => {
-    setProducts(products.map(p =>
-      p.slotId === slotId
-        ? { ...p, productName, quantity }
-        : p
-    ));
+  const handleSave = (
+    slotId: number,
+    productName: string,
+    quantity: number,
+  ) => {
+    setProducts(
+      products.map((p) =>
+        p.slotId === slotId ? { ...p, productName, quantity } : p,
+      ),
+    );
     setEditingSlotID(null);
   };
 
@@ -57,14 +67,31 @@ const Inventory = () => {
   const handleRemove = async (slotId: number) => {
     try {
       await unassignProductFromSlot(slotId);
-      setProducts(products.map(p =>
-        p.slotId === slotId
-          ? { ...p, productName: "", quantity: 0, productId: "", priceCents: 0, dateAdded: null }
-          : p
-      ));
+      setProducts(
+        products.map((p) =>
+          p.slotId === slotId
+            ? {
+                ...p,
+                productName: "",
+                quantity: 0,
+                productId: "",
+                priceCents: 0,
+                dateAdded: null,
+              }
+            : p,
+        ),
+      );
     } catch (error) {
       console.error(`Failed to remove product from slot ${slotId}:`, error);
     }
+  };
+
+  const handleDeleteConfirm = (confirmed: boolean) => {
+    if (confirmed && slotToDelete !== null) {
+      handleRemove(slotToDelete);
+    }
+    setConfirmationOpen(false);
+    setSlotToDelete(null);
   };
 
   return (
@@ -91,49 +118,49 @@ const Inventory = () => {
               {isEditMode && <th>Actions</th>}
             </tr>
           </thead>
-            <tbody>
-              {products.map((product) => {
-                const isEmpty = !product.productId; // slot has no product
+          <tbody>
+            {products.map((product) => {
+              const isEmpty = !product.productId; // slot has no product
 
-                return (
-                  <tr key={product.slotId}>
-                    {/* Slot label stays normal */}
-                    <td>{product.slotLabel}</td>
+              return (
+                <tr key={product.slotId}>
+                  {/* Slot label stays normal */}
+                  <td>{product.slotLabel}</td>
 
-                    {/* Product name: show "NO PRODUCT" in bold red if empty */}
-                    <td className={isEmpty ? "no-product" : ""}>
-                      {isEmpty ? "NO PRODUCT" : product.productName}
+                  {/* Product name: show "NO PRODUCT" in bold red if empty */}
+                  <td className={isEmpty ? "no-product" : ""}>
+                    {isEmpty ? "NO PRODUCT" : product.productName}
+                  </td>
+
+                  {/* Quantity: show empty string if slot is empty */}
+                  <td>{isEmpty ? "" : product.quantity}</td>
+
+                  {/* Actions */}
+                  {isEditMode && (
+                    <td className="edit-btn-cell">
+                      <div className="action-btns">
+                        <button
+                          className="edit-btn-row"
+                          onClick={() => setEditingSlotID(product.slotId)}
+                        >
+                          <EditIcon sx={{ fontSize: 20 }} />
+                        </button>
+                        <button
+                          className="delete-btn-row"
+                          onClick={() => {
+                            setSlotToDelete(product.slotId);
+                            setConfirmationOpen(true);
+                          }}
+                        >
+                          <DeleteIcon sx={{ fontSize: 20 }} />
+                        </button>
+                      </div>
                     </td>
-
-                    {/* Quantity: show empty string if slot is empty */}
-                    <td
-                    >
-                      {isEmpty ? "" : product.quantity}
-                    </td>
-
-                                {/* Actions */}
-                      {isEditMode && (
-                        <td className="edit-btn-cell">
-                          <div className="action-btns">
-                            <button
-                              className="edit-btn-row"
-                              onClick={() => setEditingSlotID(product.slotId)}
-                            >
-                              <EditIcon sx={{ fontSize: 20 }} />
-                            </button>
-                            <button
-                              className="delete-btn-row"
-                              onClick={() => handleRemove(product.slotId)}
-                            >
-                              <DeleteIcon sx={{ fontSize: 20 }} />
-                            </button>
-                          </div>
-                        </td>
-                      )}
-                    </tr>
-                  );
-                })}
-              </tbody>
+                  )}
+                </tr>
+              );
+            })}
+          </tbody>
         </table>
       </div>
 
@@ -146,6 +173,17 @@ const Inventory = () => {
           slotID={editingSlotInfo.slotId}
           currentProductName={editingSlotInfo.productName}
           currentQuantity={editingSlotInfo.quantity}
+        />
+      )}
+
+      {/* Confirmation modal for deletion */}
+      {confirmationOpen && (
+        <ConfirmationModal
+          isOpen={confirmationOpen}
+          onClose={() => setConfirmationOpen(false)}
+          onConfirm={handleDeleteConfirm}
+          title="Are you sure?"
+          message="This action cannot be undone. Please confirm if you want to proceed."
         />
       )}
     </div>
