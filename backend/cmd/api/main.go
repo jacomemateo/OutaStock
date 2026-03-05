@@ -11,18 +11,17 @@ import (
     "github.com/rs/zerolog"
 	"github.com/jacomemateo/OutaStock/backend/internal/transport"
 	"github.com/jacomemateo/OutaStock/backend/internal/service"
-)
-
-var (
-	connectionString = "postgres://postgres:secret@localhost:5432/vending?sslmode=disable"
-	echo_port 		   = ":8080"
-	origins = []string{"http://localhost:5173"} // Vite dev server, will come from env later
-	logLevel = "debug" // will come from env later, hardcoded for now
+	"github.com/jacomemateo/OutaStock/backend/cmd"
 )
 
 func main() {
+	cfg, err := config.Load()
+	if err != nil {
+		log.Fatal().Err(err).Msg("Failed to load config")
+	}
+
 	// ---------- LOGGER ----------
-	switch logLevel {
+	switch cfg.LogLevel {
 	case "debug":
 		log.Logger = zerolog.New(zerolog.ConsoleWriter{
 			Out:        os.Stdout,
@@ -37,14 +36,18 @@ func main() {
 		zerolog.SetGlobalLevel(zerolog.InfoLevel)
 	default:
 		zerolog.SetGlobalLevel(zerolog.InfoLevel)
-		log.Warn().Str("logLevel", logLevel).Msg("Unknown log level, defaulting to INFO")
+		log.Warn().Str("logLevel", cfg.LogLevel).Msg("Unknown log level, defaulting to INFO")
 	}	
+
+	log.Info().Msgf("COST VAR: %s", cfg.CORSOrigins)
+	log.Info().Msgf("LOG VAR: %s", cfg.LogLevel)
+
 
 	// ---------- DATABASE ----------
 	// Will come from env later, hardcoded for now
 	ctx := context.Background()
 
-	db, err := service.NewDatabase(ctx, connectionString)
+	db, err := service.NewDatabase(ctx, cfg.DatabaseURL)
 	if err != nil {
     	log.Fatal().Err(err).Str("service", "database").Msg("Failed to connect")
 	} 
@@ -58,15 +61,15 @@ func main() {
 	}()
 
 	// ---------- ECHO SERVER & GRACEFUL SHUTDOWN ----------
-	router := transport.NewRouter(db, origins)
+	router := transport.NewRouter(db, cfg.CORSOrigins)
 
 	// Create signal-aware context
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
 
-	log.Info().Str("service", "echo_server").Msgf("Starting server on %s", echo_port)
+	log.Info().Str("service", "echo_server").Msgf("Starting server on %s", cfg.Port)
 
-	if err := router.Start(ctx, echo_port); err != nil {
+	if err := router.Start(ctx, cfg.Port); err != nil {
 		log.Fatal().Err(err).Str("service", "echo_server").Msg("Server stopped with error")
 	}
 

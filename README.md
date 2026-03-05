@@ -46,6 +46,10 @@ Make sure you have the following installed locally in your system:
 git clone https://github.com/jacomemateo/OutaStock/
 cd OutaStock
 
+# Copy the env file
+# If you don't do this nothing will work.
+cp .env.example .env
+
 # Running backend
 make backend # This will start the local PostgreSQL server in a docker container
 make seed # To get test data into postgresql
@@ -55,3 +59,4 @@ make frontend
 ```
 
 ### [View Project Architecture](./docs/ARCHITECTURE.md)
+### [View API Specification](./docs/API.md)
