@@ -23,13 +23,13 @@
 }
 
 .modal-content {
-  background-color: var( --darker-black );
+  background-color: #1a1a1a;
+  border: 1px solid #2a2a2a;
   border-radius: 12px;
   padding: 2rem;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
-  border: 1px solid var( --lighter-black );
-  max-width: 500px;
+  max-width: 400px;
   width: 90%;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
   animation: slideUp 0.3s ease-out;
 }
 

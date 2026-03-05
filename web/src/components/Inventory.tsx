@@ -171,6 +171,7 @@ const Inventory = () => {
           onSave={handleSave}
           allProducts={allProducts}
           slotID={editingSlotInfo.slotId}
+          slotLabel={editingSlotInfo.slotLabel}
           currentProductName={editingSlotInfo.productName}
           currentQuantity={editingSlotInfo.quantity}
         />
