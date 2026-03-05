@@ -2,8 +2,9 @@ package service
 
 import (
 	"context"
-    "github.com/rs/zerolog/log"
-    // "fmt"
+
+	"github.com/rs/zerolog/log"
+	// "fmt"
 
 	"github.com/jacomemateo/OutaStock/backend/internal/transport/http/dto"
 )
@@ -26,8 +27,6 @@ func (s *ProductsService) GetAllProducts(ctx context.Context) ([]dto.ProductResp
 		return nil, err
 	}
 
-
-	
 	var productResponses []dto.ProductResponse
 
 	for _, row := range rows {
@@ -36,8 +35,8 @@ func (s *ProductsService) GetAllProducts(ctx context.Context) ([]dto.ProductResp
 		productResponses = append(productResponses, dto.ProductResponse{
 			ID:          uuidString,
 			Name:        row.Name,
-			PriceCents: 		int(row.PriceCents),
-			DateCreated:       &row.DateCreated.Time,
+			PriceCents:  int(row.PriceCents),
+			DateCreated: &row.DateCreated.Time,
 		})
 	}
 	return productResponses, nil

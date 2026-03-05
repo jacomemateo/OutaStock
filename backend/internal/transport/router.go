@@ -1,10 +1,11 @@
 package transport
 
 import (
-	"net/http"
 	"context"
-	"time"
+	"net/http"
 	"strings"
+	"time"
+
 	"github.com/labstack/echo/v5"
 	"github.com/labstack/echo/v5/middleware"
 
@@ -13,11 +14,11 @@ import (
 )
 
 type Router struct {
-	echo *echo.Echo
-	database            *service.Database  // Just store the Database, not the raw pool
-	transactionsHandler  *handlers.TransactionsHandler
-	inventoryHandler     *handlers.InventoryHandler
-	productsHandler      *handlers.ProductsHandler
+	echo                *echo.Echo
+	database            *service.Database // Just store the Database, not the raw pool
+	transactionsHandler *handlers.TransactionsHandler
+	inventoryHandler    *handlers.InventoryHandler
+	productsHandler     *handlers.ProductsHandler
 }
 
 func NewRouter(database *service.Database, origins []string) *Router {
@@ -27,37 +28,36 @@ func NewRouter(database *service.Database, origins []string) *Router {
 
 	// Middleware
 	r.echo.Use(middleware.RequestLogger())
-	
+
 	r.echo.Use(middleware.GzipWithConfig(
 		middleware.GzipConfig{
-			Level: 5, // Compression level (1-9)
+			Level:     5, // Compression level (1-9)
 			MinLength: 1024,
 			Skipper: func(c *echo.Context) bool {
 				// Skip compression for health check endpoint
 				return strings.Contains(c.Path(), "health")
-
 			},
 		},
 	))
 
-    r.echo.Use(middleware.CORSWithConfig(middleware.CORSConfig {
-        AllowOrigins: origins,
-        AllowMethods: []string{
-            http.MethodGet,
-            http.MethodPost,
-            http.MethodPut,
-            http.MethodDelete,
-            http.MethodOptions,
+	r.echo.Use(middleware.CORSWithConfig(middleware.CORSConfig{
+		AllowOrigins: origins,
+		AllowMethods: []string{
+			http.MethodGet,
+			http.MethodPost,
+			http.MethodPut,
+			http.MethodDelete,
+			http.MethodOptions,
 			http.MethodPatch,
-        },
-        AllowHeaders: []string{
-            echo.HeaderOrigin,
-            echo.HeaderContentType,
-            echo.HeaderAccept,
-            echo.HeaderAuthorization,
-        },
-        AllowCredentials: true,
-    }))
+		},
+		AllowHeaders: []string{
+			echo.HeaderOrigin,
+			echo.HeaderContentType,
+			echo.HeaderAccept,
+			echo.HeaderAuthorization,
+		},
+		AllowCredentials: true,
+	}))
 
 	// Initialize services (using database.queries)
 	transactionsService := service.NewTransactionsService(r.database)
@@ -73,20 +73,19 @@ func NewRouter(database *service.Database, origins []string) *Router {
 }
 
 func (r *Router) Start(ctx context.Context, address string) error {
-    r.addRoutes()
+	r.addRoutes()
 
 	sc := echo.StartConfig{
-		Address:     address,
+		Address:         address,
 		GracefulTimeout: 10 * time.Second,
-		HideBanner: false,
-		HidePort: false,
-        OnShutdownError: func(err error) {
-            r.echo.Logger.Error("graceful shutdown failed", "error", err)
-        },
+		HideBanner:      false,
+		HidePort:        false,
+		OnShutdownError: func(err error) {
+			r.echo.Logger.Error("graceful shutdown failed", "error", err)
+		},
 	}
 	return sc.Start(ctx, r.echo)
 }
-
 
 func (r *Router) addRoutes() {
 	// Health check endpoint
@@ -100,7 +99,7 @@ func (r *Router) addRoutes() {
 				"error":  err.Error(),
 			})
 		}
-		
+
 		return c.JSON(http.StatusOK, map[string]string{
 			"status": "healthy",
 			"db":     "connected",
@@ -110,7 +109,7 @@ func (r *Router) addRoutes() {
 
 	// API routes group
 	api := r.echo.Group("/api")
-	
+
 	// Transaction routes
 	transactions := api.Group("/transactions")
 	transactions.GET("/recent", r.transactionsHandler.GetRecentTransactions)
@@ -119,7 +118,6 @@ func (r *Router) addRoutes() {
 	inventory := api.Group("/inventory")
 	inventory.GET("/all", r.inventoryHandler.GetAllInventory)
 	inventory.PATCH("/:slotID", r.inventoryHandler.UpdateInventory)
-
 
 	products := api.Group("/products")
 	products.GET("/all", r.productsHandler.GetAllProducts)

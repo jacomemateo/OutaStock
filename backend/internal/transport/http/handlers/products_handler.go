@@ -30,4 +30,3 @@ func (h *ProductsHandler) GetAllProducts(c *echo.Context) error {
 	}
 	return c.JSON(http.StatusOK, products)
 }
-

@@ -3,11 +3,11 @@ package service
 import (
 	"context"
 
-	"github.com/rs/zerolog/log"
 	"github.com/jackc/pgx/v5/pgtype"
+	"github.com/rs/zerolog/log"
 
-	"github.com/jacomemateo/OutaStock/backend/internal/transport/http/dto"
 	"github.com/jacomemateo/OutaStock/backend/internal/repository"
+	"github.com/jacomemateo/OutaStock/backend/internal/transport/http/dto"
 )
 
 type InventoryService struct {
@@ -28,24 +28,23 @@ func (s *InventoryService) GetAllInventory(ctx context.Context) ([]dto.Inventory
 		return nil, err
 	}
 
-	log.Debug().Msgf("Found %d rows from database", len(rows))  // ADD THIS
+	log.Debug().Msgf("Found %d rows from database", len(rows)) // ADD THIS
 
-	inventoryItems := make([]dto.InventorySlot, 0, len(rows))  // Initialize with capacity to avoid multiple allocations
+	inventoryItems := make([]dto.InventorySlot, 0, len(rows)) // Initialize with capacity to avoid multiple allocations
 
 	for _, row := range rows {
-		log.Debug().Msgf("Row - SlotID=%v, SlotLabel=%s, Quantity=%v, DateAdded=%v, Name=%s, PriceCents=%v, ProductID=%v", 
+		log.Debug().Msgf("Row - SlotID=%v, SlotLabel=%s, Quantity=%v, DateAdded=%v, Name=%s, PriceCents=%v, ProductID=%v",
 			row.SlotID, row.Quantity, row.DateAdded, row.Name, row.PriceCents, row.ProductID)
-
 
 		if !row.ProductID.Valid {
 			inventorySlot := dto.InventorySlot{
-				SlotID:	  int(row.SlotID),
-				SlotLabel:  row.SlotLabel,
-				Quantity: 0,
+				SlotID:      int(row.SlotID),
+				SlotLabel:   row.SlotLabel,
+				Quantity:    0,
 				ProductName: "",
-				PriceCents: 0,
-				ProductID:  "",
-				DateAdded:  nil,
+				PriceCents:  0,
+				ProductID:   "",
+				DateAdded:   nil,
 			}
 			inventoryItems = append(inventoryItems, inventorySlot)
 			continue
@@ -54,15 +53,15 @@ func (s *InventoryService) GetAllInventory(ctx context.Context) ([]dto.Inventory
 		uuidString := convertPgtypeUUIDToString(row.ProductID)
 
 		inventorySlot := dto.InventorySlot{
-			SlotID:	  int(row.SlotID),
-			SlotLabel: row.SlotLabel,
-			Quantity: int(row.Quantity.Int32),
+			SlotID:      int(row.SlotID),
+			SlotLabel:   row.SlotLabel,
+			Quantity:    int(row.Quantity.Int32),
 			ProductName: row.Name.String,
-			PriceCents: int(row.PriceCents.Int32),
-			ProductID:  uuidString,
-			DateAdded:  &row.DateAdded.Time,
+			PriceCents:  int(row.PriceCents.Int32),
+			ProductID:   uuidString,
+			DateAdded:   &row.DateAdded.Time,
 		}
-		
+
 		inventoryItems = append(inventoryItems, inventorySlot)
 	}
 	log.Debug().Msgf("Returning %d inventory items", len(inventoryItems))
@@ -82,17 +81,17 @@ func (s *InventoryService) UpdateInventory(ctx context.Context, slotID int, req 
 	// Convert uuid.UUID to pgtype.UUID
 	var pgtypeUUID pgtype.UUID
 	if req.ProductID == nil {
-		pgtypeUUID = pgtype.UUID { Valid: false }
+		pgtypeUUID = pgtype.UUID{Valid: false}
 	} else {
-		pgtypeUUID = pgtype.UUID {
-			Bytes:  *req.ProductID,
+		pgtypeUUID = pgtype.UUID{
+			Bytes: *req.ProductID,
 			Valid: true,
 		}
 	}
 
 	var quantity pgtype.Int4
 	if req.Quantity == nil {
-		quantity = pgtype.Int4{ Valid: false }
+		quantity = pgtype.Int4{Valid: false}
 	} else {
 		quantity = pgtype.Int4{
 			Int32: int32(*req.Quantity),
@@ -102,7 +101,7 @@ func (s *InventoryService) UpdateInventory(ctx context.Context, slotID int, req 
 
 	args := repository.UpdateInventoryParams{
 		ProductID: pgtypeUUID,
-		Quantity: quantity,
+		Quantity:  quantity,
 		SlotID:    int32(slotID),
 	}
 
@@ -116,6 +115,6 @@ func (s *InventoryService) UpdateInventory(ctx context.Context, slotID int, req 
 	} else {
 		log.Debug().Msgf("Updated quantity of slot %d to %d", slotID, *req.Quantity)
 	}
-	
+
 	return nil
 }

@@ -7,7 +7,7 @@ import (
 )
 
 func convertPgtypeUUIDToString(uuid pgtype.UUID) string {
-			// Skip rows with null TransactionID
+	// Skip rows with null TransactionID
 	if !uuid.Valid {
 		return "NULL UUID"
 	}

@@ -3,8 +3,9 @@ package service
 
 import (
 	"context"
-    "github.com/rs/zerolog/log"
-    "fmt"
+	"fmt"
+
+	"github.com/rs/zerolog/log"
 
 	"github.com/jacomemateo/OutaStock/backend/internal/transport/http/dto"
 )
@@ -32,7 +33,7 @@ func (s *TransactionsService) GetRecentTransactions(ctx context.Context, limit i
 	// Convert repository rows directly to DTOs
 	transactions := make([]dto.TransactionResponse, 0, len(rows)) // Initialize with capacity to avoid multiple allocations
 	for _, row := range rows {
-		log.Debug().Msgf("Row - TransactionID.Valid=%v, PriceAtSaleCents=%v, Name=%s", 
+		log.Debug().Msgf("Row - TransactionID.Valid=%v, PriceAtSaleCents=%v, Name=%s",
 			row.TransactionID.Valid, row.PriceAtSaleCents, row.Name,
 		)
 

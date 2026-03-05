@@ -5,8 +5,8 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/labstack/echo/v5"
 	"github.com/jacomemateo/OutaStock/backend/internal/service"
+	"github.com/labstack/echo/v5"
 )
 
 type TransactionsHandler struct {
@@ -20,8 +20,8 @@ func NewTransactionsHandler(transactionsService *service.TransactionsService) *T
 }
 
 const (
-    DefaultLimit = int32(10)
-    MaxLimit     = int64(200)
+	DefaultLimit = int32(10)
+	MaxLimit     = int64(200)
 )
 
 // GetRecentTransactions handles GET /api/transactions/recent?limit=10

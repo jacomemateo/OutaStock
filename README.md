@@ -58,5 +58,28 @@ make seed # To get test data into postgresql
 make frontend
 ```
 
+## Other
+
+**Making frontend pretty**
+```bash
+cd web/
+npm run pretty
+```
+
+**Making backend pretty**
+
+Make sure u have this installed 
+```bash
+go install mvdan.cc/gofumpt@latest
+go install golang.org/x/tools/cmd/goimports@latest
+```
+
+Then run
+```bash
+cd backend/
+gofumpt -w .
+goimports -w .
+```
+
 ### [View Project Architecture](./docs/ARCHITECTURE.md)
 ### [View API Specification](./docs/API.md)

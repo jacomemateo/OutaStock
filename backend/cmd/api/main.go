@@ -7,11 +7,11 @@ import (
 	"syscall"
 	"time"
 
-    "github.com/rs/zerolog/log"
-    "github.com/rs/zerolog"
-	"github.com/jacomemateo/OutaStock/backend/internal/transport"
+	config "github.com/jacomemateo/OutaStock/backend/cmd"
 	"github.com/jacomemateo/OutaStock/backend/internal/service"
-	"github.com/jacomemateo/OutaStock/backend/cmd"
+	"github.com/jacomemateo/OutaStock/backend/internal/transport"
+	"github.com/rs/zerolog"
+	"github.com/rs/zerolog/log"
 )
 
 func main() {
@@ -31,17 +31,16 @@ func main() {
 		zerolog.SetGlobalLevel(zerolog.DebugLevel)
 	case "info":
 		log.Logger = zerolog.New(os.Stdout).
-		With().Timestamp().Logger()
+			With().Timestamp().Logger()
 
 		zerolog.SetGlobalLevel(zerolog.InfoLevel)
 	default:
 		zerolog.SetGlobalLevel(zerolog.InfoLevel)
 		log.Warn().Str("logLevel", cfg.LogLevel).Msg("Unknown log level, defaulting to INFO")
-	}	
+	}
 
 	log.Info().Msgf("COST VAR: %s", cfg.CORSOrigins)
 	log.Info().Msgf("LOG VAR: %s", cfg.LogLevel)
-
 
 	// ---------- DATABASE ----------
 	// Will come from env later, hardcoded for now
@@ -49,11 +48,10 @@ func main() {
 
 	db, err := service.NewDatabase(ctx, cfg.DatabaseURL)
 	if err != nil {
-    	log.Fatal().Err(err).Str("service", "database").Msg("Failed to connect")
-	} 
-	log.Info().Str("service", "database").Msg("Connected successfully")	
-	
-	
+		log.Fatal().Err(err).Str("service", "database").Msg("Failed to connect")
+	}
+	log.Info().Str("service", "database").Msg("Connected successfully")
+
 	// Close database connection when main exits
 	defer func() {
 		db.Close()

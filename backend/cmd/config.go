@@ -2,10 +2,10 @@
 package config
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
-	"fmt"
 
 	"github.com/joho/godotenv"
 	"github.com/rs/zerolog/log"
@@ -22,7 +22,7 @@ func Load() (*Config, error) {
 	// Load .env file
 	err := loadEnvFile()
 	if err != nil {
-		return nil, err;
+		return nil, err
 	}
 
 	cfg := &Config{}
@@ -69,7 +69,6 @@ func Load() (*Config, error) {
 		return nil, err
 	}
 
-
 	return cfg, nil
 }
 
@@ -80,17 +79,17 @@ func loadEnvFile() error {
 		log.Warn().Err(err).Msg("Failed to get current directory")
 		return err
 	}
-	
+
 	// Try parent directory first
 	parentDir := filepath.Dir(currentDir)
 	envPath := filepath.Join(parentDir, ".env")
-	
+
 	err = godotenv.Load(envPath)
 	if err == nil {
 		log.Info().Str("path", envPath).Msg("Loaded .env from parent directory")
 		return nil
 	}
-	
+
 	log.Error().Msg("No .env file found")
 	return fmt.Errorf("no .env file found")
 }

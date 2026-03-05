@@ -4,10 +4,10 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/labstack/echo/v5"
-	"github.com/rs/zerolog/log"
 	"github.com/jacomemateo/OutaStock/backend/internal/service"
 	"github.com/jacomemateo/OutaStock/backend/internal/transport/http/dto"
+	"github.com/labstack/echo/v5"
+	"github.com/rs/zerolog/log"
 )
 
 type InventoryHandler struct {
@@ -63,4 +63,3 @@ func (h *InventoryHandler) UpdateInventory(c *echo.Context) error {
 		"message": "Slot updated successfully",
 	})
 }
-
