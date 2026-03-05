@@ -19,14 +19,14 @@ const Inventory = () => {
   const [editingSlotID, setEditingSlotID] = useState<number | null>(null);
   const [isEditMode, setIsEditMode] = useState<boolean>(false);
   const [products, setProducts] = useState<ProductSlot[]>([]);
-  const [allProducts, setAllProducts] = useState<string[]>([]);
+  const [inventory, setInventory] = useState<string[]>([]);
 
   // Confirmation modal state
   const [confirmationOpen, setConfirmationOpen] = useState<boolean>(false);
   const [slotToDelete, setSlotToDelete] = useState<number | null>(null);
 
-  // Fetch products from the backend API
-  const loadProducts = async () => {
+  // Fetch inventory from the backend API
+  const loadInventory = async () => {
     try {
       const data = await fetchInventory();
       setProducts(data || []); // default to empty array if backend returns null
@@ -34,14 +34,14 @@ const Inventory = () => {
 
       // Make array of all product names (for dropdown)
       const productNames = (data || []).map((p: ProductSlot) => p.productName);
-      setAllProducts(productNames);
+      setInventory(productNames);
     } catch (error) {
-      console.error("Failed to load products");
+      console.error("Failed to load inventory");
     }
   };
 
   useEffect(() => {
-    loadProducts();
+    loadInventory();
   }, []);
 
   // Slot currently being edited
@@ -169,7 +169,7 @@ const Inventory = () => {
           isOpen={editingSlotID !== null}
           onClose={() => setEditingSlotID(null)}
           onSave={handleSave}
-          allProducts={allProducts}
+          inventory={inventory}
           slotID={editingSlotInfo.slotId}
           currentProductName={editingSlotInfo.productName}
           currentQuantity={editingSlotInfo.quantity}

@@ -6,7 +6,7 @@ interface EditInventoryModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSave: (slotID: number, productName: string, quantity: number) => void;
-  allProducts: string[]; // List of all product names for the dropdown
+  inventory: string[]; // List of all product names for the dropdown
   slotID: number; // ID of the slot being edited
   currentProductName: string;
   currentQuantity: number;
@@ -16,7 +16,7 @@ const EditInventoryModal = ({
   isOpen,
   onClose,
   onSave,
-  allProducts,
+  inventory,
   slotID,
   currentProductName,
   currentQuantity,
@@ -59,7 +59,7 @@ const EditInventoryModal = ({
               label="Product Name"
             >
               <MenuItem value="">-- Select Product --</MenuItem>
-              {allProducts.map((product) => (
+              {inventory.map((product) => (
                 <MenuItem key={product} value={product}>
                   {product}
                 </MenuItem>
