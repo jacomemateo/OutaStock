@@ -3,7 +3,7 @@ import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from '@mui/icons-material/Delete';
 import { useState, useEffect } from "react";
 import EditInventoryModal from "@/components/EditInventoryModal";
-import { fetchInventory } from "@/services/api";
+import { fetchInventory, unassignProductFromSlot } from "@/services/api";
 
 interface ProductSlot {
   slotId: number;
@@ -54,12 +54,17 @@ const Inventory = () => {
   };
 
   // Handle remove product
-  const handleRemove = (slotId: number) => {
-    setProducts(products.map(p =>
-      p.slotId === slotId
-        ? { ...p, productName: "", quantity: 0, productId: "", priceCents: 0, dateAdded: null }
-        : p
-    ));
+  const handleRemove = async (slotId: number) => {
+    try {
+      await unassignProductFromSlot(slotId);
+      setProducts(products.map(p =>
+        p.slotId === slotId
+          ? { ...p, productName: "", quantity: 0, productId: "", priceCents: 0, dateAdded: null }
+          : p
+      ));
+    } catch (error) {
+      console.error(`Failed to remove product from slot ${slotId}:`, error);
+    }
   };
 
   return (
