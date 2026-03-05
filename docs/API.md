@@ -174,3 +174,52 @@ Error Response (500 Internal Server Error)
   "error": "Failed to update inventory"
 }
 ```
+
+## Products
+## `GET /api/products/all`
+
+Retrieve all available products.
+
+Example Request:
+```bash
+curl "http://localhost:8080/api/products/all"
+```
+
+**Response**
+
+Success Response (200 OK)
+```json
+[
+  {
+    "id": "019cbe99-8159-732f-a262-480494020c64",
+    "name": "Coca-Cola",
+    "priceCents": 159,
+    "dateCreated": "2026-03-05T10:24:17.112673-05:00"
+  },
+  {
+    "id": "019cbe99-8159-75cd-941e-5af905e06828",
+    "name": "Diet Coke",
+    "priceCents": 165,
+    "dateCreated": "2026-03-05T10:24:17.112673-05:00"
+  },
+  {
+    "id": "019cbe99-8159-75ea-b44e-7fec97a7c958",
+    "name": "Sprite",
+    "priceCents": 149,
+    "dateCreated": "2026-03-05T10:24:17.112673-05:00"
+  }
+]
+```
+
+Error Response (500 Internal Server Error)
+```json
+
+{
+  "error": "Failed to fetch products"
+}
+```
+**Status Codes**
+
+**200 OK** – Products successfully retrieved
+
+**500 Internal Server Error** – Failed to fetch products from database

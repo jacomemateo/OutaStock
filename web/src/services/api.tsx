@@ -1,6 +1,9 @@
 // src/services/api.js
 const API_BASE_URL = import.meta.env.VITE_API_URL
 
+/** -----------------------------
+ * Transaction Actions
+ * ----------------------------- */
 export const fetchRecentTransactions = async (limit = 10) => {
   try {
     const response = await fetch(`${API_BASE_URL}/transactions/recent?limit=${limit}`);
@@ -86,3 +89,20 @@ export const updateSlotQuantity = async (slotID: number, quantity: number) => {
     throw error;
   }
 };
+
+/** -----------------------------
+ * Product Actions
+ * ----------------------------- */
+
+export const getAllProducts = async () => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/products/all`);
+
+    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error('Error fetching products:', error);
+    throw error;
+  }
+}

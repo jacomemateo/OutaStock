@@ -1,3 +1,9 @@
+-- Make sure there's no data in the inventory table before seeding
+UPDATE inventory
+SET product_id = NULL,
+    quantity = NULL,
+    date_added = NULL;
+
 -- Clear inventory assignments
 UPDATE inventory
 SET product_id = NULL,

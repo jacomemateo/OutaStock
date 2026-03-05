@@ -1,3 +1,6 @@
+-- Make sure there's no data in the product_info table before seeding
+DELETE FROM product_info;
+
 -- Seed data for products
 INSERT INTO product_info (name, price_cents) VALUES
     -- Drinks (15)

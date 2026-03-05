@@ -1,3 +1,6 @@
+-- Make sure there's no data in the transactions table before seeding
+DELETE FROM transactions;
+
 -- Seed data for 100 random transactions
 DO $$
 DECLARE
