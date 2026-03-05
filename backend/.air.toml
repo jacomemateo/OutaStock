@@ -3,6 +3,7 @@ testdata_dir = "testdata"
 tmp_dir = "tmp"
 
 [build]
+pre_cmd = ["ln -s ../.env .env"]
 args_bin = []
 entrypoint = "./tmp/main"
 cmd = "go build -o ./tmp/main ./cmd/api"
@@ -14,7 +15,6 @@ exclude_regex = ["_test.go"]
 exclude_unchanged = false
 full_bin = ""
 follow_symlink = true
-include_file = [".env"]  # Watch the specific .env file in parent dir
 include_ext = ["go", "tpl", "tmpl", "html"]
 keep_on_interrupt = false
 log = "build-errors.log"
