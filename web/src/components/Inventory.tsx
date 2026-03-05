@@ -3,7 +3,7 @@ import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import { useState, useEffect } from "react";
 import EditInventoryModal from "@/components/EditInventoryModal";
-import { fetchInventory, unassignProductFromSlot } from "@/services/api";
+import { fetchInventory, unassignProductFromSlot, getAllProducts } from "@/services/api";
 import  ConfirmationModal from "@/components/ConfirmationModal";
 interface ProductSlot {
   slotId: number;
@@ -20,6 +20,8 @@ const Inventory = () => {
   const [isEditMode, setIsEditMode] = useState<boolean>(false);
   const [products, setProducts] = useState<ProductSlot[]>([]);
   const [inventory, setInventory] = useState<string[]>([]);
+  const [allProducts, setAllProducts] = useState<string[]>([]);
+
 
   // Confirmation modal state
   const [confirmationOpen, setConfirmationOpen] = useState<boolean>(false);
@@ -40,8 +42,20 @@ const Inventory = () => {
     }
   };
 
+  const loadAllProducts = async () => {
+    try{
+      const data = await getAllProducts();
+      const productNames = data.map((p: { name: string }) => p.name);
+      setAllProducts(productNames);
+      console.log("All products data:", productNames);
+    } catch (error) {
+      console.error("Failed to load all products");
+    }
+  }
+
   useEffect(() => {
     loadInventory();
+    loadAllProducts();
   }, []);
 
   // Slot currently being edited
@@ -169,7 +183,7 @@ const Inventory = () => {
           isOpen={editingSlotID !== null}
           onClose={() => setEditingSlotID(null)}
           onSave={handleSave}
-          inventory={inventory}
+          inventory={allProducts}
           slotID={editingSlotInfo.slotId}
           slotLabel={editingSlotInfo.slotLabel}
           currentProductName={editingSlotInfo.productName}
