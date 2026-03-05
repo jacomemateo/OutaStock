@@ -1,37 +1,36 @@
 .template-container {
-  width: 100vw;
-  height: 100vh;
-  display: flex;
-  background-color: var(--darker-black);
+    width: 100vw;
+    height: 100vh;
+    display: flex;
+    background-color: var(--darker-black);
 }
 
 .sidebar {
-  width: 250px;
-  background-color: var(--darker-black);
-  padding: 2rem 0;
-  box-shadow: var(--gold-shadow);
-
+    width: 250px;
+    background-color: var(--darker-black);
+    padding: 2rem 0;
+    box-shadow: var(--gold-shadow);
 }
 
 .sidebar-header {
-  padding: 0rem 2rem;
-  border-bottom: 1px solid #333;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+    padding: 0rem 2rem;
+    border-bottom: 1px solid #333;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .sidebar-header img {
-  width: 220px;
-  height: auto;
-  position: relative;
-  top: -10px;
+    width: 220px;
+    height: auto;
+    position: relative;
+    top: -10px;
 }
 
 .sidebar-nav ul {
-  list-style: none;
-  padding: 0;
-  margin: 0;
+    list-style: none;
+    padding: 0;
+    margin: 0;
 }
 
 /* Side bar fade in animation */
@@ -40,7 +39,6 @@
     animation-delay: calc(var(--item-index, 0) * 1s);
     opacity: 0;
 }
-
 
 @keyframes navItemFadeUp {
     from {
@@ -74,63 +72,63 @@
 /* REPLACEMENT: We target the button and reset its styles 
 */
 .nav-link-btn {
-  width: 100%; /* Make button fill the sidebar width */
-  background: none;
-  border: none;
-  border-left: 3px solid transparent;
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  padding: 1rem 1.5rem;
-  color: #b0b0b0;
-  cursor: pointer;
-  text-align: left;
-  transition: all 0.3s ease;
-  font-size: 1rem; /* Adjust to match your previous font size */
+    width: 100%; /* Make button fill the sidebar width */
+    background: none;
+    border: none;
+    border-left: 3px solid transparent;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 1rem 1.5rem;
+    color: #b0b0b0;
+    cursor: pointer;
+    text-align: left;
+    transition: all 0.3s ease;
+    font-size: 1rem; /* Adjust to match your previous font size */
 }
 
 .nav-link-btn svg {
-  width: 24px;
-  height: 24px;
-  flex-shrink: 0;
+    width: 24px;
+    height: 24px;
+    flex-shrink: 0;
 }
 
 /* Hover effects */
 .nav-link-btn:hover {
-  background-color: var( --lighter-black );
-  color: white;
-  border-left-color: var(--umbc-gold);
+    background-color: var(--lighter-black);
+    color: white;
+    border-left-color: var(--umbc-gold);
 }
 
 /* NEW: This handles the "Stay highlighted" logic 
    using the active class we put on the <li>
 */
 .sidebar-nav li.active .nav-link-btn {
-  background-color: var( --lighter-black );
-  color: white;
-  border-left-color: var(--umbc-gold);
+    background-color: var(--lighter-black);
+    color: white;
+    border-left-color: var(--umbc-gold);
 }
 
 .main-content {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
 }
 
 .template-header {
-  padding: 2rem;
-  border-bottom: 1px solid #333;
-  background-color: var(--umbc-gold);
+    padding: 2rem;
+    border-bottom: 1px solid #333;
+    background-color: var(--umbc-gold);
 }
 
 .template-header h1 {
-  color: white;
-  margin: 0;
-  font-size: 2rem;
+    color: white;
+    margin: 0;
+    font-size: 2rem;
 }
 
 .content {
-  flex: 1;
-  padding: 2rem;
-  color: #b0b0b0;
+    flex: 1;
+    padding: 2rem;
+    color: #b0b0b0;
 }

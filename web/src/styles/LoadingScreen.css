@@ -1,96 +1,96 @@
 .loading-container {
-  width: 100vw;
-  height: 100vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: linear-gradient(135deg, #f5f7fa 0%, #b8c4d6 100%);
-  position: relative;
-  overflow: hidden;
+    width: 100vw;
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #f5f7fa 0%, #b8c4d6 100%);
+    position: relative;
+    overflow: hidden;
 }
 
 .loading-content {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  position: relative;
-  text-align: center;
-  animation: fadeIn 0.8s ease-in;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    text-align: center;
+    animation: fadeIn 0.8s ease-in;
 }
 
 .loading-content img {
-  width: 500px;
-  height: auto;
-  animation: slideUp 0.6s ease-out;
+    width: 500px;
+    height: auto;
+    animation: slideUp 0.6s ease-out;
 }
 
 .loading-text {
-  margin-top: 2rem;
-  font-size: 1.1rem;
-  color: #555;
-  letter-spacing: 1px;
-  font-weight: 500;
+    margin-top: 2rem;
+    font-size: 1.1rem;
+    color: #555;
+    letter-spacing: 1px;
+    font-weight: 500;
 }
 
 .loading-spinner {
-  display: inline-block;
-  margin-left: 0.5rem;
-  animation: spin 1.5s linear infinite;
+    display: inline-block;
+    margin-left: 0.5rem;
+    animation: spin 1.5s linear infinite;
 }
 
 .dashboard-btn {
-  margin-top: 3rem;
-  margin-bottom: 0;
-  display: flex;
-  justify-content: center;
-  opacity: 0;
-  animation: fadeIn 0.8s ease-in 1.2s forwards;
+    margin-top: 3rem;
+    margin-bottom: 0;
+    display: flex;
+    justify-content: center;
+    opacity: 0;
+    animation: fadeIn 0.8s ease-in 1.2s forwards;
 }
 
 .view-inventory {
-  padding: 0.75rem 2.5rem;
-  font-size: 1.2rem;
-  border-radius: 8px;
-  border: none;
-  background: var(--umbc-gold);
-  color: #fff;
-  font-weight: 600;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  cursor: pointer;
-  transition: all 0.2s;
+    padding: 0.75rem 2.5rem;
+    font-size: 1.2rem;
+    border-radius: 8px;
+    border: none;
+    background: var(--umbc-gold);
+    color: #fff;
+    font-weight: 600;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    cursor: pointer;
+    transition: all 0.2s;
 }
 
 .view-inventory:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+    transform: translateY(-3px);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
 }
 
 @keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
 }
 
 @keyframes slideUp {
-  from {
-    opacity: 0;
-    transform: translateY(30px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 @keyframes spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
 }

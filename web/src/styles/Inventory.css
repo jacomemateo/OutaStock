@@ -1,175 +1,173 @@
 .inventory-container {
-  background: var(--darker-black);
-  border-radius: 12px;
-  padding: 2rem;
-  box-shadow: var(--gold-shadow);
-  border: 1px solid var(--lighter-black);
-  display: flex;
-  flex-direction: column;
-  animation: boxFadeIn 0.6s ease-out;
-
+    background: var(--darker-black);
+    border-radius: 12px;
+    padding: 2rem;
+    box-shadow: var(--gold-shadow);
+    border: 1px solid var(--lighter-black);
+    display: flex;
+    flex-direction: column;
+    animation: boxFadeIn 0.6s ease-out;
 }
 
 .inventory-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
 }
 
 .inventory-header h2 {
-  font-size: 1.5rem;
-  font-weight: 700;
-  color: var( --white );
-  margin: 0 0 0.3rem 0;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--white);
+    margin: 0 0 0.3rem 0;
 }
 
 .inventory-subtitle {
-  font-size: 0.9rem;
-  color: #888;
-  margin-top: 0rem;
-  font-weight: 500;
+    font-size: 0.9rem;
+    color: #888;
+    margin-top: 0rem;
+    font-weight: 500;
 }
 
 .inventory-header {
-  margin-bottom: 32px;
+    margin-bottom: 32px;
 }
 
 .add-btn {
-  background-color: var(--umbc-gold);
-  color: white;
-  border: none;
-  border-radius: 6px;
-  width: 36px;
-  height: 36px;
-  font-size: 24px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: background-color 0.2s;
-  top: 20px;
-  left: 20px;
+    background-color: var(--umbc-gold);
+    color: white;
+    border: none;
+    border-radius: 6px;
+    width: 36px;
+    height: 36px;
+    font-size: 24px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.2s;
+    top: 20px;
+    left: 20px;
 }
 
 .add-btn:hover {
-  opacity: 0.7;
+    opacity: 0.7;
 }
 
-
-
-
 .products-list {
-  max-height: 60vh;
-  overflow-y: auto;
-  border: 1px solid var(--lighter-black);
-  border-radius: 8px;
-  scrollbar-color: var(--umbc-gold) var( --darker-black );
+    max-height: 60vh;
+    overflow-y: auto;
+    border: 1px solid var(--lighter-black);
+    border-radius: 8px;
+    scrollbar-color: var(--umbc-gold) var(--darker-black);
 
-  opacity: 0;
-  animation: tableFadeIn 0.5s ease-out forwards;
-  animation-delay: 0.15s;
+    opacity: 0;
+    animation: tableFadeIn 0.5s ease-out forwards;
+    animation-delay: 0.15s;
 }
 
 @keyframes tableFadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
-
 .products-table thead th {
-  position: sticky;
-  top: 0;
-  background: var( --darker-black );   /* important so rows don't show through */
-  z-index: 1;
+    position: sticky;
+    top: 0;
+    background: var(--darker-black); /* important so rows don't show through */
+    z-index: 1;
 }
 
 .products-list::-webkit-scrollbar {
-  width: 8px;
+    width: 8px;
 }
 
 .no-product {
-  color: var(--error-red);
-  font-weight: bold;
+    color: var(--error-red);
+    font-weight: bold;
 }
 
 .products-list::-webkit-scrollbar-track {
-  background: var( --darker-black );
+    background: var(--darker-black);
 }
 
 .products-list::-webkit-scrollbar-thumb {
-  background: var(--umbc-gold);
-  border-radius: 4px;
+    background: var(--umbc-gold);
+    border-radius: 4px;
 }
 
 .products-list::-webkit-scrollbar-thumb:hover {
-  background: var(--light-gold);
+    background: var(--light-gold);
 }
 
 .empty-state {
-  text-align: center;
-  color: var(--even-lighter-black);
-  padding: 2rem;
+    text-align: center;
+    color: var(--even-lighter-black);
+    padding: 2rem;
 }
 
 .products-table {
-  width: 100%;
-  border-collapse: collapse;
-  color: var( --white );
+    width: 100%;
+    border-collapse: collapse;
+    color: var(--white);
 }
 
 .products-table thead {
-  border-bottom: 1px solid var( --lighter-black );
+    border-bottom: 1px solid var(--lighter-black);
 }
 
 .products-table th {
-  padding: 1rem;
-  text-align: left;
-  font-weight: 600;
-  color: var(--umbc-gold);
+    padding: 1rem;
+    text-align: left;
+    font-weight: 600;
+    color: var(--umbc-gold);
 }
 
 .products-table td {
-  padding: 0.75rem 1rem;
-  border-bottom: 1px solid var( --lighter-black );
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid var(--lighter-black);
 }
 
 .products-table tbody tr:hover {
-  background-color: var(--darker-black);
+    background-color: var(--darker-black);
 }
-.edit-btn-cell, .delete-btn-cell {
-  width: 10px !important;
+.edit-btn-cell,
+.delete-btn-cell {
+    width: 10px !important;
 }
-.edit-btn-row, .delete-btn-row {
-  background-color: transparent;
-  color: var(--even-lighter-black);
-  border: none;
-  cursor: pointer;
-  padding: 0;
-  transition: color 0.2s;
-  font-size: small;
+.edit-btn-row,
+.delete-btn-row {
+    background-color: transparent;
+    color: var(--even-lighter-black);
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    transition: color 0.2s;
+    font-size: small;
 }
 
-.edit-btn-row:hover, .delete-btn-row:hover {
-  color: var(--white);
+.edit-btn-row:hover,
+.delete-btn-row:hover {
+    color: var(--white);
 }
 
 .edit-btn-row {
-  margin-right: 8px;
+    margin-right: 8px;
 }
 
 .product-row {
-  opacity: 0; /* start hidden */
-  animation: cardFadeIn 0.5s ease-out forwards;
-  animation-delay: calc(var(--row-index, 0) * 0.1s);
+    opacity: 0; /* start hidden */
+    animation: cardFadeIn 0.5s ease-out forwards;
+    animation-delay: calc(var(--row-index, 0) * 0.1s);
 }
 
- .inventory-container {
-  animation: boxFadeIn 0.2s ease-out;
+.inventory-container {
+    animation: boxFadeIn 0.2s ease-out;
 }
