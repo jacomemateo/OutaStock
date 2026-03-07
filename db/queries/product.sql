@@ -11,11 +11,10 @@ SET
     name = COALESCE(@name, name)
 WHERE product_id = @product_id;
 
--- name: updateName
-
 -- name: DeleteProduct :exec
 DELETE FROM product_info
 WHERE product_id = @product_id;
 
 -- name: GetProducts :many 
-SELECT * FROM product_info;
+SELECT * FROM product_info
+ORDER BY name;

@@ -9,6 +9,7 @@ endif
 # ----------------------------
 # This should be run every time there's a change in the DB structure
 generate_sqlc:
+	rm -rf backend/internal/repository/*
 	docker run --rm -v $(shell pwd):/src -w /src sqlc/sqlc generate
 
 # --------- Database ---------
