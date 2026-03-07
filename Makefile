@@ -5,9 +5,13 @@ ifneq (,$(wildcard .env))
 endif
 .PHONY: generate_sqlc create_db connect_db nuke_db backend deps seed frontend
 
+# ----------- SQLC -----------
+# ----------------------------
 generate_sqlc:
 	docker run --rm -v $(shell pwd):/src -w /src sqlc/sqlc generate
 
+# --------- Database ---------
+# ----------------------------
 create_db:
 	docker compose up -d
 
@@ -20,22 +24,26 @@ nuke_db:
 logs_db:
 	docker logs vending-db
 
+seed:
+	docker exec -i vending-db psql -U $(POSTGRES_USER) -d $(POSTGRES_DB) < db/seeds/01_products.sql
+	docker exec -i vending-db psql -U $(POSTGRES_USER) -d $(POSTGRES_DB) < db/seeds/02_transactions.sql
+	docker exec -i vending-db psql -U $(POSTGRES_USER) -d $(POSTGRES_DB) < db/seeds/03_inventory.sql 
+
+# ---------- Backend ---------
+# ----------------------------
+
 # Dependencies
 deps:
 	cd backend && go mod download && go mod tidy
 
 # Backend development
-backend: create_db deps
-	cd backend && air
+server: create_db deps
+	air
 
 # Run Go server without hot reload
-backend-run: create_db deps
-	cd backend && go run ./cmd/api
+build-server: create_db deps
+	cd backend && mkdir -p out/prod && go build -ldflags="-s -w" -o ./out/prod/server ./cmd/api
 
-seed:
-	docker exec -i vending-db psql -U $(POSTGRES_USER) -d $(POSTGRES_DB) < db/seeds/01_products.sql
-	docker exec -i vending-db psql -U $(POSTGRES_USER) -d $(POSTGRES_DB) < db/seeds/02_transactions.sql
-	docker exec -i vending-db psql -U $(POSTGRES_USER) -d $(POSTGRES_DB) < db/seeds/03_inventory.sql 
 
 # Frontend development
 frontend:
