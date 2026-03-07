@@ -1,11 +1,13 @@
 import '@styles/Settings.css';
 import { useNavigate, useLocation, Routes, Route } from 'react-router-dom';
-
-import ThemeChoice from '@components/ThemeChoice';
 import BedtimeIcon from '@mui/icons-material/Bedtime';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import GroupsIcon from '@mui/icons-material/Groups';
 import { useEffect } from 'react';
+
+//Components
+import ThemeChoice from '@components/ThemeChoice';
+import Profile from '@components/Profile';
 
 const Settings = () => {
     const navigate = useNavigate();
@@ -17,18 +19,18 @@ const Settings = () => {
             label: 'Profile',
             section: 'Account',
             icon: <AccountCircleIcon />,
-            component: <div>Profile</div>,
+            component: <Profile />,
             path: 'profile',
         },
 
-        {
-            id: 'team',
-            label: 'Team',
-            section: 'Account', // Same section
-            icon: <GroupsIcon />,
-            component: <div>Team</div>,
-            path: 'team',
-        },
+        // {
+        //     id: 'team',
+        //     label: 'Team',
+        //     section: 'Account', // Same section
+        //     icon: <GroupsIcon />,
+        //     component: <div>Team</div>,
+        //     path: 'team',
+        // },
 
         {
             id: 'theme',
@@ -83,13 +85,22 @@ const Settings = () => {
                 </nav>
             </aside>
 
-            <div className="settings-content">
-                <Routes>
-                    {pages.map((page) => (
-                        <Route key={page.id} path={page.path} element={page.component} />
-                    ))}
-                </Routes>
-            </div>
+            <main>
+                <header className="settings-heading-section">
+                    <h1 className="settings-heading">{activePage.label}</h1>
+                </header>
+                <div className="settings-content">
+                    <Routes>
+                        {pages.map((page) => (
+                            <Route
+                                key={page.id}
+                                path={page.path}
+                                element={page.component}
+                            />
+                        ))}
+                    </Routes>
+                </div>
+            </main>
         </div>
     );
 };
