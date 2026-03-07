@@ -28,15 +28,9 @@ func (s *TransactionsService) GetRecentTransactions(ctx context.Context, limit i
 		return nil, fmt.Errorf("Failed to query transactions: %v", err)
 	}
 
-	log.Debug().Msgf("Found %d rows from database query", len(rows))
-
 	// Convert repository rows directly to DTOs
 	transactions := make([]dto.TransactionResponse, 0, len(rows)) // Initialize with capacity to avoid multiple allocations
 	for _, row := range rows {
-		log.Debug().Msgf("Row - TransactionID.Valid=%v, PriceAtSaleCents=%v, Name=%s",
-			row.TransactionID.Valid, row.PriceAtSaleCents, row.Name,
-		)
-
 		uuidString := convertPgtypeUUIDToString(row.TransactionID)
 
 		transaction := dto.TransactionResponse{
@@ -48,6 +42,5 @@ func (s *TransactionsService) GetRecentTransactions(ctx context.Context, limit i
 		transactions = append(transactions, transaction)
 	}
 
-	log.Debug().Msgf("Returning %d transactions", len(transactions))
 	return transactions, nil
 }
