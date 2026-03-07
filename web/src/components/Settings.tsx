@@ -53,7 +53,6 @@ const Settings = () => {
         }
     }, [location.pathname]);
 
-
     return (
         <div className="settings-container">
             <aside className="settings-sidebar">
