@@ -10,15 +10,15 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-type BaseHandler struct {}
+type BaseHandler struct{}
 
-func (h *BaseHandler) bindAndValidate(c *echo.Context, v any) (bool,  error) {
+func (h *BaseHandler) bindAndValidate(c *echo.Context, v any) (bool, error) {
 	decoder := json.NewDecoder(c.Request().Body)
 	decoder.DisallowUnknownFields()
 
 	if err := decoder.Decode(v); err != nil {
 		log.Warn().Msg("unknow field in request body")
-		return false, c.JSON(http.StatusBadRequest, map[string]string{"error": "Invalid request body",})
+		return false, c.JSON(http.StatusBadRequest, map[string]string{"error": "Invalid request body"})
 	}
 
 	if err := validation.Struct(v); err != nil {

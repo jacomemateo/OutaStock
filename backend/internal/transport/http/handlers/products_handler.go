@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"net/http"
+
 	"github.com/jacomemateo/OutaStock/backend/internal/service"
 	"github.com/jacomemateo/OutaStock/backend/internal/transport/http/dto"
 	"github.com/labstack/echo/v5"

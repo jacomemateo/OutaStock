@@ -12,7 +12,6 @@ import (
 	"github.com/jacomemateo/OutaStock/backend/internal/transport"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
-
 )
 
 func main() {
@@ -42,7 +41,6 @@ func main() {
 
 	log.Info().Msgf("COST VAR: %s", cfg.CORSOrigins)
 	log.Info().Msgf("LOG VAR: %s", cfg.LogLevel)
-
 
 	// ---------- DATABASE ----------
 	// Will come from env later, hardcoded for now

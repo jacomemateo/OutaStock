@@ -3,6 +3,7 @@ package handlers
 import (
 	"net/http"
 	"strconv"
+
 	"github.com/jacomemateo/OutaStock/backend/internal/service"
 	"github.com/jacomemateo/OutaStock/backend/internal/transport/http/dto"
 	"github.com/labstack/echo/v5"
@@ -16,7 +17,7 @@ type InventoryHandler struct {
 
 func NewInventoryHandler(inventoryService *service.InventoryService) *InventoryHandler {
 	return &InventoryHandler{
-		inventoryService: inventoryService,	
+		inventoryService: inventoryService,
 	}
 }
 

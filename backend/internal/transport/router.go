@@ -14,8 +14,8 @@ import (
 )
 
 type Router struct {
-	echo                *echo.Echo
-	database            *service.Database // Just store the Database, not the raw pool
+	echo     *echo.Echo
+	database *service.Database // Just store the Database, not the raw pool
 
 	transactionsHandler *handlers.TransactionsHandler
 	inventoryHandler    *handlers.InventoryHandler
@@ -26,7 +26,6 @@ func NewRouter(database *service.Database, origins []string) *Router {
 	r := Router{}
 	r.database = database
 	r.echo = echo.New()
-
 
 	// Middleware
 	r.echo.Use(middleware.RequestLogger())
