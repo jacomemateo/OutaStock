@@ -1,11 +1,24 @@
 import '@styles/ThemeChoice.css';
-import BedtimeIcon from '@mui/icons-material/Bedtime';
+import DarkModeIcon from '@mui/icons-material/DarkMode';
+import LightModeIcon from '@mui/icons-material/LightMode';
+import { useState } from 'react';
 
 const ThemeChoice = () => {
+    const [theme, setTheme] = useState<string>('dark');
     return (
         <div className="theme-choice-container">
             <div className="theme-heading-section">
                 <p className="theme-choice-subtitle">Customize your appearance</p>
+            </div>
+            <div className="theme-options-section">
+                <p>Current Theme</p>
+                <div className="theme-option">
+                    {theme === 'dark' ? <DarkModeIcon /> : <LightModeIcon />}
+                    <select value={theme} onChange={(e) => setTheme(e.target.value)}>
+                        <option value="dark">Dark </option>
+                        <option value="light">Light</option>
+                    </select>
+                </div>
             </div>
         </div>
     );
