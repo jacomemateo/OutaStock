@@ -7,6 +7,7 @@ endif
 
 # ----------- SQLC -----------
 # ----------------------------
+# This should be run every time there's a change in the DB structure
 generate_sqlc:
 	docker run --rm -v $(shell pwd):/src -w /src sqlc/sqlc generate
 
@@ -37,18 +38,23 @@ deps:
 	cd backend && go mod download && go mod tidy
 
 # Backend development
-server: create_db deps
+run-dev: create_db deps
 	air
 
 # Run Go server without hot reload
-build-server: create_db deps
-	cd backend && mkdir -p out/prod && go build -ldflags="-s -w" -o ./out/prod/server ./cmd/api
+# Just for testing since we're gonna be packaging with
+# docker anyway
+run-prod: create_db deps
+	cd backend && mkdir -p out/prod && go build -ldflags="-s -w" -o ./out/prod/server ./cmd/api && ./backend/out/prod/server 
 
 
-# Frontend development
-frontend:
+# --------- Frontend ---------
+# ----------------------------
+run-frontend:
 	cd web && npm install && npm run dev
 
+# ----------- Misc -----------
+# ----------------------------
 pretty:
 	@echo "Formatting frontend..."
 	cd web && npm run pretty

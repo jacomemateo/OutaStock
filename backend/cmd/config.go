@@ -20,10 +20,7 @@ type Config struct {
 
 func Load() (*Config, error) {
 	// Load .env file
-	err := loadEnvFile()
-	if err != nil {
-		return nil, err
-	}
+	 loadEnvFile()
 
 	cfg := &Config{}
 
@@ -72,12 +69,11 @@ func Load() (*Config, error) {
 	return cfg, nil
 }
 
-func loadEnvFile() error {
+func loadEnvFile() {
 	// Get current directory
 	currentDir, err := os.Getwd()
 	if err != nil {
 		log.Warn().Err(err).Msg("Failed to get current directory")
-		return err
 	}
 
 	// Try parent directory first
@@ -87,11 +83,9 @@ func loadEnvFile() error {
 	err = godotenv.Load(envPath)
 	if err == nil {
 		log.Info().Str("path", envPath).Msg("Loaded .env from parent directory")
-		return nil
 	}
 
-	log.Error().Msg("No .env file found")
-	return fmt.Errorf("no .env file found")
+	log.Warn().Msg("No .env file found")
 }
 
 func getEnv(key string) (string, error) {
