@@ -12,6 +12,7 @@ import (
 
 type InventoryHandler struct {
 	inventoryService *service.InventoryService
+	BaseHandler
 }
 
 func NewInventoryHandler(inventoryService *service.InventoryService) *InventoryHandler {
@@ -34,7 +35,6 @@ func (h *InventoryHandler) GetAllInventory(c *echo.Context) error {
 func (h *InventoryHandler) UpdateInventory(c *echo.Context) error {
 	slotIDStr := c.Param("slotID")
 
-	// Getting slotID from params
 	slotIdInt, err := strconv.ParseInt(slotIDStr, 10, 32)
 	if err != nil {
 		log.Debug().Msgf("Failed to parse slotID parameter: %s", slotIDStr)
@@ -43,13 +43,9 @@ func (h *InventoryHandler) UpdateInventory(c *echo.Context) error {
 		})
 	}
 
-	// Binding request body to DTO
 	var req dto.UpdateInventoryRequest
-	if err := c.Bind(&req); err != nil {
-		log.Debug().Msgf("Failed to bind request body: %v", err)
-		return c.JSON(http.StatusBadRequest, map[string]string{
-			"error": "Invalid request body",
-		})
+	if err, json_err := h.bindAndValidate(c, &req); !err {
+		return json_err
 	}
 
 	err = h.inventoryService.UpdateInventory(c.Request().Context(), int(slotIdInt), req)

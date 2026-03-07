@@ -11,6 +11,7 @@ import (
 
 type TransactionsHandler struct {
 	transactionsService *service.TransactionsService
+	BaseHandler
 }
 
 func NewTransactionsHandler(transactionsService *service.TransactionsService) *TransactionsHandler {

@@ -20,6 +20,11 @@ type InventorySlot struct {
 
 // UpdateInventoryRequest is the "Input" DTO.
 type UpdateInventoryRequest struct {
-	Quantity  *int       `json:"quantity"`
-	ProductID *uuid.UUID `json:"productUUID"`
+	// Quantity: Required if ProductID is missing.
+	// omitempty ensures gte=0 only runs if Quantity is actually provided.
+	Quantity *int `json:"quantity" validate:"required_without=ProductID,omitempty,gte=0"`
+
+	// ProductID: Required if Quantity is missing.
+	// Removed gte=0 because UUIDs are not numeric.
+	ProductID *uuid.UUID `json:"productUUID" validate:"required_without=Quantity"`
 }

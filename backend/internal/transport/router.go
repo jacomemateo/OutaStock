@@ -14,8 +14,9 @@ import (
 )
 
 type Router struct {
-	echo                *echo.Echo
-	database            *service.Database // Just store the Database, not the raw pool
+	echo     *echo.Echo
+	database *service.Database // Just store the Database, not the raw pool
+
 	transactionsHandler *handlers.TransactionsHandler
 	inventoryHandler    *handlers.InventoryHandler
 	productsHandler     *handlers.ProductsHandler
@@ -121,4 +122,5 @@ func (r *Router) addRoutes() {
 
 	products := api.Group("/products")
 	products.GET("/all", r.productsHandler.GetAllProducts)
+	products.POST("/new", r.productsHandler.CreateProduct)
 }
