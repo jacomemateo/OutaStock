@@ -85,7 +85,7 @@ const Template = () => {
                         {pages.map((page) => (
                             <li
                                 key={page.id}
-                                className={currentId === page.id ? 'active' : ''}
+                                className={currentId === page.id ? 'active' : ''} // If current url matches page id, add 'active' class for styling
                             >
                                 <button
                                     className="nav-link-btn"
