@@ -54,7 +54,6 @@
 /* header fade-in animation */
 .template-header {
     animation: headerFadeIn 1s ease-out forwards;
-    animation-delay: calc(var(--item-index, 0) * 1s);
     opacity: 0;
 }
 
@@ -113,6 +112,8 @@
     flex: 1;
     display: flex;
     flex-direction: column;
+    margin: 0;
+    padding: 0;
 }
 
 .template-header {
