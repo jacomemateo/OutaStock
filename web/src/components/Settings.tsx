@@ -2,6 +2,9 @@ import '@styles/Settings.css';
 import { useNavigate, useLocation, Routes, Route } from 'react-router-dom';
 
 import ThemeChoice from '@components/ThemeChoice';
+import BedtimeIcon from '@mui/icons-material/Bedtime';
+import AccountCircleIcon from '@mui/icons-material/AccountCircle';
+import GroupsIcon from '@mui/icons-material/Groups';
 import { useEffect } from 'react';
 
 const Settings = () => {
@@ -13,22 +16,25 @@ const Settings = () => {
             id: 'profile',
             label: 'Profile',
             section: 'Account',
-            component: <ThemeChoice />,
+            icon: <AccountCircleIcon />,
+            component: <div>Profile</div>,
             path: 'profile',
         },
-        //ONLY HERE FOR TEST
+
         {
-            id: 'security',
-            label: 'Security',
+            id: 'team',
+            label: 'Team',
             section: 'Account', // Same section
-            component: <div>Security Settings</div>,
-            path: 'security',
+            icon: <GroupsIcon />,
+            component: <div>Team</div>,
+            path: 'team',
         },
 
         {
             id: 'theme',
             label: 'Theme',
             section: 'Preferences',
+            icon: <BedtimeIcon />,
             component: <ThemeChoice />,
             path: 'theme',
         },
@@ -69,7 +75,7 @@ const Settings = () => {
                                             navigate(`/dashboard/settings/${page.path}`)
                                         }
                                     >
-                                        {page.label}
+                                        {page.icon} {page.label}
                                     </button>
                                 </li>
                             </>
