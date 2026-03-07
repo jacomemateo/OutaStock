@@ -2,9 +2,11 @@ package service
 
 import (
 	"context"
+	"fmt"
+
+	"github.com/jacomemateo/OutaStock/backend/internal/repository"
 
 	"github.com/rs/zerolog/log"
-	// "fmt"
 
 	"github.com/jacomemateo/OutaStock/backend/internal/transport/http/dto"
 )
@@ -40,4 +42,17 @@ func (s *ProductsService) GetAllProducts(ctx context.Context) ([]dto.ProductResp
 		})
 	}
 	return productResponses, nil
+}
+
+func (s *ProductsService) CreateProduct(ctx context.Context, prod dto.CreateProductRequest) error {
+	product := repository.CreateProductParams{
+		Name:       prod.Name,
+		PriceCents: int32(prod.PriceCents),
+	}
+	err := s.database.queries.CreateProduct(ctx, product)
+	if err != nil {
+		return fmt.Errorf("create product in db: %w", err)
+	}
+
+	return err
 }

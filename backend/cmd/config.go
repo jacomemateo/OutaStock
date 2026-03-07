@@ -20,7 +20,7 @@ type Config struct {
 
 func Load() (*Config, error) {
 	// Load .env file
-	 loadEnvFile()
+	loadEnvFile()
 
 	cfg := &Config{}
 
