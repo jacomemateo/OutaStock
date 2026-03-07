@@ -121,4 +121,5 @@ func (r *Router) addRoutes() {
 
 	products := api.Group("/products")
 	products.GET("/all", r.productsHandler.GetAllProducts)
+	products.POST("/new", r.productsHandler.CreateProduct)
 }

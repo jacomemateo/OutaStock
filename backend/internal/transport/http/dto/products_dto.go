@@ -22,7 +22,8 @@ type CreateProductRequest struct {
 }
 
 // UpdatePriceRequest is the "Input" DTO for changing a price.
-type UpdatePriceRequest struct {
-	ProductID  *uuid.UUID `json:"productId"`
-	PriceCents int        `json:"priceCents"` // Changed from decimal.Decimal to int to represent price in cents
+type UpdateProductRequest struct {
+	ProductID   *uuid.UUID `json:"productId"`
+	PriceCents  int        `json:"priceCents"` // Changed from decimal.Decimal to int to represent price in cents
+	ProductName string     `json:"name"`
 }

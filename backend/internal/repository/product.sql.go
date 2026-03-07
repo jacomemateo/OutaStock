@@ -40,6 +40,7 @@ func (q *Queries) DeleteProduct(ctx context.Context, productID pgtype.UUID) erro
 
 const getProducts = `-- name: GetProducts :many
 SELECT product_id, name, price_cents, date_created, date_modified FROM product_info
+ORDER BY name
 `
 
 func (q *Queries) GetProducts(ctx context.Context) ([]ProductInfo, error) {
@@ -68,18 +69,21 @@ func (q *Queries) GetProducts(ctx context.Context) ([]ProductInfo, error) {
 	return items, nil
 }
 
-const updatePrice = `-- name: UpdatePrice :exec
+const updateProduct = `-- name: UpdateProduct :exec
 UPDATE product_info
-SET price_cents = $1
-WHERE product_id = $2
+SET
+    price_cents = COALESCE($1, price_cents),
+    name = COALESCE($2, name)
+WHERE product_id = $3
 `
 
-type UpdatePriceParams struct {
+type UpdateProductParams struct {
 	PriceCents int32
+	Name       string
 	ProductID  pgtype.UUID
 }
 
-func (q *Queries) UpdatePrice(ctx context.Context, arg UpdatePriceParams) error {
-	_, err := q.db.Exec(ctx, updatePrice, arg.PriceCents, arg.ProductID)
+func (q *Queries) UpdateProduct(ctx context.Context, arg UpdateProductParams) error {
+	_, err := q.db.Exec(ctx, updateProduct, arg.PriceCents, arg.Name, arg.ProductID)
 	return err
 }

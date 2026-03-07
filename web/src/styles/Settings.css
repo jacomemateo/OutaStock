@@ -70,8 +70,8 @@
 }
 
 .tab-btn svg {
-  flex-shrink: 0;
-  font-size: 1.3rem;
+    flex-shrink: 0;
+    font-size: 1.3rem;
 }
 
 .tab-btn:hover {
