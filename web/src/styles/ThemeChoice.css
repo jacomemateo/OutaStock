@@ -3,16 +3,6 @@
     margin-left: 12px;
 }
 
-.theme-choice-heading {
-    color: var(--white);
-    font-size: 1.8rem;
-    font-weight: 700;
-    margin: 0 0 0.5rem 0;
-    padding: 0 0 1rem 0;
-    border-bottom: 2px solid var(--umbc-gold);
-    letter-spacing: 0.5px;
-}
-
 .theme-choice-subtitle {
     color: #888;
     font-size: 0.9rem;
