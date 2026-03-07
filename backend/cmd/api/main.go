@@ -12,6 +12,8 @@ import (
 	"github.com/jacomemateo/OutaStock/backend/internal/transport"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
+	"github.com/go-playground/validator/v10"
+
 )
 
 func main() {
@@ -42,6 +44,8 @@ func main() {
 	log.Info().Msgf("COST VAR: %s", cfg.CORSOrigins)
 	log.Info().Msgf("LOG VAR: %s", cfg.LogLevel)
 
+	validator := validator.New(validator.WithRequiredStructEnabled())
+
 	// ---------- DATABASE ----------
 	// Will come from env later, hardcoded for now
 	ctx := context.Background()
@@ -59,7 +63,7 @@ func main() {
 	}()
 
 	// ---------- ECHO SERVER & GRACEFUL SHUTDOWN ----------
-	router := transport.NewRouter(db, cfg.CORSOrigins)
+	router := transport.NewRouter(db, cfg.CORSOrigins, validator)
 
 	// Create signal-aware context
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)

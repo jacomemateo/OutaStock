@@ -3,20 +3,24 @@ package handlers
 import (
 	"net/http"
 	"strconv"
-
+	"encoding/json"
 	"github.com/jacomemateo/OutaStock/backend/internal/service"
 	"github.com/jacomemateo/OutaStock/backend/internal/transport/http/dto"
 	"github.com/labstack/echo/v5"
+	"github.com/go-playground/validator/v10"
 	"github.com/rs/zerolog/log"
 )
 
 type InventoryHandler struct {
 	inventoryService *service.InventoryService
+	validator *validator.Validate
 }
 
-func NewInventoryHandler(inventoryService *service.InventoryService) *InventoryHandler {
+func NewInventoryHandler(inventoryService *service.InventoryService, validator *validator.Validate) *InventoryHandler {
 	return &InventoryHandler{
 		inventoryService: inventoryService,
+		validator: validator,
+		
 	}
 }
 
@@ -43,13 +47,25 @@ func (h *InventoryHandler) UpdateInventory(c *echo.Context) error {
 		})
 	}
 
-	// Binding request body to DTO
+	decoder := json.NewDecoder(c.Request().Body)
+	decoder.DisallowUnknownFields()
+
 	var req dto.UpdateInventoryRequest
-	if err := c.Bind(&req); err != nil {
-		log.Debug().Msgf("Failed to bind request body: %v", err)
+	if err := decoder.Decode(&req); err != nil {
+		log.Warn().Msgf("Failed to decode request body: %v", err)
 		return c.JSON(http.StatusBadRequest, map[string]string{
 			"error": "Invalid request body",
 		})
+	}
+
+	if err := h.validator.Struct(req); err != nil {
+		validationErrors := err.(validator.ValidationErrors)
+		errors := map[string]string{}
+		for _, e := range validationErrors {
+			errors[e.Field()] = e.Tag()
+		}
+		log.Warn().Msgf("validation error %s", errors)
+		return c.JSON(http.StatusBadRequest, errors)
 	}
 
 	err = h.inventoryService.UpdateInventory(c.Request().Context(), int(slotIdInt), req)
