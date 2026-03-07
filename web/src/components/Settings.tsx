@@ -2,6 +2,7 @@ import '@styles/Settings.css';
 import { useNavigate, useLocation, Routes, Route } from 'react-router-dom';
 
 import ThemeChoice from '@components/ThemeChoice';
+import { useEffect } from 'react';
 
 const Settings = () => {
     const navigate = useNavigate();
@@ -33,9 +34,20 @@ const Settings = () => {
         },
     ];
 
-    const currentId = location.pathname.split('/').pop() || 'theme';
+    const currentId = location.pathname.split('/').pop() || 'profile';
     const activePage = pages.find((p) => p.id === currentId) || pages[0];
     // Determine which page is active based on the current URL
+
+    useEffect(() => {
+        if (
+            location.pathname === '/dashboard/settings' ||
+            location.pathname.endsWith('/settings')
+        ) {
+            navigate('/dashboard/settings/profile');
+        }
+    }, [location.pathname]);
+
+
     return (
         <div className="settings-container">
             <aside className="settings-sidebar">
