@@ -3,24 +3,20 @@ package handlers
 import (
 	"net/http"
 	"strconv"
-	"encoding/json"
 	"github.com/jacomemateo/OutaStock/backend/internal/service"
 	"github.com/jacomemateo/OutaStock/backend/internal/transport/http/dto"
 	"github.com/labstack/echo/v5"
-	"github.com/go-playground/validator/v10"
 	"github.com/rs/zerolog/log"
 )
 
 type InventoryHandler struct {
 	inventoryService *service.InventoryService
-	validator *validator.Validate
+	BaseHandler
 }
 
-func NewInventoryHandler(inventoryService *service.InventoryService, validator *validator.Validate) *InventoryHandler {
+func NewInventoryHandler(inventoryService *service.InventoryService) *InventoryHandler {
 	return &InventoryHandler{
-		inventoryService: inventoryService,
-		validator: validator,
-		
+		inventoryService: inventoryService,	
 	}
 }
 
@@ -38,7 +34,6 @@ func (h *InventoryHandler) GetAllInventory(c *echo.Context) error {
 func (h *InventoryHandler) UpdateInventory(c *echo.Context) error {
 	slotIDStr := c.Param("slotID")
 
-	// Getting slotID from params
 	slotIdInt, err := strconv.ParseInt(slotIDStr, 10, 32)
 	if err != nil {
 		log.Debug().Msgf("Failed to parse slotID parameter: %s", slotIDStr)
@@ -47,25 +42,9 @@ func (h *InventoryHandler) UpdateInventory(c *echo.Context) error {
 		})
 	}
 
-	decoder := json.NewDecoder(c.Request().Body)
-	decoder.DisallowUnknownFields()
-
 	var req dto.UpdateInventoryRequest
-	if err := decoder.Decode(&req); err != nil {
-		log.Warn().Msgf("Failed to decode request body: %v", err)
-		return c.JSON(http.StatusBadRequest, map[string]string{
-			"error": "Invalid request body",
-		})
-	}
-
-	if err := h.validator.Struct(req); err != nil {
-		validationErrors := err.(validator.ValidationErrors)
-		errors := map[string]string{}
-		for _, e := range validationErrors {
-			errors[e.Field()] = e.Tag()
-		}
-		log.Warn().Msgf("validation error %s", errors)
-		return c.JSON(http.StatusBadRequest, errors)
+	if err, json_err := h.bindAndValidate(c, &req); !err {
+		return json_err
 	}
 
 	err = h.inventoryService.UpdateInventory(c.Request().Context(), int(slotIdInt), req)

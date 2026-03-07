@@ -2,25 +2,20 @@ package handlers
 
 import (
 	"net/http"
-	"encoding/json"
 	"github.com/jacomemateo/OutaStock/backend/internal/service"
 	"github.com/jacomemateo/OutaStock/backend/internal/transport/http/dto"
 	"github.com/labstack/echo/v5"
 	"github.com/rs/zerolog/log"
-	// "github.com/jacomemateo/OutaStock/backend/internal/transport/http/dto"
-	"github.com/go-playground/validator/v10"
-
 )
 
 type ProductsHandler struct {
+	BaseHandler
 	productsService *service.ProductsService
-	validator *validator.Validate
 }
 
-func NewProductsHandler(productsService *service.ProductsService, validator *validator.Validate) *ProductsHandler {
+func NewProductsHandler(productsService *service.ProductsService) *ProductsHandler {
 	return &ProductsHandler{
 		productsService: productsService,
-		validator: validator,
 	}
 }
 
@@ -36,25 +31,10 @@ func (h *ProductsHandler) GetAllProducts(c *echo.Context) error {
 }
 
 func (h *ProductsHandler) CreateProduct(c *echo.Context) error {
-	decoder := json.NewDecoder(c.Request().Body)
-	decoder.DisallowUnknownFields()
-
 	var req dto.CreateProductRequest
-	if err := decoder.Decode(&req); err != nil {
-		log.Warn().Msgf("Failed to decode request body: %v", err)
-		return c.JSON(http.StatusBadRequest, map[string]string{
-			"error": "Invalid request body",
-		})
-	}
 
-	if err := h.validator.Struct(req); err != nil {
-		validationErrors := err.(validator.ValidationErrors)
-		errors := map[string]string{}
-		for _, e := range validationErrors {
-			errors[e.Field()] = e.Tag()
-		}
-		log.Warn().Msgf("validation error %s", errors)
-		return c.JSON(http.StatusBadRequest, errors)
+	if err, json_err := h.bindAndValidate(c, &req); !err {
+		return json_err
 	}
 
 	err := h.productsService.CreateProduct(c.Request().Context(), req)

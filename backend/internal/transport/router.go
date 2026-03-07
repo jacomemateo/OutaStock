@@ -11,7 +11,6 @@ import (
 
 	"github.com/jacomemateo/OutaStock/backend/internal/service"
 	"github.com/jacomemateo/OutaStock/backend/internal/transport/http/handlers"
-	"github.com/go-playground/validator/v10"
 )
 
 type Router struct {
@@ -21,16 +20,13 @@ type Router struct {
 	transactionsHandler *handlers.TransactionsHandler
 	inventoryHandler    *handlers.InventoryHandler
 	productsHandler     *handlers.ProductsHandler
-
-	validator *validator.Validate
 }
 
-func NewRouter(database *service.Database, origins []string, validator *validator.Validate) *Router {
+func NewRouter(database *service.Database, origins []string) *Router {
 	r := Router{}
 	r.database = database
 	r.echo = echo.New()
 
-	r.validator = validator
 
 	// Middleware
 	r.echo.Use(middleware.RequestLogger())
@@ -71,9 +67,9 @@ func NewRouter(database *service.Database, origins []string, validator *validato
 	productsService := service.NewProductsService(r.database)
 
 	// Initialize handlers
-	r.transactionsHandler = handlers.NewTransactionsHandler(transactionsService, r.validator)
-	r.inventoryHandler = handlers.NewInventoryHandler(inventoryService, r.validator)
-	r.productsHandler = handlers.NewProductsHandler(productsService, r.validator)
+	r.transactionsHandler = handlers.NewTransactionsHandler(transactionsService)
+	r.inventoryHandler = handlers.NewInventoryHandler(inventoryService)
+	r.productsHandler = handlers.NewProductsHandler(productsService)
 
 	return &r
 }

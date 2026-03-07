@@ -7,18 +7,16 @@ import (
 
 	"github.com/jacomemateo/OutaStock/backend/internal/service"
 	"github.com/labstack/echo/v5"
-	"github.com/go-playground/validator/v10"
 )
 
 type TransactionsHandler struct {
 	transactionsService *service.TransactionsService
-	validator *validator.Validate
+	BaseHandler
 }
 
-func NewTransactionsHandler(transactionsService *service.TransactionsService, validator *validator.Validate) *TransactionsHandler {
+func NewTransactionsHandler(transactionsService *service.TransactionsService) *TransactionsHandler {
 	return &TransactionsHandler{
 		transactionsService: transactionsService,
-		validator: validator,
 	}
 }
 
