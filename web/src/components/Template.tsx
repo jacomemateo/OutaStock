@@ -69,7 +69,8 @@ const Template = () => {
 
     // Determine current ID based on the URL path
     // We remove "/dashboard/" from the location.pathname to match our IDs
-    const currentId = location.pathname.split('/').pop() || 'dashboard';
+    const pathSegments = location.pathname.split('/').filter(Boolean);
+    const currentId = pathSegments[1] || 'dashboard';
 
     // FIX for the 'undefined' error: Provide a fallback object
     const activePage = pages.find((p) => p.id === currentId) || pages[0];
@@ -85,7 +86,7 @@ const Template = () => {
                         {pages.map((page) => (
                             <li
                                 key={page.id}
-                                className={currentId === page.id ? 'active' : ''}
+                                className={currentId === page.id ? 'active' : ''} // If current url matches page id, add 'active' class for styling
                             >
                                 <button
                                     className="nav-link-btn"
@@ -109,7 +110,7 @@ const Template = () => {
                         {pages.map((page) => (
                             <Route
                                 key={page.id}
-                                path={page.path}
+                                path={page.path === '' ? '/' : page.path + '/*'} // Add /* for nested routes
                                 element={page.component}
                             />
                         ))}
