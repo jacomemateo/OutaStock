@@ -30,8 +30,9 @@
             "@assets/*": ["./src/assets/*"],
             "@components/*": ["./src/components/*"],
             "@styles/*": ["./src/styles/*"],
-            "@services/*": ["./src/services/*"]
+            "@services/*": ["./src/services/*"],
+            "@contexts/*": ["./src/contexts/*"]
         }
     },
-    "include": ["src"]
+    "include": ["src", "src/contexts/ThemeContext.tsx"]
 }

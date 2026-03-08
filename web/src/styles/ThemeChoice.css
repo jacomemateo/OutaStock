@@ -9,3 +9,69 @@
     margin: 0.5rem 0 0 0;
     font-weight: 400;
 }
+
+.theme-options-section {
+    margin-left: 12px;
+    border: 1px solid var(--lighter-black);
+    border-radius: 12px;
+    padding: 1rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    max-width: 10000px;
+    width: 100%;
+}
+
+.theme-option {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    border: 2px solid var(--umbc-gold);
+    border-radius: 4px;
+    padding: 0.6rem 0.8rem;
+    background-color: var(--darker-black);
+    transition: all 0.2s ease;
+}
+
+.theme-option:hover {
+    box-shadow: 0 0 8px rgba(212, 165, 116, 0.2);
+}
+
+.theme-option:focus-within {
+    box-shadow: 0 0 12px rgba(212, 165, 116, 0.4);
+}
+
+.theme-option svg {
+    color: var(--umbc-gold);
+    font-size: 1.5rem;
+    flex-shrink: 0;
+}
+
+.theme-option select {
+    border: none;
+    background-color: transparent;
+    color: var(--white);
+    font-size: 0.95rem;
+    cursor: pointer;
+    appearance: none;
+    padding: 0;
+    outline: none;
+    min-width: 100px;
+}
+
+.theme-option select:hover {
+    border-color: var(--lighter-black);
+    box-shadow: 0 0 8px rgba(212, 165, 116, 0.2);
+}
+
+.theme-option select:focus {
+    outline: none;
+    border-color: var(--umbc-gold);
+    box-shadow: 0 0 12px rgba(212, 165, 116, 0.4);
+}
+
+.theme-option option {
+    background-color: var(--darker-black);
+    color: var(--white);
+    padding: 0.5rem;
+}
