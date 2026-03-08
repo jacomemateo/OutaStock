@@ -2,7 +2,6 @@ package dto
 
 import (
 	"time"
-
 )
 
 // InventorySlot is the "Output" DTO.

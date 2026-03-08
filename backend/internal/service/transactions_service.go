@@ -5,7 +5,6 @@ import (
 	"context"
 	"fmt"
 
-
 	"github.com/jacomemateo/OutaStock/backend/internal/transport/http/dto"
 )
 

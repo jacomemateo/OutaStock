@@ -3,11 +3,11 @@ package handlers
 import (
 	"net/http"
 
+	"github.com/google/uuid"
 	"github.com/jacomemateo/OutaStock/backend/internal/service"
 	"github.com/jacomemateo/OutaStock/backend/internal/transport/http/dto"
 	"github.com/labstack/echo/v5"
 	"github.com/rs/zerolog/log"
-	"github.com/google/uuid"
 )
 
 type ProductsHandler struct {
@@ -54,7 +54,6 @@ func (h *ProductsHandler) UpdateProduct(c *echo.Context) error {
 	prodUUIDString := c.Param("productID")
 
 	prodUUID, err := uuid.Parse(prodUUIDString)
-	
 	if err != nil {
 		log.Warn().Msgf("unable to parse product UUID string: %s", err)
 		return c.JSON(http.StatusBadRequest, map[string]string{

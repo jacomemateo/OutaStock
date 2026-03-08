@@ -68,12 +68,12 @@ func (s *ProductsService) UpdateProduct(ctx context.Context, prodUUID uuid.UUID,
 		return nil
 	}
 
-	uuidPgtype := pgtype.UUID {
+	uuidPgtype := pgtype.UUID{
 		Bytes: prodUUID,
 		Valid: true,
 	}
 
-		// both provided -> use the existing combined query
+	// both provided -> use the existing combined query
 	if req.Name != nil && req.PriceCents != nil {
 		args := repository.UpdateProductParams{
 			PriceCents: int32(*req.PriceCents), // sqlc generated int32
@@ -89,8 +89,8 @@ func (s *ProductsService) UpdateProduct(ctx context.Context, prodUUID uuid.UUID,
 
 	if req.Name != nil {
 		log.Debug().Msg("updating name")
-		args := repository.UpdateProductNameParams {
-			Name: *req.Name,
+		args := repository.UpdateProductNameParams{
+			Name:      *req.Name,
 			ProductID: uuidPgtype,
 		}
 
@@ -101,16 +101,16 @@ func (s *ProductsService) UpdateProduct(ctx context.Context, prodUUID uuid.UUID,
 	}
 	if req.PriceCents != nil {
 		log.Debug().Msg("updating price")
-		args := repository.UpdateProductPriceParams {
+		args := repository.UpdateProductPriceParams{
 			PriceCents: int32(*req.PriceCents),
-			ProductID: uuidPgtype,
+			ProductID:  uuidPgtype,
 		}
 
 		if err := s.database.queries.UpdateProductPrice(ctx, args); err != nil {
 			log.Warn().Msgf("error updating product price: %v", err)
 			return err
 		}
-	} 
+	}
 
 	return nil
 }

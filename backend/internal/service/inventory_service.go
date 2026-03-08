@@ -3,10 +3,10 @@ package service
 import (
 	"context"
 
-	"github.com/rs/zerolog/log"
 	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/jacomemateo/OutaStock/backend/internal/repository"
 	"github.com/jacomemateo/OutaStock/backend/internal/transport/http/dto"
+	"github.com/rs/zerolog/log"
 )
 
 type InventoryService struct {
@@ -26,7 +26,6 @@ func (s *InventoryService) GetAllInventory(ctx context.Context) ([]dto.Inventory
 	if err != nil {
 		return nil, err
 	}
-
 
 	inventoryItems := make([]dto.InventorySlot, 0, len(rows)) // Initialize with capacity to avoid multiple allocations
 
