@@ -1,5 +1,3 @@
-Here's an updated section for your API documentation including Inventory endpoints:
-
 # OutaStock API Documentation
 
 Base URL: `http://localhost:8080`
@@ -27,27 +25,25 @@ Check if the API service and database are operational.
 
 ---
 
-## Transactions
+# Transactions
 
-### `GET /api/transactions/recent`
+## `GET /api/transactions/recent`
 
 Retrieve the most recent transactions.
 
-**Query Parameters**
+### Query Parameters
 
-| Name  | Type    | Description                      | Default |
-| ----- | ------- | -------------------------------- | ------- |
-| limit | integer | Number of transactions to return | 10      |
+| Name  | Type    | Description                              |
+| ----- | ------- | ---------------------------------------- |
+| limit | integer | Number of transactions to return (1-200) |
 
-**Example Request**
+### Example Request
 
 ```bash
 curl "http://localhost:8080/api/transactions/recent?limit=5"
 ```
 
-**Response**
-
-Success Response (200 OK)
+### Success Response (200)
 
 ```json
 [
@@ -60,7 +56,29 @@ Success Response (200 OK)
 ]
 ```
 
-Error Response (500 Internal Server Error)
+### Error Responses
+
+**400 Bad Request**
+
+```json
+{
+  "error": "Invalid limit parameter"
+}
+```
+
+```json
+{
+  "error": "Limit must be between 1 and 200"
+}
+```
+
+```json
+{
+  "error": "Limit parameter is required"
+}
+```
+
+**500 Internal Server Error**
 
 ```json
 {
@@ -70,26 +88,25 @@ Error Response (500 Internal Server Error)
 
 ---
 
-## Inventory
+# Inventory
 
-### `GET /api/inventory/all`
+## `GET /api/inventory/all`
 
 Retrieve all inventory slots.
 
-**Example Request**
+### Example Request
 
 ```bash
 curl "http://localhost:8080/api/inventory/all"
 ```
 
-**Response**
-
-Success Response (200 OK)
+### Success Response (200)
 
 ```json
 [
   {
     "slotId": 1,
+    "slotLabel": "A1",
     "quantity": 10,
     "productName": "Trail Mix",
     "priceCents": 249,
@@ -99,7 +116,21 @@ Success Response (200 OK)
 ]
 ```
 
-Error Response (500 Internal Server Error)
+If a slot has **no product assigned**, fields related to the product will be empty:
+
+```json
+{
+  "slotId": 5,
+  "slotLabel": "B3",
+  "quantity": 0,
+  "productName": "",
+  "priceCents": 0,
+  "productId": "",
+  "dateAdded": null
+}
+```
+
+### Error Response (500)
 
 ```json
 {
@@ -109,49 +140,61 @@ Error Response (500 Internal Server Error)
 
 ---
 
-### `PATCH /api/inventory/:slotID`
+## `PATCH /api/inventory/:slotID`
 
-Update an inventory slot (assign, unassign, or update quantity).
+Update an inventory slot.
 
-**URL Parameters**
+This endpoint supports:
 
-| Name   | Type    | Description              |
-| ------ | ------- | ------------------------ |
-| slotID | integer | ID of the slot to update |
+* Assigning a product to a slot
+* Updating the quantity
+* Removing a product from a slot
 
-**Request Body** (JSON)
+### URL Parameters
 
-| Field       | Type               | Description                                     |
-| ----------- | ------------------ | ----------------------------------------------- |
-| productUUID | string (nullable)  | UUID of product to assign, or null to unassign  |
-| quantity    | integer (nullable) | Quantity of product, or null to leave unchanged |
+| Name   | Type    | Description       |
+| ------ | ------- | ----------------- |
+| slotID | integer | Inventory slot ID |
 
-**Example Request: Assign product to slot**
+### Request Body
+
+```json
+{
+  "productUUID": "string (optional)",
+  "quantity": 10
+}
+```
+
+| Field       | Type           | Description                        |
+| ----------- | -------------- | ---------------------------------- |
+| productUUID | string | null  | Product UUID to assign to the slot |
+| quantity    | integer | null | Quantity of items in the slot      |
+
+### Example: Assign Product
 
 ```bash
 curl -X PATCH "http://localhost:8080/api/inventory/1" \
   -H "Content-Type: application/json" \
-  -d '{"productUUID": "019cac06-f112-7f43-a509-42a3ed771d70", "quantity": 0}'
+  -d '{"productUUID":"019cac06-f112-7f43-a509-42a3ed771d70","quantity":0}'
 ```
 
-**Example Request: Unassign product**
+### Example: Update Quantity
 
 ```bash
 curl -X PATCH "http://localhost:8080/api/inventory/1" \
   -H "Content-Type: application/json" \
-  -d '{"productUUID": null, "quantity": null}'
+  -d '{"quantity":50}'
 ```
 
-**Example Request: Update Quantity**
+### Example: Clear Slot
+
 ```bash
 curl -X PATCH "http://localhost:8080/api/inventory/1" \
   -H "Content-Type: application/json" \
-  -d '{"productUUID": null, "quantity": 50}'
+  -d '{"productUUID":null,"quantity":null}'
 ```
 
-**Response**
-
-Success Response (200 OK)
+### Success Response (200)
 
 ```json
 {
@@ -159,7 +202,9 @@ Success Response (200 OK)
 }
 ```
 
-Error Response (400 Bad Request)
+### Error Responses
+
+**400 Bad Request**
 
 ```json
 {
@@ -167,7 +212,7 @@ Error Response (400 Bad Request)
 }
 ```
 
-Error Response (500 Internal Server Error)
+**500 Internal Server Error**
 
 ```json
 {
@@ -175,19 +220,22 @@ Error Response (500 Internal Server Error)
 }
 ```
 
-## Products
+---
+
+# Products
+
 ## `GET /api/products/all`
 
-Retrieve all available products.
+Retrieve all products.
 
-Example Request:
+### Example Request
+
 ```bash
 curl "http://localhost:8080/api/products/all"
 ```
 
-**Response**
+### Success Response (200)
 
-Success Response (200 OK)
 ```json
 [
   {
@@ -195,31 +243,114 @@ Success Response (200 OK)
     "name": "Coca-Cola",
     "priceCents": 159,
     "dateCreated": "2026-03-05T10:24:17.112673-05:00"
-  },
-  {
-    "id": "019cbe99-8159-75cd-941e-5af905e06828",
-    "name": "Diet Coke",
-    "priceCents": 165,
-    "dateCreated": "2026-03-05T10:24:17.112673-05:00"
-  },
-  {
-    "id": "019cbe99-8159-75ea-b44e-7fec97a7c958",
-    "name": "Sprite",
-    "priceCents": 149,
-    "dateCreated": "2026-03-05T10:24:17.112673-05:00"
   }
 ]
 ```
 
-Error Response (500 Internal Server Error)
-```json
+### Error Response (500)
 
+```json
 {
   "error": "Failed to fetch products"
 }
 ```
-**Status Codes**
 
-**200 OK** – Products successfully retrieved
+---
 
-**500 Internal Server Error** – Failed to fetch products from database
+## `POST /api/products/new`
+
+Create a new product.
+
+### Request Body
+
+```json
+{
+  "name": "Sprite",
+  "priceCents": 149
+}
+```
+
+### Success Response (201)
+
+```json
+"created product"
+```
+
+### Error Response (400)
+
+Validation errors return the failing fields:
+
+```json
+{
+  "Name": "required",
+  "PriceCents": "gt"
+}
+```
+
+### Error Response (500)
+
+```json
+{
+  "error": "Failed to create new product"
+}
+```
+
+---
+
+## `PATCH /api/products/:productID`
+
+Update a product's name or price.
+
+### URL Parameters
+
+| Name      | Type | Description |
+| --------- | ---- | ----------- |
+| productID | UUID | Product ID  |
+
+### Request Body
+
+At least **one field must be provided**.
+
+```json
+{
+  "name": "Sprite Zero",
+  "priceCents": 169
+}
+```
+
+| Field      | Type           | Description            |
+| ---------- | -------------- | ---------------------- |
+| name       | string | null  | Updated product name   |
+| priceCents | integer | null | Updated price in cents |
+
+### Example Request
+
+```bash
+curl -X PATCH "http://localhost:8080/api/products/019cbe99-8159-75ea-b44e-7fec97a7c958" \
+  -H "Content-Type: application/json" \
+  -d '{"priceCents":175}'
+```
+
+### Success Response (202)
+
+```json
+"product updated"
+```
+
+### Error Responses
+
+**400 Bad Request**
+
+```json
+{
+  "error": "Invalid productID parameter"
+}
+```
+
+**500 Internal Server Error**
+
+```json
+{
+  "error": "Failed to update products"
+}
+```
