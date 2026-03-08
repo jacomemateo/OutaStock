@@ -72,8 +72,8 @@ func (q *Queries) GetProducts(ctx context.Context) ([]ProductInfo, error) {
 const updateProduct = `-- name: UpdateProduct :exec
 UPDATE product_info
 SET
-    price_cents = COALESCE($1, price_cents),
-    name = COALESCE($2, name)
+    price_cents = $1,
+    name = $2
 WHERE product_id = $3
 `
 
@@ -85,5 +85,37 @@ type UpdateProductParams struct {
 
 func (q *Queries) UpdateProduct(ctx context.Context, arg UpdateProductParams) error {
 	_, err := q.db.Exec(ctx, updateProduct, arg.PriceCents, arg.Name, arg.ProductID)
+	return err
+}
+
+const updateProductName = `-- name: UpdateProductName :exec
+UPDATE product_info
+SET name = $1
+WHERE product_id = $2
+`
+
+type UpdateProductNameParams struct {
+	Name      string
+	ProductID pgtype.UUID
+}
+
+func (q *Queries) UpdateProductName(ctx context.Context, arg UpdateProductNameParams) error {
+	_, err := q.db.Exec(ctx, updateProductName, arg.Name, arg.ProductID)
+	return err
+}
+
+const updateProductPrice = `-- name: UpdateProductPrice :exec
+UPDATE product_info
+SET price_cents = $1
+WHERE product_id = $2
+`
+
+type UpdateProductPriceParams struct {
+	PriceCents int32
+	ProductID  pgtype.UUID
+}
+
+func (q *Queries) UpdateProductPrice(ctx context.Context, arg UpdateProductPriceParams) error {
+	_, err := q.db.Exec(ctx, updateProductPrice, arg.PriceCents, arg.ProductID)
 	return err
 }

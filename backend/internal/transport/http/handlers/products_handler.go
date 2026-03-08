@@ -68,12 +68,12 @@ func (h *ProductsHandler) UpdateProduct(c *echo.Context) error {
 		return json_err
 	}
 
-	if err := h.productsService.UpdateProduct(c.Request().Context(), prodUUID); err != nil {
+	if err := h.productsService.UpdateProduct(c.Request().Context(), prodUUID, req); err != nil {
 		log.Warn().Msgf("issue with service: %s", err)
 		return c.JSON(http.StatusInternalServerError, map[string]string{
 			"error": "Failed to update products",
 		})
 	}
 
-	return c.JSON(http.StatusAccepted, "applied changes")
+	return c.JSON(http.StatusAccepted, "product updated")
 }

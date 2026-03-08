@@ -20,6 +20,6 @@ type CreateProductRequest struct {
 }
 
 type UpdateProductRequest struct {
-	PriceCents  *int        `json:"priceCents" validate:"omitempty,gte=0"` // Changed from decimal.Decimal to int to represent price in cents
-	ProductName *string     `json:"name"`
+	PriceCents  *int        `json:"priceCents" validate:"required_without=Name,omitempty,gte=0"` // Changed from decimal.Decimal to int to represent price in cents
+	Name *string     `json:"name" validate:"required_without=PriceCents"`
 }
