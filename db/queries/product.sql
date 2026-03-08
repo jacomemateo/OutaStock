@@ -4,11 +4,21 @@
 INSERT INTO product_info (name, price_cents)
 VALUES ( @name, @price_cents );
 
+-- name: UpdateProductName :exec
+UPDATE product_info
+SET name = @name
+WHERE product_id = @product_id;
+
+-- name: UpdateProductPrice :exec
+UPDATE product_info
+SET price_cents = @price_cents
+WHERE product_id = @product_id;
+
 -- name: UpdateProduct :exec
 UPDATE product_info
 SET
-    price_cents = COALESCE(@price_cents, price_cents),
-    name = COALESCE(@name, name)
+    price_cents = @price_cents,
+    name = @name
 WHERE product_id = @product_id;
 
 -- name: DeleteProduct :exec

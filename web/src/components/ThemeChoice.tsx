@@ -16,7 +16,10 @@ const ThemeChoice = () => {
                 <p>Current Theme</p>
                 <div className="theme-option">
                     {theme === 'dark' ? <DarkModeIcon /> : <LightModeIcon />}
-                    <select value={theme} onChange={(e) => setTheme(e.target.value as 'dark' | 'light')}>
+                    <select
+                        value={theme}
+                        onChange={(e) => setTheme(e.target.value as 'dark' | 'light')}
+                    >
                         <option value="dark">Dark </option>
                         <option value="light">Light</option>
                     </select>
