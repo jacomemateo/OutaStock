@@ -3,9 +3,8 @@ package service
 import (
 	"context"
 
-	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/rs/zerolog/log"
-
+	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/jacomemateo/OutaStock/backend/internal/repository"
 	"github.com/jacomemateo/OutaStock/backend/internal/transport/http/dto"
 )
@@ -77,9 +76,9 @@ func (s *InventoryService) UpdateInventory(ctx context.Context, slotID int, req 
 	if req.ProductID == nil {
 		pgtypeUUID = pgtype.UUID{Valid: false}
 	} else {
-		pgtypeUUID = pgtype.UUID{
-			Bytes: *req.ProductID,
-			Valid: true,
+		if err := pgtypeUUID.Scan(*req.ProductID); err != nil {
+			log.Warn().Msg("unable to parse uuid")
+			return err
 		}
 	}
 
@@ -101,6 +100,7 @@ func (s *InventoryService) UpdateInventory(ctx context.Context, slotID int, req 
 
 	err := s.database.queries.UpdateInventory(ctx, args)
 	if err != nil {
+		log.Warn().Msgf("error with the database %s", err)
 		return err
 	}
 

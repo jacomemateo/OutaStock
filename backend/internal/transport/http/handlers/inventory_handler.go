@@ -37,7 +37,7 @@ func (h *InventoryHandler) UpdateInventory(c *echo.Context) error {
 
 	slotIdInt, err := strconv.ParseInt(slotIDStr, 10, 32)
 	if err != nil {
-		log.Debug().Msgf("Failed to parse slotID parameter: %s", slotIDStr)
+		log.Warn().Msgf("Failed to parse slotID parameter: %s", slotIDStr)
 		return c.JSON(http.StatusBadRequest, map[string]string{
 			"error": "Invalid slotID parameter",
 		})

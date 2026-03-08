@@ -2,8 +2,6 @@ package dto
 
 import (
 	"time"
-
-	"github.com/google/uuid"
 )
 
 // ProductResponse is the "Output" DTO.
@@ -21,9 +19,7 @@ type CreateProductRequest struct {
 	PriceCents int    `json:"priceCents" validate:"required,gt=0"` // Changed from decimal.Decimal to int to represent price in cents
 }
 
-// UpdatePriceRequest is the "Input" DTO for changing a price.
 type UpdateProductRequest struct {
-	ProductID   *uuid.UUID `json:"productId"`
-	PriceCents  int        `json:"priceCents"` // Changed from decimal.Decimal to int to represent price in cents
-	ProductName string     `json:"name"`
+	PriceCents  *int        `json:"priceCents" validate:"omitempty,gte=0"` // Changed from decimal.Decimal to int to represent price in cents
+	ProductName *string     `json:"name"`
 }

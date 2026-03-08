@@ -7,7 +7,7 @@ import (
 	"github.com/jacomemateo/OutaStock/backend/internal/repository"
 
 	"github.com/rs/zerolog/log"
-
+	"github.com/google/uuid"
 	"github.com/jacomemateo/OutaStock/backend/internal/transport/http/dto"
 )
 
@@ -49,10 +49,17 @@ func (s *ProductsService) CreateProduct(ctx context.Context, prod dto.CreateProd
 		Name:       prod.Name,
 		PriceCents: int32(prod.PriceCents),
 	}
+
+	log.Debug().Msgf("FUCK BRO %s %d", prod.Name, prod.PriceCents)
+
 	err := s.database.queries.CreateProduct(ctx, product)
 	if err != nil {
 		return fmt.Errorf("create product in db: %w", err)
 	}
 
 	return err
+}
+
+func (s *ProductsService) UpdateProduct(ctx context.Context, prodUUID uuid.UUID) error {
+	return nil
 }

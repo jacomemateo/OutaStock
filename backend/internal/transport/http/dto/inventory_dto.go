@@ -3,7 +3,6 @@ package dto
 import (
 	"time"
 
-	"github.com/google/uuid"
 )
 
 // InventorySlot is the "Output" DTO.
@@ -22,9 +21,9 @@ type InventorySlot struct {
 type UpdateInventoryRequest struct {
 	// Quantity: Required if ProductID is missing.
 	// omitempty ensures gte=0 only runs if Quantity is actually provided.
-	Quantity *int `json:"quantity" validate:"required_without=ProductID,omitempty,gte=0"`
+	Quantity *int `json:"quantity" validate:"omitempty,gte=0"`
 
 	// ProductID: Required if Quantity is missing.
 	// Removed gte=0 because UUIDs are not numeric.
-	ProductID *uuid.UUID `json:"productUUID" validate:"required_without=Quantity"`
+	ProductID *string `json:"productUUID"`
 }

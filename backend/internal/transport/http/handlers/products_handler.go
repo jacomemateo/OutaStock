@@ -7,6 +7,7 @@ import (
 	"github.com/jacomemateo/OutaStock/backend/internal/transport/http/dto"
 	"github.com/labstack/echo/v5"
 	"github.com/rs/zerolog/log"
+	"github.com/google/uuid"
 )
 
 type ProductsHandler struct {
@@ -40,11 +41,39 @@ func (h *ProductsHandler) CreateProduct(c *echo.Context) error {
 
 	err := h.productsService.CreateProduct(c.Request().Context(), req)
 	if err != nil {
-		log.Debug().Msgf("%s", err)
+		log.Warn().Msgf("%s", err)
 		return c.JSON(http.StatusInternalServerError, map[string]string{
 			"error": "Failed to create new product",
 		})
 	}
 
-	return c.NoContent(http.StatusCreated)
+	return c.JSON(http.StatusCreated, "created product")
+}
+
+func (h *ProductsHandler) UpdateProduct(c *echo.Context) error {
+	prodUUIDString := c.Param("productID")
+
+	prodUUID, err := uuid.Parse(prodUUIDString)
+	
+	if err != nil {
+		log.Warn().Msgf("unable to parse product UUID string: %s", err)
+		return c.JSON(http.StatusBadRequest, map[string]string{
+			"error": "Invalid productID parameter",
+		})
+	}
+
+	var req dto.UpdateProductRequest
+	if err, json_err := h.bindAndValidate(c, &req); !err {
+		log.Warn().Msgf("unable to bind or validate to DTO: %s", json_err)
+		return json_err
+	}
+
+	if err := h.productsService.UpdateProduct(c.Request().Context(), prodUUID); err != nil {
+		log.Warn().Msgf("issue with service: %s", err)
+		return c.JSON(http.StatusInternalServerError, map[string]string{
+			"error": "Failed to update products",
+		})
+	}
+
+	return c.JSON(http.StatusAccepted, "applied changes")
 }
