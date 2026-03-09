@@ -124,4 +124,5 @@ func (r *Router) addRoutes() {
 	products.GET("/all", r.productsHandler.GetAllProducts)
 	products.POST("/new", r.productsHandler.CreateProduct)
 	products.PATCH("/:productID", r.productsHandler.UpdateProduct)
+	products.DELETE("/:productID", r.productsHandler.DeleteProduct)
 }

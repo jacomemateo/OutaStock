@@ -51,8 +51,6 @@ func (s *ProductsService) CreateProduct(ctx context.Context, prod dto.CreateProd
 		PriceCents: int32(prod.PriceCents),
 	}
 
-	log.Debug().Msgf("FUCK BRO %s %d", prod.Name, prod.PriceCents)
-
 	err := s.database.queries.CreateProduct(ctx, product)
 	if err != nil {
 		return fmt.Errorf("create product in db: %w", err)
@@ -110,6 +108,20 @@ func (s *ProductsService) UpdateProduct(ctx context.Context, prodUUID uuid.UUID,
 			log.Warn().Msgf("error updating product price: %v", err)
 			return err
 		}
+	}
+
+	return nil
+}
+
+func (s *ProductsService) DeleteProduct(ctx context.Context, prodUUID uuid.UUID) error {
+	uuidPgtype := pgtype.UUID{
+		Bytes: prodUUID,
+		Valid: true,
+	}
+
+	if err := s.database.queries.DeleteProduct(ctx, uuidPgtype); err != nil {
+		log.Warn().Msgf("error deleting product: %v", err)
+		return err
 	}
 
 	return nil

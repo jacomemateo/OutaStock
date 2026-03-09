@@ -29,7 +29,8 @@ func (q *Queries) CreateProduct(ctx context.Context, arg CreateProductParams) er
 }
 
 const deleteProduct = `-- name: DeleteProduct :exec
-DELETE FROM product_info
+UPDATE product_info
+SET date_deleted = NOW()
 WHERE product_id = $1
 `
 
@@ -39,7 +40,8 @@ func (q *Queries) DeleteProduct(ctx context.Context, productID pgtype.UUID) erro
 }
 
 const getProducts = `-- name: GetProducts :many
-SELECT product_id, name, price_cents, date_created, date_modified FROM product_info
+SELECT product_id, name, price_cents, date_created, date_modified, date_deleted FROM product_info
+WHERE date_deleted IS NULL
 ORDER BY name
 `
 
@@ -58,6 +60,7 @@ func (q *Queries) GetProducts(ctx context.Context) ([]ProductInfo, error) {
 			&i.PriceCents,
 			&i.DateCreated,
 			&i.DateModified,
+			&i.DateDeleted,
 		); err != nil {
 			return nil, err
 		}
