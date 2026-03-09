@@ -11,7 +11,7 @@ import (
 )
 
 type ProductsHandler struct {
-	BaseHandler
+	BinderValidator
 	productsService *service.ProductsService
 }
 
@@ -19,6 +19,14 @@ func NewProductsHandler(productsService *service.ProductsService) *ProductsHandl
 	return &ProductsHandler{
 		productsService: productsService,
 	}
+}
+
+func (h *ProductsHandler) RegisterRoutes(api *echo.Group) {
+	products := api.Group("/products")
+	products.GET("/all", h.GetAllProducts)
+	products.POST("/new", h.CreateProduct)
+	products.PATCH("/:productID", h.UpdateProduct)
+	products.DELETE("/:productID", h.DeleteProduct)
 }
 
 // GetAllProducts handles GET /api/products/all
@@ -90,9 +98,11 @@ func (h *ProductsHandler) DeleteProduct(c *echo.Context) error {
 
 	if err := h.productsService.DeleteProduct(c.Request().Context(), prodUUID); err != nil {
 		log.Warn().Msgf("issue with service: %s", err)
-		return c.JSON(http.StatusInternalServerError, map[string]string{
-			"error": "Failed to delete product",
-		})
+		return c.JSON(http.
+			StatusInternalServerError,
+			map[string]string{
+				"error": "Failed to delete product",
+			})
 	}
 
 	return c.JSON(http.StatusNoContent, "Deleted product")

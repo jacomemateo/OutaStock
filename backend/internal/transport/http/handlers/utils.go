@@ -10,9 +10,9 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-type BaseHandler struct{}
+type BinderValidator struct{}
 
-func (h *BaseHandler) bindAndValidate(c *echo.Context, v any) (bool, error) {
+func (h *BinderValidator) bindAndValidate(c *echo.Context, v any) (bool, error) {
 	decoder := json.NewDecoder(c.Request().Body)
 	decoder.DisallowUnknownFields()
 
