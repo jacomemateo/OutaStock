@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import '@styles/EditInventoryModal.css';
 import { Select, MenuItem, FormControl, InputLabel } from '@mui/material';
+import Label from 'node_modules/@mui/icons-material/Label';
 
 interface EditInventoryModalProps {
     isOpen: boolean;
@@ -51,22 +52,22 @@ const EditInventoryModal = ({
                 </div>
                 <form onSubmit={handleSubmit}>
                     <FormControl fullWidth className="product-select" sx={{ mb: 2 }}>
-                        <InputLabel>Product Name</InputLabel>
-                        <Select
+                        <label id="product-select-label">Product</label>
+                        <select
                             className="product-select"
                             value={formData.productName}
                             onChange={(e) =>
                                 setFormData({ ...formData, productName: e.target.value })
                             }
-                            label="Product Name"
                         >
-                            <MenuItem value="">-- Select Product --</MenuItem>
+                            <option value="">-- Select Product --</option>
+
                             {inventory.map((product) => (
-                                <MenuItem key={product} value={product}>
+                                <option key={product} value={product}>
                                     {product}
-                                </MenuItem>
+                                </option>
                             ))}
-                        </Select>
+                        </select>
                     </FormControl>
                     <input
                         type="number"
