@@ -23,6 +23,7 @@ func main() {
 	// ---------- LOGGER ----------
 	switch cfg.LogLevel {
 	case "debug":
+		// Pretty logger
 		log.Logger = zerolog.New(zerolog.ConsoleWriter{
 			Out:        os.Stdout,
 			TimeFormat: time.RFC3339,
@@ -30,6 +31,7 @@ func main() {
 
 		zerolog.SetGlobalLevel(zerolog.DebugLevel)
 	case "info":
+		// json
 		log.Logger = zerolog.New(os.Stdout).
 			With().Timestamp().Logger()
 
@@ -38,9 +40,6 @@ func main() {
 		zerolog.SetGlobalLevel(zerolog.InfoLevel)
 		log.Warn().Str("logLevel", cfg.LogLevel).Msg("Unknown log level, defaulting to INFO")
 	}
-
-	log.Info().Msgf("COST VAR: %s", cfg.CORSOrigins)
-	log.Info().Msgf("LOG VAR: %s", cfg.LogLevel)
 
 	// ---------- DATABASE ----------
 	// Will come from env later, hardcoded for now

@@ -21,7 +21,7 @@ func NewTransactionsService(database *Database) *TransactionsService {
 // GetRecentTransactions gets the most recent transactions and returns DTOs directly
 func (s *TransactionsService) GetRecentTransactions(ctx context.Context, limit int32) ([]dto.TransactionResponse, error) {
 	// Call repository
-	rows, err := s.database.queries.GetRecentTransactions(ctx, limit)
+	rows, err := s.database.Queries.GetRecentTransactions(ctx, limit)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to query transactions: %v", err)
 	}
