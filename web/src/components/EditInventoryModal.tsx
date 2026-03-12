@@ -1,15 +1,39 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import '@styles/EditInventoryModal.css';
-import { Select, MenuItem, FormControl, InputLabel } from '@mui/material';
-import Label from 'node_modules/@mui/icons-material/Label';
+import { FormControl } from '@mui/material';
+
+/*
+Product type coming from your backend.
+We store the full object in `inventory` so we have access to the UUID.
+*/
+interface Product {
+    id: string;
+    name: string;
+    priceCents: number;
+    dateCreated: string;
+}
 
 interface EditInventoryModalProps {
     isOpen: boolean;
     onClose: () => void;
-    onSave: (slotID: number, productName: string, quantity: number) => void;
-    inventory: string[]; // List of all product names for the dropdown
-    slotID: number; // ID of the slot being edited
-    slotLabel: string; // Label of the slot being edited (e.g., "Slot 1")
+
+    /*
+    IMPORTANT CHANGE:
+    onSave now receives the product UUID instead of the product name.
+    */
+    onSave: (slotID: number, productId: string, quantity: number) => void;
+
+    /*
+    We now pass the FULL product objects instead of just names.
+    */
+    inventory: Product[];
+
+    slotID: number;
+    slotLabel: string;
+
+    /*
+    Used to pre-fill the modal when editing an existing slot.
+    */
     currentProductName: string;
     currentQuantity: number;
 }
@@ -24,21 +48,57 @@ const EditInventoryModal = ({
     currentProductName,
     currentQuantity,
 }: EditInventoryModalProps) => {
+    /*
+    FORM STATE
+
+    Instead of storing productName we store productId.
+    This prevents the UUID mismatch bug you were seeing.
+    */
     const [formData, setFormData] = useState({
-        productName: currentProductName,
+        productId: '',
         quantity: currentQuantity.toString(),
     });
 
+    /*
+    When the modal opens, we want to set the initial productId
+    based on the current product name.
+
+    This finds the matching product object and sets its UUID.
+    */
+    useEffect(() => {
+        const product = inventory.find((p) => p.name === currentProductName);
+
+        setFormData({
+            productId: product ? product.id : '',
+            quantity: currentQuantity.toString(),
+        });
+    }, [inventory, currentProductName, currentQuantity]);
+
+    /*
+    Submit handler
+    */
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        if (formData.productName.trim()) {
-            // When submitting make the quantity a number instead of a string
-            onSave(slotID, formData.productName, parseInt(formData.quantity) || 0);
-            setFormData({ productName: '', quantity: '' });
+
+        /*
+        Ensure a product is selected
+        */
+        if (formData.productId) {
+            /*
+            Send the UUID back to Inventory.tsx
+            */
+            onSave(slotID, formData.productId, parseInt(formData.quantity) || 0);
+
+            /*
+            Close modal after save
+            */
             onClose();
         }
     };
 
+    /*
+    If modal is closed, render nothing
+    */
     if (!isOpen) return null;
 
     return (
@@ -50,33 +110,54 @@ const EditInventoryModal = ({
                         ✕
                     </button>
                 </div>
+
                 <form onSubmit={handleSubmit}>
                     <FormControl fullWidth className="product-select" sx={{ mb: 2 }}>
                         <label id="product-select-label">Product</label>
+
+                        {/*
+                        IMPORTANT FIX:
+
+                        value = product UUID
+                        label = product name
+
+                        This ensures the backend receives the correct product ID.
+                        */}
                         <select
                             className="product-select"
-                            value={formData.productName}
+                            value={formData.productId}
                             onChange={(e) =>
-                                setFormData({ ...formData, productName: e.target.value })
+                                setFormData({
+                                    ...formData,
+                                    productId: e.target.value,
+                                })
                             }
                         >
                             <option value="">-- Select Product --</option>
 
                             {inventory.map((product) => (
-                                <option key={product} value={product}>
-                                    {product}
+                                <option key={product.id} value={product.id}>
+                                    {product.name}
                                 </option>
                             ))}
                         </select>
                     </FormControl>
+
+                    {/*
+                    Quantity input
+                    */}
                     <input
                         type="number"
                         placeholder="Quantity"
                         value={formData.quantity}
                         onChange={(e) =>
-                            setFormData({ ...formData, quantity: e.target.value })
+                            setFormData({
+                                ...formData,
+                                quantity: e.target.value,
+                            })
                         }
                     />
+
                     <button type="submit">Save Changes</button>
                 </form>
             </div>
