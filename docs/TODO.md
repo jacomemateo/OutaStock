@@ -49,5 +49,8 @@
 ## Database
 - [ ] I don't know if it's nesceary but maybe test the constraints we added in the DB schema?
 
-## Frontend (Jason)
-- [x] add here 
+## Frontend
+- [ ] Update inventory API 
+
+## Docs
+- [x] Update inventory get api to reflect changes, right now it should be broken.

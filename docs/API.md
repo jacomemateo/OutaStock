@@ -224,14 +224,21 @@ curl -X PATCH "http://localhost:8080/api/inventory/1" \
 
 # Products
 
-## `GET /api/products/all`
+## `GET /api/products`
 
-Retrieve all products.
+Retrieve products with optional pagination.
+
+### Query Parameters
+
+| Parameter   | Type | Description                               |
+| ----------- | ---- | ----------------------------------------- |
+| num_rows    | int  | Number of products to return |
+| page_offset | int  | Zero-based page index. Default:         |
 
 ### Example Request
 
 ```bash
-curl "http://localhost:8080/api/products/all"
+curl "http://localhost:8080/api/products?num_rows=10&page_offset=2"
 ```
 
 ### Success Response (200)
@@ -254,6 +261,12 @@ curl "http://localhost:8080/api/products/all"
   "error": "Failed to fetch products"
 }
 ```
+
+### Notes
+
+* Pagination ensures that large datasets can be retrieved efficiently.
+* The last page will return fewer rows if there are not enough products to fill it.
+
 
 ---
 
