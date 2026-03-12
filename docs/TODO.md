@@ -1,7 +1,8 @@
 # TODO
 ## Backend
 - [ ] Make it so `product_info` and `transactions` GET methods support pagination. By which I mean we should be able to pass in 2 parameters a `page` and `limit`. If we have 25 rows and we pass in `limit=10` `page=0` then it should return the first 10 rows, `limit=10` `page=1` should return rows 11-20, and `limit=10` `page=2` should return rows 21-25 since 25 is the last row. If we try to do `limit=10` `page=3` or `limit=10` `page=9999` it should return the same as running `limit=10` `page=2`, rows 21-25.
-- [ ] Testing
+  - [ ] Update frontend to take this into account
+- [ ] Testing (i think this is all integeration testing)
   - [ ] Learn how to set up testing
     - [ ] Postgres Mock DB with Docker
     - [ ] Go testing module/maybe use some community testing packages
@@ -41,3 +42,6 @@
       - [ ] test with non existent UUID
       - [ ] test success
   - [ ] Config file, make ENV more robust
+
+## Database
+- [ ] I don't know if it's nesceary but maybe test the constraints we added in the DB schema?
