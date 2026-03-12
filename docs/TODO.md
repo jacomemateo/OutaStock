@@ -1,0 +1,33 @@
+# TODO
+## Backend
+- [ ] Make it so `product_info` and `transactions` GET methods support pagination. By which I mean we should be able to pass in 2 parameters a `page` and `limit`. If we have 25 rows and we pass in `limit=10` `page=0` then it should return the first 10 rows, `limit=10` `page=1` should return rows 11-20, and `limit=10` `page=2` should return rows 21-25 since 25 is the last row. If we try to do `limit=10` `page=3` or `limit=10` `page=9999` it should return the same as running `limit=10` `page=2`, rows 21-25.
+- [ ] Testing
+  - [ ] Learn how to set up testing
+    - [ ] Postgres Mock DB with Docker
+    - [ ] Go testing module/maybe use some community testing packages
+  - [ ] Transactions 
+    - [ ] `GET /api/transactions/recent`
+      - [ ] test pagination & success response
+      - [ ] test invalid limit param
+      - [ ] test min and max
+      - [ ] test passing no limit
+      - [ ] test with no data in db, should return an error
+  - [ ] Inventory
+    - [ ] `GET /api/inventory/all`
+      - [ ] test with no data in db, should return an error
+      - [ ] test success response
+      - [ ] test empty inventory, i.e. all cols are NULL but `slot_id` and `slot_label`
+    - [ ] `PATCH /api/inventory/:slotID`
+      - [ ] test passing in invalid slotID
+      - [ ] test assigning with non existent product UUID, should return error
+      - [ ] test assinging negative quantity
+      - [ ] test assigning with extra invalid JSON field
+      - [ ] test deleting slot
+  - [ ] Products
+    - [ ] `GET /api/products/all`
+      - [ ] test with no data in db, should return an error
+      - [ ] test success response
+    - [ ] `POST /api/products/new`
+    - [ ] `PATCH /api/products/:productID`
+    - [ ] `DELETE /api/products/:productID`
+  - [ ] Config file, make ENV more robust
