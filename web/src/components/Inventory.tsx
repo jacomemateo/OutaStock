@@ -2,10 +2,21 @@ import '@styles/Inventory.css';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { useState, useEffect } from 'react';
+
 import EditInventoryModal from '@/components/EditInventoryModal';
-import { fetchInventory, unassignProductFromSlot, getAllProducts } from '@/services/api';
 import ConfirmationModal from '@/components/ConfirmationModal';
-import { updateSlotProductAndQuantity } from '@/services/api';
+
+import {
+    fetchInventory,
+    unassignProductFromSlot,
+    getAllProducts,
+    updateSlotProductAndQuantity,
+} from '@/services/api';
+
+/*
+Represents a slot inside the vending machine.
+Each slot may or may not contain a product.
+*/
 interface ProductSlot {
     slotId: number;
     slotLabel: string;
@@ -16,105 +27,180 @@ interface ProductSlot {
     dateAdded: string | null;
 }
 
-const Inventory = () => {
-    const [editingSlotID, setEditingSlotID] = useState<number | null>(null);
-    const [isEditMode, setIsEditMode] = useState<boolean>(false);
-    const [products, setProducts] = useState<ProductSlot[]>([]);
-    const [_, setInventory] = useState<string[]>([]);
-    const [allProducts, setAllProducts] = useState<string[]>([]);
+/*
+Represents a product returned from the products API.
+We store the full object so we can access UUID + name + price.
+*/
+interface Product {
+    id: string;
+    name: string;
+    priceCents: number;
+    dateCreated: string;
+}
 
-    // Confirmation modal state
+const Inventory = () => {
+    /*
+    Which slot is currently being edited
+    */
+    const [editingSlotID, setEditingSlotID] = useState<number | null>(null);
+
+    /*
+    Whether edit mode is enabled (shows edit/delete buttons)
+    */
+    const [isEditMode, setIsEditMode] = useState<boolean>(false);
+
+    /*
+    Current inventory slots loaded from backend
+    */
+    const [products, setProducts] = useState<ProductSlot[]>([]);
+
+    /*
+    All available products in the system (used for dropdown selection)
+    */
+    const [allProducts, setAllProducts] = useState<Product[]>([]);
+
+    /*
+    Confirmation modal state for deleting a slot product
+    */
     const [confirmationOpen, setConfirmationOpen] = useState<boolean>(false);
     const [slotToDelete, setSlotToDelete] = useState<number | null>(null);
 
-    // Fetch inventory from the backend API
+    /*
+    Load vending machine inventory from backend
+    */
     const loadInventory = async () => {
         try {
             const data = await fetchInventory();
-            setProducts(data || []); // default to empty array if backend returns null
-            console.log('Products data:', data);
 
-            // Make array of all product names (for dropdown)
-            const productNames = (data || []).map((p: ProductSlot) => p.productName);
-            setInventory(productNames);
+            /*
+            Ensure we always store an array
+            */
+            setProducts(data || []);
+
+            console.log('Inventory slots:', data);
         } catch (error) {
-            console.error('Failed to load inventory');
+            console.error('Failed to load inventory', error);
         }
     };
 
+    /*
+    Load all products that can be placed into slots
+    */
     const loadAllProducts = async () => {
         try {
             const data = await getAllProducts();
-            const productNames = data.map((p: { name: string }) => p.name);
-            setAllProducts(productNames);
-            console.log('All products data:', productNames);
+
+            /*
+            Store full product objects so we have access to id + name
+            */
+            setAllProducts(data);
+
+            console.log('All products:', data);
         } catch (error) {
-            console.error('Failed to load all products');
+            console.error('Failed to load all products', error);
         }
     };
 
+    /*
+    Load inventory and product catalog when component mounts
+    */
     useEffect(() => {
         loadInventory();
         loadAllProducts();
     }, []);
 
-    // Slot currently being edited
+    /*
+    The slot currently being edited (used to populate modal)
+    */
     const editingSlotInfo = products.find((slot) => slot.slotId === editingSlotID);
 
-    // Handle save from modal
-    const handleSave = async (slotId: number, productName: string, quantity: number) => {
-        try{
-            const product = products.find((p) => p.slotId === slotId);
-            const productUUID = product?.productId || '';
+    /*
+    Handle saving changes from the modal
+    */
+    const handleSave = async (slotId: number, productId: string, quantity: number) => {
+        try {
+            /*
+            Find the selected product using its UUID
+            */
+            const product = allProducts.find((p) => p.id === productId);
 
-            console.log(`Saving slot ${slotId} with product "${productName}" (UUID: ${productUUID}) and quantity ${quantity}`);
-            await updateSlotProductAndQuantity(slotId, productUUID, quantity);
+            if (!product) {
+                console.error('Selected product not found');
+                return;
+            }
+
+            console.log(
+                `Saving slot ${slotId} with product "${product.name}" (UUID: ${productId}) and quantity ${quantity}`,
+            );
+
+            /*
+            Update backend
+            */
+            await updateSlotProductAndQuantity(slotId, productId, quantity);
+
+            /*
+            Update local UI state so the table updates immediately
+            */
             setProducts(
-                products.map((p) =>
-                    p.slotId === slotId
-                        ? { ...p, productName, quantity }
-                        : p,
+                products.map((slot) =>
+                    slot.slotId === slotId
+                        ? {
+                              ...slot,
+                              productId: productId,
+                              productName: product.name,
+                              priceCents: product.priceCents,
+                              quantity: quantity,
+                          }
+                        : slot,
                 ),
             );
+
+            /*
+            Close modal
+            */
             setEditingSlotID(null);
         } catch (error) {
-            console.error(`Failed to update product and quantity for slot ${slotId}:`, error);
+            console.error(`Failed to update slot ${slotId}`, error);
         }
-        // setProducts(
-        //     products.map((p) =>
-        //         p.slotId === slotId ? { ...p, productName, quantity } : p,
-        //     ),
-        // );
-        // setEditingSlotID(null);
     };
 
-    // Handle remove product
+    /*
+    Remove product from slot
+    */
     const handleRemove = async (slotId: number) => {
         try {
             await unassignProductFromSlot(slotId);
+
+            /*
+            Reset slot locally
+            */
             setProducts(
-                products.map((p) =>
-                    p.slotId === slotId
+                products.map((slot) =>
+                    slot.slotId === slotId
                         ? {
-                              ...p,
+                              ...slot,
                               productName: '',
                               quantity: 0,
                               productId: '',
                               priceCents: 0,
                               dateAdded: null,
                           }
-                        : p,
+                        : slot,
                 ),
             );
         } catch (error) {
-            console.error(`Failed to remove product from slot ${slotId}:`, error);
+            console.error(`Failed to remove product from slot ${slotId}`, error);
         }
     };
 
+    /*
+    Confirmation modal result handler
+    */
     const handleDeleteConfirm = (confirmed: boolean) => {
         if (confirmed && slotToDelete !== null) {
             handleRemove(slotToDelete);
         }
+
         setConfirmationOpen(false);
         setSlotToDelete(null);
     };
@@ -128,6 +214,7 @@ const Inventory = () => {
                         Products currently in the vending machine
                     </p>
                 </div>
+
                 <button className="add-btn" onClick={() => setIsEditMode(!isEditMode)}>
                     <EditIcon />
                 </button>
@@ -143,8 +230,12 @@ const Inventory = () => {
                             {isEditMode && <th>Actions</th>}
                         </tr>
                     </thead>
+
                     <tbody>
                         {products.map((product, index) => {
+                            /*
+                            If no productId exists the slot is empty
+                            */
                             const isEmpty = !product.productId;
 
                             return (
@@ -163,7 +254,6 @@ const Inventory = () => {
 
                                     <td>{isEmpty ? '' : product.quantity}</td>
 
-                                    {/* Actions */}
                                     {isEditMode && (
                                         <td className="edit-btn-cell">
                                             <div className="action-btns">
@@ -175,6 +265,7 @@ const Inventory = () => {
                                                 >
                                                     <EditIcon sx={{ fontSize: 20 }} />
                                                 </button>
+
                                                 <button
                                                     className="delete-btn-row"
                                                     onClick={() => {
@@ -199,6 +290,9 @@ const Inventory = () => {
                     isOpen={editingSlotID !== null}
                     onClose={() => setEditingSlotID(null)}
                     onSave={handleSave}
+                    /*
+                    Pass full product catalog
+                    */
                     inventory={allProducts}
                     slotID={editingSlotInfo.slotId}
                     slotLabel={editingSlotInfo.slotLabel}
@@ -207,7 +301,6 @@ const Inventory = () => {
                 />
             )}
 
-            {/* Confirmation modal for deletion */}
             {confirmationOpen && (
                 <ConfirmationModal
                     isOpen={confirmationOpen}

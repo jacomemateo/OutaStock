@@ -94,8 +94,12 @@ export const updateSlotQuantity = async (slotID: number, quantity: number) => {
 };
 
 // update both product and quantity for a slot
-export const updateSlotProductAndQuantity = async (slotID: number, productUUID: string, quantity: number) => {
-    try{
+export const updateSlotProductAndQuantity = async (
+    slotID: number,
+    productUUID: string,
+    quantity: number,
+) => {
+    try {
         const response = await fetch(`${API_BASE_URL}/inventory/${slotID}`, {
             method: 'PATCH',
             headers: { 'Content-Type': 'application/json' },
@@ -108,9 +112,6 @@ export const updateSlotProductAndQuantity = async (slotID: number, productUUID: 
         throw error;
     }
 };
-
-
-
 
 /** -----------------------------
  * Product Actions
