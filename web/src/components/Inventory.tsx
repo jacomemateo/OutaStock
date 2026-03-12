@@ -5,6 +5,7 @@ import { useState, useEffect } from 'react';
 import EditInventoryModal from '@/components/EditInventoryModal';
 import { fetchInventory, unassignProductFromSlot, getAllProducts } from '@/services/api';
 import ConfirmationModal from '@/components/ConfirmationModal';
+import { updateSlotProductAndQuantity } from '@/services/api';
 interface ProductSlot {
     slotId: number;
     slotLabel: string;
@@ -61,13 +62,30 @@ const Inventory = () => {
     const editingSlotInfo = products.find((slot) => slot.slotId === editingSlotID);
 
     // Handle save from modal
-    const handleSave = (slotId: number, productName: string, quantity: number) => {
-        setProducts(
-            products.map((p) =>
-                p.slotId === slotId ? { ...p, productName, quantity } : p,
-            ),
-        );
-        setEditingSlotID(null);
+    const handleSave = async (slotId: number, productName: string, quantity: number) => {
+        try{
+            const product = products.find((p) => p.slotId === slotId);
+            const productUUID = product?.productId || '';
+
+            console.log(`Saving slot ${slotId} with product "${productName}" (UUID: ${productUUID}) and quantity ${quantity}`);
+            await updateSlotProductAndQuantity(slotId, productUUID, quantity);
+            setProducts(
+                products.map((p) =>
+                    p.slotId === slotId
+                        ? { ...p, productName, quantity }
+                        : p,
+                ),
+            );
+            setEditingSlotID(null);
+        } catch (error) {
+            console.error(`Failed to update product and quantity for slot ${slotId}:`, error);
+        }
+        // setProducts(
+        //     products.map((p) =>
+        //         p.slotId === slotId ? { ...p, productName, quantity } : p,
+        //     ),
+        // );
+        // setEditingSlotID(null);
     };
 
     // Handle remove product
