@@ -48,3 +48,6 @@
 
 ## Database
 - [ ] I don't know if it's nesceary but maybe test the constraints we added in the DB schema?
+
+## Frontend (Jason)
+- [x] add here 

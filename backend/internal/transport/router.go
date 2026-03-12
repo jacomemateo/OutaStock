@@ -11,7 +11,6 @@ import (
 
 	"github.com/jacomemateo/OutaStock/backend/internal/service"
 	"github.com/jacomemateo/OutaStock/backend/internal/transport/http/handlers"
-
 )
 
 type Router struct {
@@ -59,16 +58,16 @@ func NewRouter(database *service.Database, origins []string) *Router {
 	}))
 
 	// Initialize services (using database.queries)
-    transactionsService := service.NewTransactionsService(database)
-    inventoryService    := service.NewInventoryService(database)
-    productsService     := service.NewProductsService(database)
+	transactionsService := service.NewTransactionsService(database)
+	inventoryService := service.NewInventoryService(database)
+	productsService := service.NewProductsService(database)
 
-    // Build handler list
-    r.handlers = []handlers.Handler{ 
-        handlers.NewTransactionsHandler(transactionsService),
-        handlers.NewInventoryHandler(inventoryService),
-        handlers.NewProductsHandler(productsService),
-    }
+	// Build handler list
+	r.handlers = []handlers.Handler{
+		handlers.NewTransactionsHandler(transactionsService),
+		handlers.NewInventoryHandler(inventoryService),
+		handlers.NewProductsHandler(productsService),
+	}
 
 	return &r
 }
@@ -112,7 +111,7 @@ func (r *Router) addRoutes() {
 	api := r.echo.Group("/api")
 
 	// Let each handler register its own routes
-    for _, h := range r.handlers {
-        h.RegisterRoutes(api)
-    }
+	for _, h := range r.handlers {
+		h.RegisterRoutes(api)
+	}
 }

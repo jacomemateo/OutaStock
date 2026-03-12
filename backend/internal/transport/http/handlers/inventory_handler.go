@@ -22,16 +22,33 @@ func NewInventoryHandler(inventoryService *service.InventoryService) *InventoryH
 }
 
 func (h *InventoryHandler) RegisterRoutes(api *echo.Group) {
-		// Invetory routes
+	// Invetory routes
 	inventory := api.Group("/inventory")
-	inventory.GET("/all", h.GetAllInventory)
+	inventory.GET("/", h.GetAllInventory)
 	inventory.PATCH("/:slotID", h.UpdateInventory)
 }
 
-
-// GetAllInventory handles GET /api/inventory/all
+// GetAllInventory handles GET /api/inventory/?num_rows=&page_offset=
 func (h *InventoryHandler) GetAllInventory(c *echo.Context) error {
-	inventory, err := h.inventoryService.GetAllInventory(c.Request().Context())
+	numRowsStr := c.QueryParam("num_rows")
+	numRows, err := strconv.ParseInt(numRowsStr, 10, 32)
+	if err != nil {
+		log.Warn().Msgf("Failed to parse num_rows parameter: %s", numRowsStr)
+		return c.JSON(http.StatusBadRequest, map[string]string{
+			"error": "Invalid num_rows parameter",
+		})
+	}
+
+	pageOffsetStr := c.QueryParam("page_offset")
+	pageOffset, err := strconv.ParseInt(pageOffsetStr, 10, 32)
+	if err != nil {
+		log.Warn().Msgf("Failed to parse page_offset parameter: %s", pageOffsetStr)
+		return c.JSON(http.StatusBadRequest, map[string]string{
+			"error": "Invalid page_offset parameter",
+		})
+	}
+
+	inventory, err := h.inventoryService.GetAllInventory(c.Request().Context(), int(pageOffset), int(numRows))
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, map[string]string{
 			"error": "Failed to fetch inventory",

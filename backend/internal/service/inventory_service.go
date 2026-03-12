@@ -20,9 +20,43 @@ func NewInventoryService(database *Database) *InventoryService {
 }
 
 // GetAllInventory gets all inventory items
-func (s *InventoryService) GetAllInventory(ctx context.Context) ([]dto.InventorySlot, error) {
+
+func (s *InventoryService) GetAllInventory(ctx context.Context, pageOffset int, numRows int) ([]dto.InventorySlot, error) {
+	invTotalRows64, err := s.database.Queries.CountInventoryRows(ctx)
+	if err != nil {
+		log.Warn().Msg("Unable to get inventory row count")
+		return nil, err
+	}
+	invTotalRows := int(invTotalRows64)
+
+	var params repository.GetInventoryParams
+
+	// if we have 24 total rows
+	// page =  10
+	// numRows = 5, then
+	// 10*5 = 50 > 24! So we basically get the last page by performing integer division
+	// to get the last page before that which would be
+	// 24/5 = 4 and we use that number to get the the last page
+	//
+	// in short
+	// if it's not over the bounary, pass normally
+	// if it is, get the last "page"
+	// btw this all is based off pageOffset being zero index, i.e. the front end would
+	// pass 0 to get the first page
+	offset := pageOffset * numRows
+
+	if offset+numRows > invTotalRows {
+		offset = (invTotalRows - 1) / numRows * numRows // Number of possible pages before we overflow
+		if offset < 0 {
+			offset = 0
+		}
+	}
+
+	params.NumRows = int32(numRows)
+	params.PageOffset = int32(offset) // We don't need to worry about making this fit since postgres will just take care of it
+
 	// Call repository
-	rows, err := s.database.Queries.GetInventory(ctx)
+	rows, err := s.database.Queries.GetInventory(ctx, params)
 	if err != nil {
 		return nil, err
 	}
@@ -30,6 +64,7 @@ func (s *InventoryService) GetAllInventory(ctx context.Context) ([]dto.Inventory
 	inventoryItems := make([]dto.InventorySlot, 0, len(rows)) // Initialize with capacity to avoid multiple allocations
 
 	for _, row := range rows {
+		// Check if it hss a valid UUID
 		if !row.ProductID.Valid {
 			inventorySlot := dto.InventorySlot{
 				SlotID:      int(row.SlotID),
