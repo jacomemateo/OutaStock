@@ -11,13 +11,18 @@ import (
 
 type TransactionsHandler struct {
 	transactionsService *service.TransactionsService
-	BaseHandler
+	BinderValidator
 }
 
 func NewTransactionsHandler(transactionsService *service.TransactionsService) *TransactionsHandler {
 	return &TransactionsHandler{
 		transactionsService: transactionsService,
 	}
+}
+
+func (h *TransactionsHandler) RegisterRoutes(api *echo.Group) {
+	transactions := api.Group("/transactions")
+	transactions.GET("/recent", h.GetRecentTransactions)
 }
 
 const (

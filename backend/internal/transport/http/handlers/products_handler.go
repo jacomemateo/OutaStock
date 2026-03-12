@@ -11,7 +11,7 @@ import (
 )
 
 type ProductsHandler struct {
-	BaseHandler
+	BinderValidator
 	productsService *service.ProductsService
 }
 
@@ -19,6 +19,14 @@ func NewProductsHandler(productsService *service.ProductsService) *ProductsHandl
 	return &ProductsHandler{
 		productsService: productsService,
 	}
+}
+
+func (h *ProductsHandler) RegisterRoutes(api *echo.Group) {
+	products := api.Group("/products")
+	products.GET("/all", h.GetAllProducts)
+	products.POST("/new", h.CreateProduct)
+	products.PATCH("/:productID", h.UpdateProduct)
+	products.DELETE("/:productID", h.DeleteProduct)
 }
 
 // GetAllProducts handles GET /api/products/all
@@ -75,4 +83,27 @@ func (h *ProductsHandler) UpdateProduct(c *echo.Context) error {
 	}
 
 	return c.JSON(http.StatusAccepted, "product updated")
+}
+
+func (h *ProductsHandler) DeleteProduct(c *echo.Context) error {
+	prodUUIDString := c.Param("productID")
+
+	prodUUID, err := uuid.Parse(prodUUIDString)
+	if err != nil {
+		log.Warn().Msgf("unable to parse product UUID string: %s", err)
+		return c.JSON(http.StatusBadRequest, map[string]string{
+			"error": "Invalid productID parameter",
+		})
+	}
+
+	if err := h.productsService.DeleteProduct(c.Request().Context(), prodUUID); err != nil {
+		log.Warn().Msgf("issue with service: %s", err)
+		return c.JSON(http.
+			StatusInternalServerError,
+			map[string]string{
+				"error": "Failed to delete product",
+			})
+	}
+
+	return c.JSON(http.StatusNoContent, "Deleted product")
 }

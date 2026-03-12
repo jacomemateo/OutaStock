@@ -22,7 +22,7 @@ func NewInventoryService(database *Database) *InventoryService {
 // GetAllInventory gets all inventory items
 func (s *InventoryService) GetAllInventory(ctx context.Context) ([]dto.InventorySlot, error) {
 	// Call repository
-	rows, err := s.database.queries.GetInventory(ctx)
+	rows, err := s.database.Queries.GetInventory(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -63,7 +63,7 @@ func (s *InventoryService) GetAllInventory(ctx context.Context) ([]dto.Inventory
 
 func (s *InventoryService) UpdateInventory(ctx context.Context, slotID int, req dto.UpdateInventoryRequest) error {
 	if req.ProductID == nil && req.Quantity == nil {
-		err := s.database.queries.ClearInventorySlot(ctx, int32(slotID))
+		err := s.database.Queries.ClearInventorySlot(ctx, int32(slotID))
 		if err != nil {
 			return err
 		}
@@ -97,7 +97,7 @@ func (s *InventoryService) UpdateInventory(ctx context.Context, slotID int, req 
 		SlotID:    int32(slotID),
 	}
 
-	err := s.database.queries.UpdateInventory(ctx, args)
+	err := s.database.Queries.UpdateInventory(ctx, args)
 	if err != nil {
 		log.Warn().Msgf("error with the database %s", err)
 		return err

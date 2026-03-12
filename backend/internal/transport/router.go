@@ -11,15 +11,13 @@ import (
 
 	"github.com/jacomemateo/OutaStock/backend/internal/service"
 	"github.com/jacomemateo/OutaStock/backend/internal/transport/http/handlers"
+
 )
 
 type Router struct {
+	handlers []handlers.Handler
 	echo     *echo.Echo
 	database *service.Database // Just store the Database, not the raw pool
-
-	transactionsHandler *handlers.TransactionsHandler
-	inventoryHandler    *handlers.InventoryHandler
-	productsHandler     *handlers.ProductsHandler
 }
 
 func NewRouter(database *service.Database, origins []string) *Router {
@@ -61,14 +59,16 @@ func NewRouter(database *service.Database, origins []string) *Router {
 	}))
 
 	// Initialize services (using database.queries)
-	transactionsService := service.NewTransactionsService(r.database)
-	inventoryService := service.NewInventoryService(r.database)
-	productsService := service.NewProductsService(r.database)
+    transactionsService := service.NewTransactionsService(database)
+    inventoryService    := service.NewInventoryService(database)
+    productsService     := service.NewProductsService(database)
 
-	// Initialize handlers
-	r.transactionsHandler = handlers.NewTransactionsHandler(transactionsService)
-	r.inventoryHandler = handlers.NewInventoryHandler(inventoryService)
-	r.productsHandler = handlers.NewProductsHandler(productsService)
+    // Build handler list
+    r.handlers = []handlers.Handler{ 
+        handlers.NewTransactionsHandler(transactionsService),
+        handlers.NewInventoryHandler(inventoryService),
+        handlers.NewProductsHandler(productsService),
+    }
 
 	return &r
 }
@@ -111,17 +111,8 @@ func (r *Router) addRoutes() {
 	// API routes group
 	api := r.echo.Group("/api")
 
-	// Transaction routes
-	transactions := api.Group("/transactions")
-	transactions.GET("/recent", r.transactionsHandler.GetRecentTransactions)
-
-	// Invetory routes
-	inventory := api.Group("/inventory")
-	inventory.GET("/all", r.inventoryHandler.GetAllInventory)
-	inventory.PATCH("/:slotID", r.inventoryHandler.UpdateInventory)
-
-	products := api.Group("/products")
-	products.GET("/all", r.productsHandler.GetAllProducts)
-	products.POST("/new", r.productsHandler.CreateProduct)
-	products.PATCH("/:productID", r.productsHandler.UpdateProduct)
+	// Let each handler register its own routes
+    for _, h := range r.handlers {
+        h.RegisterRoutes(api)
+    }
 }

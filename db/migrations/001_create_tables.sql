@@ -5,8 +5,8 @@ CREATE TABLE product_info (
     name TEXT NOT NULL,
     price_cents INTEGER CHECK (price_cents > 0) NOT NULL,  -- price in cents to avoid floating point issues
     date_created TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP NOT NULL,
-    -- I know I need a trigger but idk how to implement
-    date_modified TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP NOT NULL
+    date_modified TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    date_deleted TIMESTAMPTZ DEFAULT NULL
 );
 
 CREATE TABLE inventory (

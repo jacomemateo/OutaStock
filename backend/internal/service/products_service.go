@@ -24,7 +24,7 @@ func NewProductsService(database *Database) *ProductsService {
 
 // GetAllProducts gets all products and returns DTOs directly
 func (s *ProductsService) GetAllProducts(ctx context.Context) ([]dto.ProductResponse, error) {
-	rows, err := s.database.queries.GetProducts(ctx)
+	rows, err := s.database.Queries.GetProducts(ctx)
 	if err != nil {
 		log.Error().Err(err).Msg("Failed to get products from database")
 		return nil, err
@@ -51,9 +51,7 @@ func (s *ProductsService) CreateProduct(ctx context.Context, prod dto.CreateProd
 		PriceCents: int32(prod.PriceCents),
 	}
 
-	log.Debug().Msgf("FUCK BRO %s %d", prod.Name, prod.PriceCents)
-
-	err := s.database.queries.CreateProduct(ctx, product)
+	err := s.database.Queries.CreateProduct(ctx, product)
 	if err != nil {
 		return fmt.Errorf("create product in db: %w", err)
 	}
@@ -80,7 +78,7 @@ func (s *ProductsService) UpdateProduct(ctx context.Context, prodUUID uuid.UUID,
 			Name:       *req.Name,              // sqlc generated string
 			ProductID:  uuidPgtype,
 		}
-		if err := s.database.queries.UpdateProduct(ctx, args); err != nil {
+		if err := s.database.Queries.UpdateProduct(ctx, args); err != nil {
 			log.Warn().Msgf("error updating product: %v", err)
 			return err
 		}
@@ -94,7 +92,7 @@ func (s *ProductsService) UpdateProduct(ctx context.Context, prodUUID uuid.UUID,
 			ProductID: uuidPgtype,
 		}
 
-		if err := s.database.queries.UpdateProductName(ctx, args); err != nil {
+		if err := s.database.Queries.UpdateProductName(ctx, args); err != nil {
 			log.Warn().Msgf("error updating product name: %v", err)
 			return err
 		}
@@ -106,10 +104,24 @@ func (s *ProductsService) UpdateProduct(ctx context.Context, prodUUID uuid.UUID,
 			ProductID:  uuidPgtype,
 		}
 
-		if err := s.database.queries.UpdateProductPrice(ctx, args); err != nil {
+		if err := s.database.Queries.UpdateProductPrice(ctx, args); err != nil {
 			log.Warn().Msgf("error updating product price: %v", err)
 			return err
 		}
+	}
+
+	return nil
+}
+
+func (s *ProductsService) DeleteProduct(ctx context.Context, prodUUID uuid.UUID) error {
+	uuidPgtype := pgtype.UUID{
+		Bytes: prodUUID,
+		Valid: true,
+	}
+
+	if err := s.database.Queries.DeleteProduct(ctx, uuidPgtype); err != nil {
+		log.Warn().Msgf("error deleting product: %v", err)
+		return err
 	}
 
 	return nil

@@ -12,7 +12,7 @@ import (
 
 type InventoryHandler struct {
 	inventoryService *service.InventoryService
-	BaseHandler
+	BinderValidator
 }
 
 func NewInventoryHandler(inventoryService *service.InventoryService) *InventoryHandler {
@@ -20,6 +20,14 @@ func NewInventoryHandler(inventoryService *service.InventoryService) *InventoryH
 		inventoryService: inventoryService,
 	}
 }
+
+func (h *InventoryHandler) RegisterRoutes(api *echo.Group) {
+		// Invetory routes
+	inventory := api.Group("/inventory")
+	inventory.GET("/all", h.GetAllInventory)
+	inventory.PATCH("/:slotID", h.UpdateInventory)
+}
+
 
 // GetAllInventory handles GET /api/inventory/all
 func (h *InventoryHandler) GetAllInventory(c *echo.Context) error {

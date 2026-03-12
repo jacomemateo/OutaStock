@@ -22,6 +22,7 @@ type ProductInfo struct {
 	PriceCents   int32
 	DateCreated  pgtype.Timestamptz
 	DateModified pgtype.Timestamptz
+	DateDeleted  pgtype.Timestamptz
 }
 
 type Transaction struct {

@@ -22,9 +22,11 @@ SET
 WHERE product_id = @product_id;
 
 -- name: DeleteProduct :exec
-DELETE FROM product_info
+UPDATE product_info
+SET date_deleted = NOW()
 WHERE product_id = @product_id;
 
 -- name: GetProducts :many 
 SELECT * FROM product_info
+WHERE date_deleted IS NULL
 ORDER BY name;

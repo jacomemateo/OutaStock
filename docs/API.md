@@ -354,3 +354,50 @@ curl -X PATCH "http://localhost:8080/api/products/019cbe99-8159-75ea-b44e-7fec97
   "error": "Failed to update products"
 }
 ```
+
+---
+## `DELETE /api/products/:productID`
+Soft deletes product from database, reason for soft delete is beacuse all transaction and inventory data depends on the product UUID so both the transactions and inventory tables have constraints on deleteing product_info rows.
+
+```sql
+CREATE TABLE transactions (
+    product_id UUID REFERENCES product_info(product_id) ON DELETE RESTRICT NOT NULL
+    ...
+);
+
+CREATE TABLE inventory (
+    product_id UUID REFERENCES product_info(product_id) ON DELETE RESTRICT,
+    ...
+);
+```
+
+### URL Parameters
+
+| Name      | Type | Description |
+| --------- | ---- | ----------- |
+| productID | UUID | Product ID  |
+
+### Example Request
+
+```bash
+curl -X DELETE "http://localhost:8080/api/products/019cd3fa-a89e-73e0-8d0b-2dbfef3e82ad"
+```
+
+### Success Response (204)
+
+### Error Responses
+
+**400 Bad Request**
+
+```json
+{
+  "error": "Invalid productID parameter"
+}
+```
+
+**500 Internal Server Error**
+
+```json
+{
+  "error": "Failed to update products"
+}
