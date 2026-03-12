@@ -14,20 +14,30 @@
       - [ ] test with no data in db, should return an error
   - [ ] Inventory
     - [ ] `GET /api/inventory/all`
-      - [ ] test with no data in db, should return an error
       - [ ] test success response
       - [ ] test empty inventory, i.e. all cols are NULL but `slot_id` and `slot_label`
     - [ ] `PATCH /api/inventory/:slotID`
       - [ ] test passing in invalid slotID
       - [ ] test assigning with non existent product UUID, should return error
       - [ ] test assinging negative quantity
-      - [ ] test assigning with extra invalid JSON field
-      - [ ] test deleting slot
+      - [ ] test with extra invalid JSON field
+      - [ ] test deleting slot success
   - [ ] Products
     - [ ] `GET /api/products/all`
-      - [ ] test with no data in db, should return an error
       - [ ] test success response
     - [ ] `POST /api/products/new`
+      - [ ] test with one field missing from json request body
+      - [ ] test  with extra invalid json field
+      - [ ] test with incorrect types
+      - [ ] test new success
     - [ ] `PATCH /api/products/:productID`
+      - [ ] test with non existent UUID
+      - [ ] test passing in empty json body
+      - [ ] test updating name success
+      - [ ] test updating price success
+      - [ ] test with extra invalid json field
+      - [ ] test with invalid datatypes
     - [ ] `DELETE /api/products/:productID`
+      - [ ] test with non existent UUID
+      - [ ] test success
   - [ ] Config file, make ENV more robust
