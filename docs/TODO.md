@@ -54,3 +54,17 @@
 
 ## Docs
 - [x] Update inventory get api to reflect changes, right now it should be broken.
+
+
+## Docker
+- [ ] Create dockerfile for backend
+  - [ ] Make sure it works with env variables
+- [ ] Create dockerfile for frontend
+- [ ] Create docker-compose.yml for project
+
+## Deployment
+- [ ] Learn how to set up automatic updates, i.e. we send push to the github, something in the server is listening for that and pulls it and all the docker containers automatically update magically 🇦🇺
+
+## Authenthication (LogTo)
+- [ ] [LogTo](https://logto.io/) Website
+- [ ] Learn how to integrate
