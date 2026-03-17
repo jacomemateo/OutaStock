@@ -67,6 +67,7 @@ const EditInventoryModal = ({
     */
     useEffect(() => {
         const product = inventory.find((p) => p.name === currentProductName);
+        console.log('Found product for currentProductName:', product);
 
         setFormData({
             productId: product ? product.id : '',
