@@ -1,6 +1,6 @@
 tmp/
 out/
-.env
+*.env
 .VSCodeCounter
 # Created by https://www.toptal.com/developers/gitignore/api/go,react,visualstudiocode
 # Edit at https://www.toptal.com/developers/gitignore?templates=go,react,visualstudiocode
