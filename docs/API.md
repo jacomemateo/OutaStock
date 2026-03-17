@@ -233,7 +233,7 @@ Retrieve products with optional pagination.
 | Parameter   | Type | Description                               |
 | ----------- | ---- | ----------------------------------------- |
 | num_rows    | int  | Number of products to return |
-| page_offset | int  | Zero-based page index. Default:         |
+| page_offset | int  | Zero-based page index.         |
 
 ### Example Request
 
