@@ -27,6 +27,18 @@ services:
         condition: service_healthy
     ports:
       - "8080:8080"
+
+  frontend:
+    container_name: web
+    build:
+      context: ./web
+      dockerfile: Dockerfile
+    env_file: "docker.env"   # optional if your frontend uses env variables
+    depends_on:
+      - backend
+    ports:
+      - "3000:3000"          # match the EXPOSE in your frontend Dockerfile
+    restart: unless-stopped
 volumes:
   db-data:
 
