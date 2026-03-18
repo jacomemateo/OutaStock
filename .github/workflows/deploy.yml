@@ -16,13 +16,10 @@ jobs:
         with:
           ref: raspberry
 
-      - name: SSH via Cloudflare Access tunnel
+      - name: Download cloudflared
         run: |
-          echo "Deploying via Cloudflare SSH..."
-          # Make sure cloudflared is installed on the runner
           curl -L https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64 -o cloudflared
           chmod +x cloudflared
 
-          # Run your deployment command over Cloudflare Access
-          ./cloudflared access ssh --hostname ssh.lsds.fun -- \
-            bash -c "cd ~/OutaStock && git fetch --all && git checkout raspberry && git pull origin raspberry && docker compose down && docker compose up --build -d && echo 'Deployment finished!'"
+      - name: SSH via Cloudflare Access tunnel
+        run: ./cloudflared access ssh --hostname ssh.lsds.fun -- bash -c "cd ~/OutaStock && git fetch --all && git checkout raspberry && git pull origin raspberry && docker compose down && docker compose up --build -d && echo 'Deployment finished!'"
