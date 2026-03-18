@@ -19,8 +19,11 @@ type Config struct {
 }
 
 func Load() (*Config, error) {
-	// Load .env file
-	loadEnvFile()
+	// Try to load .env file, for development only
+	if loadedFromDotEnv := loadEnvFile(); !loadedFromDotEnv {
+		log.Warn().Msg("No .env file found, going to load from environment")
+	}
+
 
 	cfg := &Config{}
 
@@ -41,10 +44,15 @@ func Load() (*Config, error) {
 		return nil, err
 	}
 
+	host, err := getEnv("POSTGRES_HOST")
+	if err != nil {
+    	return nil, err
+	}
+
 	// build connection string for postgres
 	cfg.DatabaseURL = fmt.Sprintf(
-		"postgres://%s:%s@localhost:%s/%s?sslmode=disable",
-		user, password, port, dbName,
+		"postgres://%s:%s@%s:%s/%s?sslmode=disable",
+		user, password, host, port, dbName,
 	)
 
 	cfg.Port, err = getEnv("ECHO_PORT")
@@ -69,7 +77,7 @@ func Load() (*Config, error) {
 	return cfg, nil
 }
 
-func loadEnvFile() {
+func loadEnvFile() bool {
 	// Get current directory
 	currentDir, err := os.Getwd()
 	if err != nil {
@@ -77,15 +85,17 @@ func loadEnvFile() {
 	}
 
 	// Try parent directory first
-	parentDir := filepath.Dir(currentDir)
-	envPath := filepath.Join(parentDir, ".env")
+	envPath := filepath.Join(currentDir, ".env")
+
+	log.Debug().Msgf("Path: %s", envPath)
 
 	err = godotenv.Load(envPath)
 	if err == nil {
-		log.Info().Str("path", envPath).Msg("Loaded .env from parent directory")
+		log.Info().Str("path", envPath).Msg("Loaded .env from root dir")
+		return true
 	}
 
-	log.Warn().Msg("No .env file found")
+	return false
 }
 
 func getEnv(key string) (string, error) {
