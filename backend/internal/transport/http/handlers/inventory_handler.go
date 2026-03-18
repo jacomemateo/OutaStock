@@ -25,7 +25,9 @@ func (h *InventoryHandler) RegisterRoutes(api *echo.Group) {
 	// Invetory routes
 	inventory := api.Group("/inventory")
 	inventory.GET("/", h.GetAllInventory)
+	inventory.GET("/count", h.GetInventoryCount)
 	inventory.PATCH("/:slotID", h.UpdateInventory)
+
 }
 
 // GetAllInventory handles GET /api/inventory/?num_rows=&page_offset=
@@ -83,4 +85,15 @@ func (h *InventoryHandler) UpdateInventory(c *echo.Context) error {
 	return c.JSON(http.StatusOK, map[string]string{
 		"message": "Slot updated successfully",
 	})
+}
+
+func (h *InventoryHandler) GetInventoryCount(c *echo.Context) error {
+	count, err := h.inventoryService.GetInventoryCount(c.Request().Context())
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, map[string]string{
+			"error": "Failed to inventory count",
+		})
+	}
+
+	return c.JSON(http.StatusOK, count)
 }

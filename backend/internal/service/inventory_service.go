@@ -140,3 +140,12 @@ func (s *InventoryService) UpdateInventory(ctx context.Context, slotID int, req 
 
 	return nil
 }
+
+func (s *InventoryService) GetInventoryCount(ctx context.Context) (int, error) {
+	count, err := s.database.Queries.CountInventoryRows(ctx)
+	if err != nil {
+		log.Warn().Msg("Unable to get inventory row count")
+		return 0, err
+	}
+	return int(count), nil
+}
