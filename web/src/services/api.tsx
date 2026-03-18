@@ -33,11 +33,15 @@ export const fetchRecentTransactions = async (limit = 10) => {
  * ----------------------------- */
 export const fetchInventory = async (numRows: number, pageOffset: number) => {
     try {
-        const url = new URL(`${API_BASE_URL}/inventory/`);
-        url.searchParams.append('num_rows', numRows.toString());
-        url.searchParams.append('page_offset', pageOffset.toString());
+        // Don't use new URL() with relative paths.
+        // Instead, build the query string manually.
+        const params = new URLSearchParams({
+            num_rows: numRows.toString(),
+            page_offset: pageOffset.toString(),
+        });
 
-        const response = await fetch(url.toString());
+        // Append the string to your relative base URL
+        const response = await fetch(`${API_BASE_URL}/inventory/?${params.toString()}`);
 
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);

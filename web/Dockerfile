@@ -15,26 +15,25 @@ COPY . .
 RUN npm run build
 
 # ---- Production Stage ----
-FROM node:${NODE_VERSION} AS runner
+# We use the official Caddy image now
+FROM caddy:2-alpine AS runner
 
-ENV NODE_ENV=production
 WORKDIR /app
 
 # Copy build output
-COPY --from=builder --chown=node:node /app/dist ./dist
+COPY --from=builder /app/dist ./dist
 
-
-# Install serve
-RUN --mount=type=cache,target=/root/.npm npm install serve@^14.2.6 --omit=dev
+# Copy the internal Caddyfile
+COPY Caddyfile .
 
 # Copy entrypoint script
 COPY entrypoint.sh .
-# Make env.js writable
+
+# Make sure entrypoint is executable
 RUN chmod +x /app/entrypoint.sh
 
-
-USER node
 EXPOSE 3000
 
-ENTRYPOINT ["sh", "entrypoint.sh"]
-CMD ["npx", "serve", "-s", "dist", "-l", "3000"]
+# Run entrypoint (injects env vars) then starts Caddy
+ENTRYPOINT ["sh", "./entrypoint.sh"]
+CMD ["caddy", "run", "--config", "Caddyfile", "--adapter", "caddyfile"]

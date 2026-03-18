@@ -41,25 +41,6 @@ func NewRouter(database *service.Database, origins []string) *Router {
 		},
 	))
 
-	r.echo.Use(middleware.CORSWithConfig(middleware.CORSConfig{
-		AllowOrigins: origins,
-		AllowMethods: []string{
-			http.MethodGet,
-			http.MethodPost,
-			http.MethodPut,
-			http.MethodDelete,
-			http.MethodOptions,
-			http.MethodPatch,
-		},
-		AllowHeaders: []string{
-			echo.HeaderOrigin,
-			echo.HeaderContentType,
-			echo.HeaderAccept,
-			echo.HeaderAuthorization,
-		},
-		AllowCredentials: true,
-	}))
-
 	// Initialize services (using database.queries)
 	transactionsService := service.NewTransactionsService(database)
 	inventoryService := service.NewInventoryService(database)
