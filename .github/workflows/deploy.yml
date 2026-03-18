@@ -3,8 +3,8 @@ name: Deploy to Raspberry Pi
 on:
   push:
     branches:
-      - raspberry   # Only triggers when you push to "raspberry"
-  workflow_dispatch: # Still allows manual runs from any branch
+      - raspberry
+  workflow_dispatch:
 
 jobs:
   deploy:
@@ -13,17 +13,16 @@ jobs:
     steps:
       - name: Checkout repo
         uses: actions/checkout@v3
-
-      - name: SSH into Pi and deploy
-        uses: appleboy/ssh-action@v1
         with:
-          host: ${{ secrets.PI_HOST }}
-          username: ${{ secrets.PI_USER }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          script: |
-            echo "Deploying on $(date)"
-            cd ~/OutaStock
-            git pull
-            docker compose down
-            docker compose up --build -d
-            echo "Deployment finished!"
+          ref: raspberry
+
+      - name: SSH via Cloudflare Access tunnel
+        run: |
+          echo "Deploying via Cloudflare SSH..."
+          # Make sure cloudflared is installed on the runner
+          curl -L https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64 -o cloudflared
+          chmod +x cloudflared
+
+          # Run your deployment command over Cloudflare Access
+          ./cloudflared access ssh --hostname ssh.lsds.fun -- \
+            bash -c "cd ~/OutaStock && git fetch --all && git checkout raspberry && git pull origin raspberry && docker compose down && docker compose up --build -d && echo 'Deployment finished!'"
