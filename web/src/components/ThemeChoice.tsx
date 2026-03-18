@@ -1,7 +1,6 @@
 import '@styles/ThemeChoice.css';
 import DarkModeIcon from '@mui/icons-material/DarkMode';
 import LightModeIcon from '@mui/icons-material/LightMode';
-import { useState } from 'react';
 import { useTheme } from '@contexts/ThemeContext';
 
 const ThemeChoice = () => {

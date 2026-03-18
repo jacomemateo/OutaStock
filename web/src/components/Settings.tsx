@@ -2,7 +2,6 @@ import '@styles/Settings.css';
 import { useNavigate, useLocation, Routes, Route } from 'react-router-dom';
 import BedtimeIcon from '@mui/icons-material/Bedtime';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
-import GroupsIcon from '@mui/icons-material/Groups';
 import { useEffect } from 'react';
 
 //Components

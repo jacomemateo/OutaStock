@@ -11,6 +11,7 @@ import {
     unassignProductFromSlot,
     getAllProducts,
     updateSlotProductAndQuantity,
+    getInventoryCount
 } from '@/services/api';
 
 /*
@@ -70,8 +71,7 @@ const Inventory = () => {
     */
     const loadInventory = async () => {
         try {
-            const data = await fetchInventory();
-
+            const data = await fetchInventory(await getInventoryCount(), 0);
             /*
             Ensure we always store an array
             */
