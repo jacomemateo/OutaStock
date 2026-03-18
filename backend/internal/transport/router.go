@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"strings"
 	"time"
+	"github.com/rs/zerolog/log"
 
 	"github.com/labstack/echo/v5"
 	"github.com/labstack/echo/v5/middleware"
@@ -20,6 +21,7 @@ type Router struct {
 }
 
 func NewRouter(database *service.Database, origins []string) *Router {
+	log.Info().Msgf("CORS string(s) from env: %s", origins)
 	r := Router{}
 	r.database = database
 	r.echo = echo.New()
