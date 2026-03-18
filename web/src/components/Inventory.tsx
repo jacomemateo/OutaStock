@@ -90,6 +90,7 @@ const Inventory = () => {
         try {
             const data = await getAllProducts();
 
+
             /*
             Store full product objects so we have access to id + name
             */
