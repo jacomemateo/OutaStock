@@ -1,7 +1,12 @@
+import "@styles/Analytics.css";
+
 const Analytics = () => {
     return (
-        <div>
-            <h1>Analytics Page.....</h1>
+        <div className="analytics-container">
+            <div className="analytics-header">
+                <h2>Analytics Overview</h2>
+                <p className="analytics-subtitle">Track performance and trends</p>
+            </div>
         </div>
     );
 };

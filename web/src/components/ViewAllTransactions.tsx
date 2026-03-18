@@ -1,8 +1,12 @@
+import "@styles/ViewAllTransactions.css";
+
 const ViewAllTransactions = () => {
     return (
-        <div>
-            <h1>View All Transactions Page</h1>
-            <p>- Allow user to filter by dates or other things</p>
+        <div className="view-all-transactions-container">
+            <div className="view-all-transactions-header">
+                <h2>View All Transactions</h2>
+                <p className="view-all-transactions-subtitle">View and manage all transactions</p>
+            </div>
         </div>
     );
 };

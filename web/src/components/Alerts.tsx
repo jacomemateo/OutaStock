@@ -1,7 +1,12 @@
+import "@styles/Alerts.css";
+
 const Alerts = () => {
     return (
-        <div>
-            <h1>Alerts Page.....</h1>
+        <div className="alerts-container">
+            <div className="alerts-header">
+                <h2>Alerts</h2>
+                <p className="alerts-subtitle">View and manage all alerts</p>
+            </div>
         </div>
     );
 };
