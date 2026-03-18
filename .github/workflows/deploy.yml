@@ -12,14 +12,40 @@ jobs:
 
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           ref: raspberry
 
-      - name: Download cloudflared
+      - name: Install cloudflared
         run: |
           curl -L https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64 -o cloudflared
           chmod +x cloudflared
+          sudo mv cloudflared /usr/local/bin/
 
-      - name: SSH via Cloudflare Access tunnel
-        run: ./cloudflared access ssh --hostname ssh.lsds.fun -- bash -c "cd ~/OutaStock && git fetch --all && git checkout raspberry && git pull origin raspberry && docker compose down && docker compose up --build -d && echo 'Deployment finished!'"
+      - name: Setup SSH Key
+        uses: shimataro/ssh-key-action@v2
+        with:
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          known_hosts: unnecessary_for_cloudflare_tunnel
+          if_key_exists: replace
+
+      - name: Configure SSH for Cloudflare
+        run: |
+          mkdir -p ~/.ssh
+          cat <<EOF > ~/.ssh/config
+          Host ssh.lsds.fun
+            ProxyCommand cloudflared access ssh --hostname %h --id ${{ secrets.CF_CLIENT_ID }} --secret ${{ secrets.CF_CLIENT_SECRET }}
+            StrictHostKeyChecking no
+          EOF
+
+      - name: Execute Remote Command
+        run: |
+          ssh -o "StrictHostKeyChecking=no" pi@ssh.lsds.fun << 'EOF'
+            cd ~/OutaStock
+            git fetch --all
+            git checkout raspberry
+            git pull origin raspberry
+            docker compose down
+            docker compose up --build -d
+            echo "Deployment finished!"
+          EOF
