@@ -3,7 +3,6 @@ package transport
 import (
 	"context"
 	"net/http"
-	"strings"
 	"time"
 
 	"github.com/labstack/echo/v5"
@@ -26,17 +25,6 @@ func NewRouter(database *service.Database) *Router {
 
 	// Middleware
 	r.echo.Use(middleware.RequestLogger())
-
-	r.echo.Use(middleware.GzipWithConfig(
-		middleware.GzipConfig{
-			Level:     5, // Compression level (1-9)
-			MinLength: 1024,
-			Skipper: func(c *echo.Context) bool {
-				// Skip compression for health check endpoint
-				return strings.Contains(c.Path(), "health")
-			},
-		},
-	))
 
 	// Initialize services (using database.queries)
 	transactionsService := service.NewTransactionsService(database)
