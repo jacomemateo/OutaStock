@@ -43,8 +43,6 @@ services:
     depends_on:
       db:
         condition: service_healthy # Wait for DB to be ready
-    ports:
-      - "8080:8080"
 
   frontend:
     container_name: web
@@ -56,8 +54,6 @@ services:
       API_BASE_URL: ${API_BASE_URL}
     depends_on:
       - backend
-    ports:
-      - "3000:3000" # In prod, you might map port 80 here if this is the only entry point
     restart: unless-stopped
 
 volumes:
