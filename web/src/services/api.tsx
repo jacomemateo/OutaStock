@@ -1,11 +1,11 @@
 // src/services/api.tsx
-const API_BASE_URL = window.env?.API_BASE_URL
+const API_BASE_URL = window.env?.API_BASE_URL;
 
 if (!API_BASE_URL) {
-    throw new Error("API_BASE_URL is not defined")
+    throw new Error('API_BASE_URL is not defined');
 }
 
-console.log("API Base URL:", API_BASE_URL);
+console.log('API Base URL:', API_BASE_URL);
 
 /** -----------------------------
  * Transaction Actions
@@ -65,7 +65,7 @@ export const getInventoryCount = async () => {
         console.error('Error fetching inventory count:', error);
         throw error;
     }
-}
+};
 
 //  * Assign a product to a slot (initial quantity optional)
 export const assignProductToSlot = async (

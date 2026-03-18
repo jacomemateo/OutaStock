@@ -5,9 +5,7 @@ const UpdateProducts = () => {
         <div className="update-products-container">
             <div className="update-products-header">
                 <h2>Update Products</h2>
-                <p className="update-products-subtitle">
-                    View and modify all products
-                </p>
+                <p className="update-products-subtitle">View and modify all products</p>
             </div>
         </div>
     );

@@ -24,7 +24,6 @@ func Load() (*Config, error) {
 		log.Warn().Msg("No .env file found, going to load from environment")
 	}
 
-
 	cfg := &Config{}
 
 	user, err := getEnv("POSTGRES_USER")
@@ -46,7 +45,7 @@ func Load() (*Config, error) {
 
 	host, err := getEnv("POSTGRES_HOST")
 	if err != nil {
-    	return nil, err
+		return nil, err
 	}
 
 	// build connection string for postgres

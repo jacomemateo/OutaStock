@@ -11,7 +11,7 @@ import {
     unassignProductFromSlot,
     getAllProducts,
     updateSlotProductAndQuantity,
-    getInventoryCount
+    getInventoryCount,
 } from '@/services/api';
 
 /*
@@ -89,7 +89,6 @@ const Inventory = () => {
     const loadAllProducts = async () => {
         try {
             const data = await getAllProducts();
-
 
             /*
             Store full product objects so we have access to id + name

@@ -27,7 +27,6 @@ func (h *InventoryHandler) RegisterRoutes(api *echo.Group) {
 	inventory.GET("/", h.GetAllInventory)
 	inventory.GET("/count", h.GetInventoryCount)
 	inventory.PATCH("/:slotID", h.UpdateInventory)
-
 }
 
 // GetAllInventory handles GET /api/inventory/?num_rows=&page_offset=

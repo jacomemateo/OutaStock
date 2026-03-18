@@ -17,8 +17,8 @@ declare module '*.svg' {
 
 // declarations.d.ts
 interface Window {
-  env: {
-    API_BASE_URL: string;
-    [key: string]: string | undefined; // for other env vars you may add
-  };
+    env: {
+        API_BASE_URL: string;
+        [key: string]: string | undefined; // for other env vars you may add
+    };
 }
