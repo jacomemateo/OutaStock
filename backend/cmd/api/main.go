@@ -58,7 +58,7 @@ func main() {
 	}()
 
 	// ---------- ECHO SERVER & GRACEFUL SHUTDOWN ----------
-	router := transport.NewRouter(db, cfg.CORSOrigins)
+	router := transport.NewRouter(db)
 
 	// Create signal-aware context
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)

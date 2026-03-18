@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"strings"
 
 	"github.com/joho/godotenv"
 	"github.com/rs/zerolog/log"
@@ -14,7 +13,6 @@ import (
 type Config struct {
 	DatabaseURL string
 	Port        string
-	CORSOrigins []string
 	LogLevel    string
 }
 
@@ -39,13 +37,6 @@ func Load() (*Config, error) {
 	}
 
 	cfg.Port = ":" + cfg.Port // Prepend ":" for echo server
-
-	CORSOrigins, err := getEnv("ECHO_CORS_ORIGINS")
-	if err != nil {
-		return nil, err
-	}
-
-	cfg.CORSOrigins = strings.Split(CORSOrigins, ",")
 
 	cfg.LogLevel, err = getEnv("ECHO_LOG_LEVEL")
 	if err != nil {

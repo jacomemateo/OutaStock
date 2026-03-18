@@ -6,8 +6,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/rs/zerolog/log"
-
 	"github.com/labstack/echo/v5"
 	"github.com/labstack/echo/v5/middleware"
 
@@ -21,8 +19,7 @@ type Router struct {
 	database *service.Database // Just store the Database, not the raw pool
 }
 
-func NewRouter(database *service.Database, origins []string) *Router {
-	log.Info().Msgf("CORS string(s) from env: %s", origins)
+func NewRouter(database *service.Database) *Router {
 	r := Router{}
 	r.database = database
 	r.echo = echo.New()

@@ -38,7 +38,6 @@ services:
     environment:
       DATABASE_URL: postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}?sslmode=disable
       ECHO_PORT: ${ECHO_PORT}
-      ECHO_CORS_ORIGINS: ${ECHO_CORS_ORIGINS}
       ECHO_LOG_LEVEL: ${ECHO_LOG_LEVEL}
     depends_on:
       db:
