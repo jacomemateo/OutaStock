@@ -6,14 +6,13 @@ services:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_DB: ${POSTGRES_DB}
-    ports:
-      - "${POSTGRES_PORT}:5432"
     volumes:
       - db-data:/var/lib/postgresql
       - ./db/migrations:/docker-entrypoint-initdb.d
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+    healthcheck: # Add healthcheck so backend waits for DB
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER}"]
       interval: 5s
+      timeout: 5s
       retries: 5
 
   backend:
@@ -21,10 +20,14 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile
-    env_file: "docker.env"
+    environment:
+      DATABASE_URL: postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}?sslmode=disable
+      ECHO_PORT: ${ECHO_PORT}
+      ECHO_CORS_ORIGINS: ${ECHO_CORS_ORIGINS}
+      ECHO_LOG_LEVEL: ${ECHO_LOG_LEVEL}
     depends_on:
       db:
-        condition: service_healthy
+        condition: service_healthy # Wait for DB to be ready
     ports:
       - "8080:8080"
 
@@ -33,12 +36,15 @@ services:
     build:
       context: ./web
       dockerfile: Dockerfile
-    env_file: "docker.env"   # optional if your frontend uses env variables
+    environment:
+      # This is injected into window.env at runtime
+      API_BASE_URL: ${API_BASE_URL}
     depends_on:
       - backend
     ports:
-      - "3000:3000"          # match the EXPOSE in your frontend Dockerfile
+      - "3000:3000" # In prod, you might map port 80 here if this is the only entry point
     restart: unless-stopped
+
 volumes:
   db-data:
 

@@ -24,7 +24,7 @@ nuke_db:
 	docker compose down -v
 
 logs_db:
-	docker logs vending-db
+	docker logs
 
 seed:
 	docker exec -i vending-db psql -U $(POSTGRES_USER) -d $(POSTGRES_DB) < db/seeds/01_products.sql

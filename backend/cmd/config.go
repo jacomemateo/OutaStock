@@ -26,33 +26,12 @@ func Load() (*Config, error) {
 
 	cfg := &Config{}
 
-	user, err := getEnv("POSTGRES_USER")
+	db_url, err := getEnv("DATABASE_URL")
 	if err != nil {
 		return nil, err
 	}
-	password, err := getEnv("POSTGRES_PASSWORD")
-	if err != nil {
-		return nil, err
-	}
-	port, err := getEnv("POSTGRES_PORT")
-	if err != nil {
-		return nil, err
-	}
-	dbName, err := getEnv("POSTGRES_DB")
-	if err != nil {
-		return nil, err
-	}
+	cfg.DatabaseURL = db_url
 
-	host, err := getEnv("POSTGRES_HOST")
-	if err != nil {
-		return nil, err
-	}
-
-	// build connection string for postgres
-	cfg.DatabaseURL = fmt.Sprintf(
-		"postgres://%s:%s@%s:%s/%s?sslmode=disable",
-		user, password, host, port, dbName,
-	)
 
 	cfg.Port, err = getEnv("ECHO_PORT")
 	if err != nil {
