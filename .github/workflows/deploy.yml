@@ -48,6 +48,6 @@ jobs:
             git checkout raspberry
             git pull origin raspberry
             docker compose down
-            docker compose up --build -d
+            docker compose -f docker-compose.prod.yml up --build -d
             echo "Deployment finished!"
           EOF
