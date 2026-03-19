@@ -59,6 +59,16 @@ tasks:
           docker exec -i vending-db-dev psql -U {{.POSTGRES_USER}} -d {{.POSTGRES_DB}} < $file
         done
 
+  pretty:
+    desc: Run code formatters
+    cmds:
+      - |
+        cd backend/
+        gofumpt -w .
+        goimports -w .
+        cd ../web/
+        npm run pretty
+
   prod:
     desc: Build and run the production stack
     cmds:

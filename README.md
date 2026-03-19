@@ -82,7 +82,7 @@ task dev-nuke
 
 ---
 
-### Backend Code Formatting 🧹
+### Code Formatting 🧹
 
 Install formatting tools:
 
@@ -91,18 +91,10 @@ go install mvdan.cc/gofumpt@latest
 go install golang.org/x/tools/cmd/goimports@latest
 ```
 
-Identify unused dependencies:
+Identify unused dependencies and Format and clean imports:
 
 ```bash
-npx knip
-```
-
-Format and clean imports:
-
-```bash
-cd backend/
-gofumpt -w .
-goimports -w .
+task pretty
 ```
 
 
