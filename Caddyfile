@@ -1,27 +1,27 @@
 # Caddyfile
 {
-    # Global email for SSL certs
-    email jacome.mateo@icloud.com
+	# Global email for SSL certs
+	email jacome.mateo@icloud.com
 }
 
 :80 {
-    encode gzip zstd 
-    
-    # Add basic security headers (Good practice to start now)
-    header {
-        # Enable HSTS (Force HTTPS) - Only activates when you use a real domain
-        Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
-        # Prevent clickjacking
-        X-Frame-Options "SAMEORIGIN"
-        # Prevent MIME sniffing
-        X-Content-Type-Options "nosniff"
-    }
+	encode gzip zstd
 
-    handle /api/* {
-        reverse_proxy {$BACKEND_HOST}
-    }
+	# Add basic security headers (Good practice to start now)
+	header {
+		# Enable HSTS (Force HTTPS) - Only activates when you use a real domain
+		Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
+		# Prevent clickjacking
+		X-Frame-Options "SAMEORIGIN"
+		# Prevent MIME sniffing
+		X-Content-Type-Options "nosniff"
+	}
 
-    handle {
-        reverse_proxy {$FRONTEND_HOST}
-    }
+	handle /api/* {
+		reverse_proxy {$BACKEND_HOST}
+	}
+
+	handle {
+		reverse_proxy {$FRONTEND_HOST}
+	}
 }
