@@ -30,7 +30,7 @@ jobs:
         run: |
           mkdir -p ~/.ssh
           cat <<EOF >> ~/.ssh/config
-          Host ssh.lsds.fun
+          Host ${{ secrets.PI_HOST }}
             ProxyCommand /usr/local/bin/cloudflared access ssh --hostname %h --id ${{ secrets.CF_CLIENT_ID }} --secret ${{ secrets.CF_CLIENT_SECRET }}
             StrictHostKeyChecking no
             UserKnownHostsFile /dev/null
@@ -38,7 +38,7 @@ jobs:
 
       - name: Execute Remote Command
         run: |
-          ssh -vvv pi@ssh.lsds.fun << 'EOF'
+          ssh -vvv ${{ secrets.PI_USER }}@${{ secrets.PI_HOST }} << 'EOF'
             cd ~/OutaStock
             git fetch --all
             git checkout raspberry
