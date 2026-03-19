@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"net/http"
+	"strconv"
 
 	"github.com/google/uuid"
 	"github.com/jacomemateo/OutaStock/backend/internal/service"
@@ -23,15 +24,33 @@ func NewProductsHandler(productsService *service.ProductsService) *ProductsHandl
 
 func (h *ProductsHandler) RegisterRoutes(api *echo.Group) {
 	products := api.Group("/products")
-	products.GET("/all", h.GetAllProducts)
+	products.GET("/", h.GetAllProducts)
 	products.POST("/new", h.CreateProduct)
 	products.PATCH("/:productID", h.UpdateProduct)
 	products.DELETE("/:productID", h.DeleteProduct)
 }
 
-// GetAllProducts handles GET /api/products/all
+// GetAllIProducts handles GET /api/products/?num_rows=&page_offset=
 func (h *ProductsHandler) GetAllProducts(c *echo.Context) error {
-	products, err := h.productsService.GetAllProducts(c.Request().Context())
+	numRowsStr := c.QueryParam("num_rows")
+	numRows, err := strconv.ParseInt(numRowsStr, 10, 32)
+	if err != nil {
+		log.Warn().Msgf("Failed to parse num_rows parameter: %s", numRowsStr)
+		return c.JSON(http.StatusBadRequest, map[string]string{
+			"error": "Invalid num_rows parameter",
+		})
+	}
+
+	pageOffsetStr := c.QueryParam("page_offset")
+	pageOffset, err := strconv.ParseInt(pageOffsetStr, 10, 32)
+	if err != nil {
+		log.Warn().Msgf("Failed to parse page_offset parameter: %s", pageOffsetStr)
+		return c.JSON(http.StatusBadRequest, map[string]string{
+			"error": "Invalid page_offset parameter",
+		})
+	}
+
+	products, err := h.productsService.GetAllProducts(c.Request().Context(), int(pageOffset), int(numRows))
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, map[string]string{
 			"error": "Failed to fetch products",

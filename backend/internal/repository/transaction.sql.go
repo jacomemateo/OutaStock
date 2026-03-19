@@ -11,7 +11,18 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
-const getRecentTransactions = `-- name: GetRecentTransactions :many
+const countTransactionRows = `-- name: CountTransactionRows :one
+SELECT COUNT(*) from transactions
+`
+
+func (q *Queries) CountTransactionRows(ctx context.Context) (int64, error) {
+	row := q.db.QueryRow(ctx, countTransactionRows)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
+}
+
+const getTransactions = `-- name: GetTransactions :many
 
 SELECT
     t.transaction_id,
@@ -21,10 +32,16 @@ SELECT
 FROM transactions as t
 JOIN product_info p ON t.product_id = p.product_id
 ORDER BY t.date_sold DESC
-LIMIT $1
+LIMIT $2
+OFFSET $1
 `
 
-type GetRecentTransactionsRow struct {
+type GetTransactionsParams struct {
+	PageOffset int32
+	NumRows    int32
+}
+
+type GetTransactionsRow struct {
 	TransactionID    pgtype.UUID
 	PriceAtSaleCents int32
 	DateSold         pgtype.Timestamptz
@@ -32,15 +49,15 @@ type GetRecentTransactionsRow struct {
 }
 
 // code: language=postgres
-func (q *Queries) GetRecentTransactions(ctx context.Context, numRows int32) ([]GetRecentTransactionsRow, error) {
-	rows, err := q.db.Query(ctx, getRecentTransactions, numRows)
+func (q *Queries) GetTransactions(ctx context.Context, arg GetTransactionsParams) ([]GetTransactionsRow, error) {
+	rows, err := q.db.Query(ctx, getTransactions, arg.PageOffset, arg.NumRows)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []GetRecentTransactionsRow
+	var items []GetTransactionsRow
 	for rows.Next() {
-		var i GetRecentTransactionsRow
+		var i GetTransactionsRow
 		if err := rows.Scan(
 			&i.TransactionID,
 			&i.PriceAtSaleCents,

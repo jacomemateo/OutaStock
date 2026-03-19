@@ -1,6 +1,6 @@
 -- code: language=postgres
 
--- name: GetRecentTransactions :many
+-- name: GetTransactions :many
 SELECT
     t.transaction_id,
     t.price_at_sale_cents,
@@ -9,4 +9,8 @@ SELECT
 FROM transactions as t
 JOIN product_info p ON t.product_id = p.product_id
 ORDER BY t.date_sold DESC
-LIMIT @num_rows;
+LIMIT @num_rows
+OFFSET @page_offset;
+
+-- name: CountTransactionRows :one
+SELECT COUNT(*) from transactions;

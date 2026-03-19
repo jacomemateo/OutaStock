@@ -23,14 +23,42 @@ func NewProductsService(database *Database) *ProductsService {
 }
 
 // GetAllProducts gets all products and returns DTOs directly
-func (s *ProductsService) GetAllProducts(ctx context.Context) ([]dto.ProductResponse, error) {
-	rows, err := s.database.Queries.GetProducts(ctx)
+func (s *ProductsService) GetAllProducts(ctx context.Context, pageOffset int, numRows int) ([]dto.ProductResponse, error) {
+	// 1. Get total count for boundary protection
+	totalRows64, err := s.database.Queries.CountProductRows(ctx)
+	if err != nil {
+		log.Error().Err(err).Msg("Failed to get product count from database")
+		return nil, err
+	}
+	totalRows := int(totalRows64)
+
+	// 2. Calculate offset with "last page" fallback logic
+	// This ensures that if a user requests a page beyond the limit, 
+	// we just show them the last available page.
+	offset := pageOffset * numRows
+
+	if offset+numRows > totalRows {
+		offset = (totalRows - 1) / numRows * numRows
+		if offset < 0 {
+			offset = 0
+		}
+	}
+
+	// 3. Set up repository parameters
+	params := repository.GetProductsParams{
+		NumRows:    int32(numRows),
+		PageOffset: int32(offset),
+	}
+
+	// 4. Call repository
+	rows, err := s.database.Queries.GetProducts(ctx, params)
 	if err != nil {
 		log.Error().Err(err).Msg("Failed to get products from database")
 		return nil, err
 	}
 
-	var productResponses []dto.ProductResponse
+	// 5. Initialize slice with specific capacity to avoid multiple allocations
+	productResponses := make([]dto.ProductResponse, 0, len(rows))
 
 	for _, row := range rows {
 		uuidString := convertPgtypeUUIDToString(row.ProductID)
@@ -42,6 +70,7 @@ func (s *ProductsService) GetAllProducts(ctx context.Context) ([]dto.ProductResp
 			DateCreated: &row.DateCreated.Time,
 		})
 	}
+
 	return productResponses, nil
 }
 

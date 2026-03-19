@@ -29,4 +29,9 @@ WHERE product_id = @product_id;
 -- name: GetProducts :many 
 SELECT * FROM product_info
 WHERE date_deleted IS NULL
-ORDER BY name;
+ORDER BY name
+LIMIT @num_rows
+OFFSET @page_offset;
+
+-- name: CountProductRows :one
+SELECT COUNT(*) from product_info;

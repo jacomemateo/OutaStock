@@ -11,6 +11,17 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
+const countProductRows = `-- name: CountProductRows :one
+SELECT COUNT(*) from product_info
+`
+
+func (q *Queries) CountProductRows(ctx context.Context) (int64, error) {
+	row := q.db.QueryRow(ctx, countProductRows)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
+}
+
 const createProduct = `-- name: CreateProduct :exec
 
 INSERT INTO product_info (name, price_cents)
@@ -43,10 +54,17 @@ const getProducts = `-- name: GetProducts :many
 SELECT product_id, name, price_cents, date_created, date_modified, date_deleted FROM product_info
 WHERE date_deleted IS NULL
 ORDER BY name
+LIMIT $2
+OFFSET $1
 `
 
-func (q *Queries) GetProducts(ctx context.Context) ([]ProductInfo, error) {
-	rows, err := q.db.Query(ctx, getProducts)
+type GetProductsParams struct {
+	PageOffset int32
+	NumRows    int32
+}
+
+func (q *Queries) GetProducts(ctx context.Context, arg GetProductsParams) ([]ProductInfo, error) {
+	rows, err := q.db.Query(ctx, getProducts, arg.PageOffset, arg.NumRows)
 	if err != nil {
 		return nil, err
 	}

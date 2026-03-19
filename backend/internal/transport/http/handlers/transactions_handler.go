@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/rs/zerolog/log"
 	"github.com/jacomemateo/OutaStock/backend/internal/service"
 	"github.com/labstack/echo/v5"
 )
@@ -22,7 +23,7 @@ func NewTransactionsHandler(transactionsService *service.TransactionsService) *T
 
 func (h *TransactionsHandler) RegisterRoutes(api *echo.Group) {
 	transactions := api.Group("/transactions")
-	transactions.GET("/recent", h.GetRecentTransactions)
+	transactions.GET("/", h.GetTransactions)
 }
 
 const (
@@ -30,40 +31,37 @@ const (
 	MaxLimit     = int64(200)
 )
 
-// GetRecentTransactions handles GET /api/transactions/recent?limit=10
-func (h *TransactionsHandler) GetRecentTransactions(c *echo.Context) error {
-	// Get limit from query param, default to 10
-	limit := DefaultLimit // default
-
-	if limitStr := c.QueryParam("limit"); limitStr != "" {
-		// Now using strconv.ParseInt instead of strconv.Atoi to avoid overflow issues with int32
-		// and also added error handling for non-integer values and out-of-range values
-		parsed, err := strconv.ParseInt(limitStr, 10, 32)
-
-		if err != nil {
-			return c.JSON(http.StatusBadRequest, map[string]string{
-				"error": "Invalid limit parameter",
-			})
-		} else if parsed <= 0 || parsed > MaxLimit {
-			return c.JSON(http.StatusBadRequest, map[string]string{
-				"error": "Limit must be between 1 and 200",
-			})
-		}
-		limit = int32(parsed)
-	} else {
+// GetRecentTransactions handles GET /api/transactions/recent?num_rows=&page_offset=
+func (h *TransactionsHandler) GetTransactions(c *echo.Context) error {
+	// 1. Parse num_rows query parameter
+	numRowsStr := c.QueryParam("num_rows")
+	numRows, err := strconv.ParseInt(numRowsStr, 10, 32)
+	if err != nil {
+		log.Warn().Msgf("Failed to parse num_rows parameter: %s", numRowsStr)
 		return c.JSON(http.StatusBadRequest, map[string]string{
-			"error": "Limit parameter is required",
+			"error": "Invalid num_rows parameter",
 		})
 	}
 
-	// Call service - now returns DTOs directly
-	transactions, err := h.transactionsService.GetRecentTransactions(c.Request().Context(), limit)
+	// 2. Parse page_offset query parameter
+	pageOffsetStr := c.QueryParam("page_offset")
+	pageOffset, err := strconv.ParseInt(pageOffsetStr, 10, 32)
 	if err != nil {
+		log.Warn().Msgf("Failed to parse page_offset parameter: %s", pageOffsetStr)
+		return c.JSON(http.StatusBadRequest, map[string]string{
+			"error": "Invalid page_offset parameter",
+		})
+	}
+
+	// 3. Call service with pagination params
+	transactions, err := h.transactionsService.GetTransactions(c.Request().Context(), int(pageOffset), int(numRows))
+	if err != nil {
+		log.Error().Err(err).Msg("Failed to fetch transactions from service")
 		return c.JSON(http.StatusInternalServerError, map[string]string{
 			"error": "Failed to fetch transactions",
 		})
 	}
 
-	// No conversion needed - transactions are already DTOs!
+	// 4. Return DTOs
 	return c.JSON(http.StatusOK, transactions)
 }
