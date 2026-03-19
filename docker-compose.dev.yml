@@ -9,7 +9,7 @@ services:
     env_file: ".env.dev"
     restart: unless-stopped
     ports:
-      - "80:80"    # HTTP
+      - "8081:80"    # Changed this from 80:80 to 8081:80
     volumes:
       - ./Caddyfile:/etc/caddy/Caddyfile
       - caddy_data:/data
@@ -17,6 +17,7 @@ services:
 
   db:
     image: postgres:18
+    container_name: vending-db-dev
     env_file: ".env.dev"
     volumes:
       - db-data:/var/lib/postgresql
