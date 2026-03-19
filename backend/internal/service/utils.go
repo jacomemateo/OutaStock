@@ -18,3 +18,20 @@ func convertPgtypeUUIDToString(uuid pgtype.UUID) string {
 	uuidString := fmt.Sprintf("%x-%x-%x-%x-%x", uuid.Bytes[0:4], uuid.Bytes[4:6], uuid.Bytes[6:8], uuid.Bytes[8:10], uuid.Bytes[10:16])
 	return uuidString
 }
+
+// Internal utility to handle the pagination math
+func Paginate[T any] (
+	total int, 
+	pageOffset int, 
+	numRows int, 
+	fetch func(offset, limit int) ([]T, error)
+	) ([]T, error)
+{
+    offset := pageOffset * numRows
+
+    if offset+numRows > total {
+		offset = max((total - 1) / numRows * numRows, 0)
+    }
+
+    return fetch(offset, numRows)
+}
