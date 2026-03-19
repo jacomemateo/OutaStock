@@ -2,7 +2,7 @@ import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import path from 'path';
 
-export default defineConfig(({  }) => {
+export default defineConfig(({}) => {
     // Look for .env in the parent directory (one level up)
     const envDir = path.resolve(__dirname, '..');
 

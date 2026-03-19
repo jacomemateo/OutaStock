@@ -21,7 +21,6 @@ func Load() (*Config, error) {
 	}
 	cfg.DatabaseURL = db_url
 
-
 	cfg.Port, err = getEnv("ECHO_PORT")
 	if err != nil {
 		return nil, err
@@ -36,7 +35,6 @@ func Load() (*Config, error) {
 
 	return cfg, nil
 }
-
 
 func getEnv(key string) (string, error) {
 	if value := os.Getenv(key); value != "" {

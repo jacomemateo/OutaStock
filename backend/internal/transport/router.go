@@ -3,6 +3,7 @@ package transport
 import (
 	"context"
 	"net/http"
+	"os"
 	"time"
 
 	"github.com/labstack/echo/v5"
@@ -23,28 +24,32 @@ func NewRouter(database *service.Database) *Router {
 	r.database = database
 	r.echo = echo.New()
 
-	// Middleware
 	r.echo.Use(middleware.RequestLogger())
 
+	// Conditional CORS (Only for Development)
+	// We check the environment variable we already have in .env.dev
+	//
+	// God i wish Go had macros this would be a lot nicer!
+	if os.Getenv("ECHO_LOG_LEVEL") == "debug" {
 		r.echo.Use(middleware.CORSWithConfig(middleware.CORSConfig{
-		AllowOrigins: []string{"http://localhost:5173"},
-		AllowMethods: []string{
-			http.MethodGet,
-			http.MethodPost,
-			http.MethodPut,
-			http.MethodDelete,
-			http.MethodOptions,
-			http.MethodPatch,
-		},
-		AllowHeaders: []string{
-			echo.HeaderOrigin,
-			echo.HeaderContentType,
-			echo.HeaderAccept,
-			echo.HeaderAuthorization,
-		},
-		AllowCredentials: true,
-	}))	
-
+			AllowOrigins: []string{"http://localhost:5173", "http://localhost:8081"},
+			AllowMethods: []string{
+				http.MethodGet,
+				http.MethodPost,
+				http.MethodPut,
+				http.MethodDelete,
+				http.MethodOptions,
+				http.MethodPatch,
+			},
+			AllowHeaders: []string{
+				echo.HeaderOrigin,
+				echo.HeaderContentType,
+				echo.HeaderAccept,
+				echo.HeaderAuthorization,
+			},
+			AllowCredentials: true,
+		}))
+	}
 
 	// Initialize services (using database.queries)
 	transactionsService := service.NewTransactionsService(database)
