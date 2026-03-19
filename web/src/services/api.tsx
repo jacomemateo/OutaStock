@@ -22,9 +22,8 @@ const getPaginated = async (endpoint: string, numRows: number, pageOffset: numbe
 
 export const fetchInventory = (n: number, p: number) => getPaginated('/inventory/', n, p);
 export const fetchTransactions = (n: number, p: number) =>
-    getPaginated('/transactions/recent', n, p);
-export const getAllProducts = (n: number, p: number) =>
-    getPaginated('/products/all', n, p);
+    getPaginated('/transactions/', n, p);
+export const getAllProducts = (n: number, p: number) => getPaginated('/products/', n, p);
 
 // To get row counts for each
 const getCount = async (endpoint: string) => {

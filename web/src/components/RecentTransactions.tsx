@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { fetchRecentTransactions } from '@/services/api';
+import { fetchTransactions, getTransactionCount } from '@/services/api';
 import '@styles/RecentTransactions.css';
 
 type Transaction = {
@@ -11,48 +11,53 @@ type Transaction = {
 
 const RecentTransactions = () => {
     const [transactions, setTransactions] = useState<Transaction[]>([]);
+    const [totalItems, setTotalItems] = useState(0);
     const [currentPage, setCurrentPage] = useState(1);
+    const [isLoading, setIsLoading] = useState(false);
+
     const itemsPerPage = 5;
 
-    const loadTransactions = async () => {
+    // CHANGE 1: Set your desired page limit here.
+    // If the database has 100 items (20 pages), this will cap it at 5 pages.
+    const MAX_PAGES = 5;
+
+    const loadData = async () => {
+        setIsLoading(true);
         try {
-            const data = await fetchRecentTransactions(60); //Fetch more than we need for pagination
+            const countData = await getTransactionCount();
+
+            // CHANGE 2: Fix the type mismatch.
+            // Your backend returns a raw number (e.g. 54), not an object { count: 54 }.
+            // We check if it's an object or a number to be safe.
+            const rawCount =
+                typeof countData === 'number' ? countData : (countData as any).count;
+
+            if (rawCount !== undefined) {
+                setTotalItems(rawCount);
+            }
+
+            const data = await fetchTransactions(itemsPerPage, currentPage - 1);
             setTransactions(data);
         } catch (error) {
-            console.error('Failed to load transactions');
+            console.error('Failed to load transactions', error);
+        } finally {
+            setIsLoading(false);
         }
     };
 
     useEffect(() => {
-        // Initial fetch
-        loadTransactions();
-
-        // Poll every 10 seconds
-        const interval = setInterval(() => {
-            loadTransactions();
-        }, 10000);
-
-        // Cleanup (VERY IMPORTANT)
+        loadData();
+        const interval = setInterval(loadData, 10000);
         return () => clearInterval(interval);
-    }, []);
+    }, [currentPage]);
 
-    const totalPages = Math.ceil(transactions.length / itemsPerPage);
+    // Calculate total pages based on database count
+    const actualTotalPages = Math.ceil(totalItems / itemsPerPage);
 
-    const indexOfLastItem = currentPage * itemsPerPage;
-    const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-    const currentTransactions = transactions.slice(indexOfFirstItem, indexOfLastItem);
-
-    const handleNext = () => {
-        if (currentPage < totalPages) {
-            setCurrentPage(currentPage + 1);
-        }
-    };
-
-    const handlePrev = () => {
-        if (currentPage > 1) {
-            setCurrentPage(currentPage - 1);
-        }
-    };
+    // CHANGE 3: Apply the limit.
+    // Display the smaller of (Actual Pages) or (Max Allowed Pages).
+    // If actual is 0, default to 1.
+    const totalPages = Math.min(actualTotalPages, MAX_PAGES) || 1;
 
     return (
         <div className="transactions-container">
@@ -61,8 +66,8 @@ const RecentTransactions = () => {
                 <p className="transactions-subtitle">Latest sales activity</p>
             </div>
 
-            <div className="transaction-list">
-                {currentTransactions.map((transaction, index) => (
+            <div className={`transaction-list ${isLoading ? 'loading-opacity' : ''}`}>
+                {transactions.map((transaction, index) => (
                     <div
                         key={transaction.id}
                         className="transaction-card"
@@ -78,17 +83,7 @@ const RecentTransactions = () => {
                                         {transaction.productName}
                                     </h3>
                                     <p className="transaction-date">
-                                        {new Date(transaction.dateSold).toLocaleString(
-                                            undefined,
-                                            {
-                                                year: 'numeric',
-                                                month: '2-digit',
-                                                day: '2-digit',
-                                                hour: '2-digit',
-                                                minute: '2-digit',
-                                                second: '2-digit',
-                                            },
-                                        )}
+                                        {new Date(transaction.dateSold).toLocaleString()}
                                     </p>
                                 </div>
                             </div>
@@ -105,20 +100,22 @@ const RecentTransactions = () => {
             <div className="pagination">
                 <button
                     className="pagination-btn"
-                    onClick={handlePrev}
-                    disabled={currentPage === 1}
+                    onClick={() => setCurrentPage((p) => p - 1)}
+                    disabled={currentPage === 1 || isLoading}
                 >
                     Previous
                 </button>
 
                 <span className="pagination-info">
-                    Page {currentPage} of {totalPages || 1}
+                    {/* This now correctly shows "Page 1 of 5" based on the limit */}
+                    Page {currentPage} of {totalPages}
                 </span>
 
                 <button
                     className="pagination-btn"
-                    onClick={handleNext}
-                    disabled={currentPage === totalPages || totalPages === 0}
+                    onClick={() => setCurrentPage((p) => p + 1)}
+                    // This now correctly stops at the calculated totalPages
+                    disabled={currentPage === totalPages || isLoading}
                 >
                     Next
                 </button>
