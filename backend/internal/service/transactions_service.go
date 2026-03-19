@@ -21,53 +21,40 @@ func NewTransactionsService(database *Database) *TransactionsService {
 
 // GetTransactions gets paginated recent transactions and returns DTOs directly
 func (s *TransactionsService) GetTransactions(ctx context.Context, pageOffset int, numRows int) ([]dto.TransactionResponse, error) {
-    // 1. Get total transaction count for boundary protection
-    totalRows64, err := s.database.Queries.CountTransactionRows(ctx)
-    if err != nil {
-        log.Error().Err(err).Msg("Unable to get transaction row count")
-        return nil, err
-    }
-    totalRows := int(totalRows64)
+	// 1. Get total transaction count for the pagination helper
+	totalRows64, err := s.database.Queries.CountTransactionRows(ctx)
+	if err != nil {
+		log.Error().Err(err).Msg("Unable to get transaction row count")
+		return nil, err
+	}
 
-    // 2. Calculate offset with "last page" fallback logic
-    // Ensures users don't request a page that doesn't exist
-    offset := pageOffset * numRows
+	// 2. Wrap the database call and mapping in the Paginate helper
+	// T here is []dto.TransactionResponse
+	return Paginate(int(totalRows64), pageOffset, numRows, func(calculatedOffset, limit int) ([]dto.TransactionResponse, error) {
+		
+		// 3. Call repository using the safe offset and limit
+		rows, err := s.database.Queries.GetTransactions(ctx, repository.GetTransactionsParams{
+			NumRows:    int32(limit),
+			PageOffset: int32(calculatedOffset),
+		})
+		if err != nil {
+			log.Error().Err(err).Msg("Failed to query transactions from database")
+			return nil, err
+		}
 
-    if offset+numRows > totalRows {
-        offset = (totalRows - 1) / numRows * numRows
-        if offset < 0 {
-            offset = 0
-        }
-    }
+		// 4. Map the database rows to DTOs
+		transactions := make([]dto.TransactionResponse, 0, len(rows))
+		for _, row := range rows {
+			uuidString := convertPgtypeUUIDToString(row.TransactionID)
 
-    // 3. Prepare parameters for the repository call
-    params := repository.GetTransactionsParams{
-        NumRows:    int32(numRows),
-        PageOffset: int32(offset),
-    }
+			transactions = append(transactions, dto.TransactionResponse{
+				ID:               uuidString,
+				ProductName:      row.Name,
+				PriceAtSaleCents: int(row.PriceAtSaleCents),
+				DateSold:         &row.DateSold.Time,
+			})
+		}
 
-    // 4. Call repository
-    rows, err := s.database.Queries.GetTransactions(ctx, params)
-    if err != nil {
-        log.Error().Err(err).Msg("Failed to query transactions from database")
-        return nil, err
-    }
-
-    // 5. Initialize slice with specific capacity to optimize memory allocation
-    transactions := make([]dto.TransactionResponse, 0, len(rows))
-
-    for _, row := range rows {
-        uuidString := convertPgtypeUUIDToString(row.TransactionID)
-
-        transaction := dto.TransactionResponse{
-            ID:               uuidString,
-            ProductName:      row.Name,
-            PriceAtSaleCents: int(row.PriceAtSaleCents),
-            DateSold:         &row.DateSold.Time,
-        }
-        
-        transactions = append(transactions, transaction)
-    }
-
-    return transactions, nil
+		return transactions, nil
+	})
 }

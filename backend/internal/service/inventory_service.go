@@ -19,81 +19,46 @@ func NewInventoryService(database *Database) *InventoryService {
 	}
 }
 
-// GetAllInventory gets all inventory items
-
 func (s *InventoryService) GetAllInventory(ctx context.Context, pageOffset int, numRows int) ([]dto.InventorySlot, error) {
-	invTotalRows64, err := s.database.Queries.CountInventoryRows(ctx)
-	if err != nil {
-		log.Warn().Msg("Unable to get inventory row count")
-		return nil, err
-	}
-	invTotalRows := int(invTotalRows64)
+    // 1. Get the total (needed for the math)
+    invTotalRows64, err := s.database.Queries.CountInventoryRows(ctx)
+    if err != nil {
+        log.Warn().Msg("Unable to get inventory row count")
+        return nil, err
+    }
 
-	var params repository.GetInventoryParams
+    // 2. Let Paginate handle the math and the "hand-off"
+    return Paginate(int(invTotalRows64), pageOffset, numRows, func(calculatedOffset, limit int) ([]dto.InventorySlot, error) {
+        // Call database using the SAFE offset calculated by the helper
+        rows, err := s.database.Queries.GetInventory(ctx, repository.GetInventoryParams{
+            NumRows:    int32(limit),
+            PageOffset: int32(calculatedOffset),
+        })
+        if err != nil {
+            return nil, err
+        }
 
-	// if we have 24 total rows
-	// page =  10
-	// numRows = 5, then
-	// 10*5 = 50 > 24! So we basically get the last page by performing integer division
-	// to get the last page before that which would be
-	// 24/5 = 4 and we use that number to get the the last page
-	//
-	// in short
-	// if it's not over the bounary, pass normally
-	// if it is, get the last "page"
-	// btw this all is based off pageOffset being zero index, i.e. the front end would
-	// pass 0 to get the first page
-	offset := pageOffset * numRows
+        // Map your database rows to DTOs (The same loop logic as before)
+        inventoryItems := make([]dto.InventorySlot, 0, len(rows))
+        for _, row := range rows {
+            uuidString := ""
+            if row.ProductID.Valid {
+                uuidString = convertPgtypeUUIDToString(row.ProductID)
+            }
 
-	if offset+numRows > invTotalRows {
-		offset = (invTotalRows - 1) / numRows * numRows // Number of possible pages before we overflow
-		if offset < 0 {
-			offset = 0
-		}
-	}
+            inventoryItems = append(inventoryItems, dto.InventorySlot{
+                SlotID:      int(row.SlotID),
+                SlotLabel:   row.SlotLabel,
+                Quantity:    int(row.Quantity.Int32),
+                ProductName: row.Name.String,
+                PriceCents:  int(row.PriceCents.Int32),
+                ProductID:   uuidString,
+                DateAdded:   &row.DateAdded.Time,
+            })
+        }
 
-	params.NumRows = int32(numRows)
-	params.PageOffset = int32(offset) // We don't need to worry about making this fit since postgres will just take care of it
-
-	// Call repository
-	rows, err := s.database.Queries.GetInventory(ctx, params)
-	if err != nil {
-		return nil, err
-	}
-
-	inventoryItems := make([]dto.InventorySlot, 0, len(rows)) // Initialize with capacity to avoid multiple allocations
-
-	for _, row := range rows {
-		// Check if it hss a valid UUID
-		if !row.ProductID.Valid {
-			inventorySlot := dto.InventorySlot{
-				SlotID:      int(row.SlotID),
-				SlotLabel:   row.SlotLabel,
-				Quantity:    0,
-				ProductName: "",
-				PriceCents:  0,
-				ProductID:   "",
-				DateAdded:   nil,
-			}
-			inventoryItems = append(inventoryItems, inventorySlot)
-			continue
-		}
-
-		uuidString := convertPgtypeUUIDToString(row.ProductID)
-
-		inventorySlot := dto.InventorySlot{
-			SlotID:      int(row.SlotID),
-			SlotLabel:   row.SlotLabel,
-			Quantity:    int(row.Quantity.Int32),
-			ProductName: row.Name.String,
-			PriceCents:  int(row.PriceCents.Int32),
-			ProductID:   uuidString,
-			DateAdded:   &row.DateAdded.Time,
-		}
-
-		inventoryItems = append(inventoryItems, inventorySlot)
-	}
-	return inventoryItems, nil
+        return inventoryItems, nil
+    })
 }
 
 func (s *InventoryService) UpdateInventory(ctx context.Context, slotID int, req dto.UpdateInventoryRequest) error {
