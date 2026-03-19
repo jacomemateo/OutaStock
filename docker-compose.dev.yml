@@ -1,0 +1,29 @@
+# We only need the caddy router and the database since the go backend will be ran with AIR
+# for instant reload and the frontend will run with VITE for again, instant reload.
+# 
+# For development we run both air, vite and this docker-compose file from 3 different
+# terminals so we can see everything that's happening!
+services:
+  caddy:
+    image: caddy:latest
+    env_file: ".env.dev"
+    restart: unless-stopped
+    ports:
+      - "80:80"    # HTTP
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile
+      - caddy_data:/data
+      - caddy_config:/config
+
+  db:
+    image: postgres:18
+    env_file: ".env.dev"
+    volumes:
+      - db-data:/var/lib/postgresql
+      - ./db/migrations:/docker-entrypoint-initdb.d
+
+volumes:
+  db-data:
+  caddy_data:   
+  caddy_config: 
+

@@ -1,7 +1,9 @@
 services:
   caddy:
     image: caddy:latest
-    container_name: caddy-proxy
+    environment:
+      BACKEND_HOST: ${BACKEND_HOST}
+      FRONTEND_HOST: ${FRONTEND_HOST}
     restart: unless-stopped
     ports:
       - "80:80"    # HTTP
@@ -16,7 +18,6 @@ services:
 
   db:
     image: postgres:18
-    container_name: vending-db
     environment:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
@@ -31,7 +32,6 @@ services:
       retries: 5
 
   backend:
-    container_name: server
     build:
       context: ./backend
       dockerfile: Dockerfile
@@ -44,7 +44,6 @@ services:
         condition: service_healthy # Wait for DB to be ready
 
   frontend:
-    container_name: web
     build:
       context: ./web
       dockerfile: Dockerfile
