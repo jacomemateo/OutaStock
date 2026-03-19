@@ -1,6 +1,13 @@
 name: Deploy to Raspberry Pi
 
 on:
+  push:
+    branches:
+      - raspberry
+    paths-ignore:  # Add this section
+      - 'README.md'
+      - 'docs/**'
+      - '.gitignore'
   workflow_dispatch:
 
 jobs:
