@@ -50,20 +50,21 @@
 - [ ] I don't know if it's nesceary but maybe test the constraints we added in the DB schema?
 
 ## Frontend
-- [ ] Update inventory API 
+- [x] Update inventory API 
 
 ## Docs
 - [x] Update inventory get api to reflect changes, right now it should be broken.
 
 
 ## Docker
-- [ ] Create dockerfile for backend
-  - [ ] Make sure it works with env variables
-- [ ] Create dockerfile for frontend
-- [ ] Create docker-compose.yml for project
+- [x] Create dockerfile for backend
+  - [x] Make sure it works with env variables
+- [x] Create dockerfile for frontend
+- [x] Create docker-compose.yml for project
+  - [x] Actually split them into a docker-compose.dev.yml and docker-compose.prod.yml
 
 ## Deployment
-- [ ] Learn how to set up automatic updates, i.e. we send push to the github, something in the server is listening for that and pulls it and all the docker containers automatically update magically 🇦🇺
+- [x] Learn how to set up automatic updates, i.e. we send push to the github, something in the server is listening for that and pulls it and all the docker containers automatically update magically
 
 ## Authenthication (LogTo)
 - [ ] [LogTo](https://logto.io/) Website
