@@ -9,69 +9,34 @@ if (!API_BASE_URL || API_BASE_URL === '__API_BASE_URL__') {
 
 console.log('API Base URL:', API_BASE_URL);
 
-/** -----------------------------
- * Transaction Actions
- * ----------------------------- */
-export const fetchRecentTransactions = async (limit = 10) => {
-    try {
-        const response = await fetch(
-            `${API_BASE_URL}/transactions/recent?limit=${limit}`,
-        );
 
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-
-        const data = await response.json();
-        return data;
-    } catch (error) {
-        console.error('Error fetching transactions:', error);
-        throw error;
-    }
+const getPaginated = async (endpoint: string, numRows: number, pageOffset: number) => {
+    const params = new URLSearchParams({
+        num_rows: numRows.toString(),
+        page_offset: pageOffset.toString(),
+    });
+    const response = await fetch(`${API_BASE_URL}${endpoint}?${params.toString()}`);
+    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+    return await response.json();
 };
 
-/** -----------------------------
- * Inventory Actions
- * ----------------------------- */
-export const fetchInventory = async (numRows: number, pageOffset: number) => {
-    try {
-        // Don't use new URL() with relative paths.
-        // Instead, build the query string manually.
-        const params = new URLSearchParams({
-            num_rows: numRows.toString(),
-            page_offset: pageOffset.toString(),
-        });
+// Now your exports are one-liners:
+export const fetchInventory = (n: number, p: number) => getPaginated('/inventory/', n, p);
+export const fetchTransactions = (n: number, p: number) => getPaginated('/transactions/recent', n, p);
+export const getAllProducts = (n: number, p: number) => getPaginated('/products/all', n, p);
 
-        // Append the string to your relative base URL
-        const response = await fetch(`${API_BASE_URL}/inventory/?${params.toString()}`);
 
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-
-        const data = await response.json();
-        return data;
-    } catch (error) {
-        console.error('Error fetching inventory:', error);
-        throw error;
+const getCount = async (endpoint: string) => {
+    const response = await fetch(`${API_BASE_URL}${endpoint}`);
+    if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status} at ${endpoint}`);
     }
+    return await response.json();
 };
 
-export const getInventoryCount = async () => {
-    try {
-        const response = await fetch(`${API_BASE_URL}/inventory/count`);
-
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-
-        const data = await response.json();
-        return data;
-    } catch (error) {
-        console.error('Error fetching inventory count:', error);
-        throw error;
-    }
-};
+export const getInventoryCount = () => getCount('/inventory/count');
+export const getTransactionCount = () => getCount('/transactions/count');
+export const getProductCount = () => getCount('/products/count');
 
 //  * Assign a product to a slot (initial quantity optional)
 export const assignProductToSlot = async (
@@ -141,23 +106,6 @@ export const updateSlotProductAndQuantity = async (
         return await response.json();
     } catch (error) {
         console.error(`Error updating product and quantity for slot ${slotID}:`, error);
-        throw error;
-    }
-};
-
-/** -----------------------------
- * Product Actions
- * ----------------------------- */
-
-export const getAllProducts = async () => {
-    try {
-        const response = await fetch(`${API_BASE_URL}/products/all`);
-
-        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-        const data = await response.json();
-        return data;
-    } catch (error) {
-        console.error('Error fetching products:', error);
         throw error;
     }
 };
