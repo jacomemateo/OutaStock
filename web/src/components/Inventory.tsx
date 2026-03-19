@@ -9,9 +9,10 @@ import ConfirmationModal from '@/components/ConfirmationModal';
 import {
     fetchInventory,
     unassignProductFromSlot,
-    getAllProducts,
+    fetchProducts,
     updateSlotProductAndQuantity,
     getInventoryCount,
+    getProductCount,
 } from '@/services/api';
 
 /*
@@ -88,7 +89,7 @@ const Inventory = () => {
     */
     const loadAllProducts = async () => {
         try {
-            const data = await getAllProducts();
+            const data = await fetchProducts(await getProductCount(), 0);
 
             /*
             Store full product objects so we have access to id + name
