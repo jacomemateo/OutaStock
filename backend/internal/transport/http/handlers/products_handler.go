@@ -24,6 +24,7 @@ func NewProductsHandler(productsService *service.ProductsService) *ProductsHandl
 func (h *ProductsHandler) RegisterRoutes(api *echo.Group) {
 	products := api.Group("/products")
 	products.GET("/", h.GetAllProducts)
+	products.GET("/count", h.GetProductsCount)
 	products.POST("/new", h.CreateProduct)
 	products.PATCH("/:productID", h.UpdateProduct)
 	products.DELETE("/:productID", h.DeleteProduct)
@@ -117,7 +118,7 @@ func (h *ProductsHandler) GetProductsCount(c *echo.Context) error {
 	count, err := h.productsService.GetProductsCount(c.Request().Context())
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, map[string]string{
-			"error": "Failed to Product count",
+			"error": "Failed to get product count",
 		})
 	}
 

@@ -77,7 +77,7 @@ func (h *InventoryHandler) GetInventoryCount(c *echo.Context) error {
 	count, err := h.inventoryService.GetInventoryCount(c.Request().Context())
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, map[string]string{
-			"error": "Failed to inventory count",
+			"error": "Failed to get inventory count",
 		})
 	}
 

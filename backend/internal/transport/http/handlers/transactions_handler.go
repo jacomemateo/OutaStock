@@ -23,6 +23,7 @@ func NewTransactionsHandler(transactionsService *service.TransactionsService) *T
 func (h *TransactionsHandler) RegisterRoutes(api *echo.Group) {
 	transactions := api.Group("/transactions")
 	transactions.GET("/", h.GetTransactions)
+	transactions.GET("/count", h.GetTransactionsCount)
 }
 
 const (
@@ -51,11 +52,11 @@ func (h *TransactionsHandler) GetTransactions(c *echo.Context) error {
 }
 
 
-func (h *TransactionsHandler) GetInventoryCount(c *echo.Context) error {
+func (h *TransactionsHandler) GetTransactionsCount(c *echo.Context) error {
 	count, err := h.transactionsService.GetTransactionsCount(c.Request().Context())
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, map[string]string{
-			"error": "Failed to get inventory count",
+			"error": "Failed to get transactions count",
 		})
 	}
 
