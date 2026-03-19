@@ -1,8 +1,10 @@
 // src/services/api.tsx
-const API_BASE_URL = window.env?.API_BASE_URL;
+// src/services/api.js
 
-if (!API_BASE_URL) {
-    throw new Error('API_BASE_URL is not defined');
+let API_BASE_URL = window.env?.API_BASE_URL;
+
+if (!API_BASE_URL || API_BASE_URL === '__API_BASE_URL__') {
+  API_BASE_URL = import.meta.env.VITE_API_URL;
 }
 
 console.log('API Base URL:', API_BASE_URL);

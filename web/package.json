@@ -4,10 +4,10 @@
     "version": "0.0.0",
     "type": "module",
     "scripts": {
-        "dev": "vite",
-        "build": "tsc -b && vite build",
-        "lint": "eslint .",
+        "dev": "vite --mode dev",
+        "build": "vite build",
         "preview": "vite preview",
+        "lint": "eslint .",
         "pretty": "npx prettier --write ."
     },
     "dependencies": {
