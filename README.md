@@ -1,6 +1,6 @@
 # OutaStock?
 
-## Project Overview
+## Project Overview 
 The goal of this project is to design and build a digital system that manages the inventory of an older vending machine. The system keeps track of products, pricing, inventory levels, and transaction history in a structured and reliable way.
 
 Transaction data is provided through a CBORD CSV log, which includes the timestamp and price of each purchase. An example format is shown below:
@@ -23,7 +23,7 @@ The project emphasizes data integrity, clear system design, and separation of re
 
 Another aim of the project is to create a modern frontend that's intuative and easy to use.
 
-## Purpose
+### Purpose
 
 This project aims to simulate a real-world inventory and sales tracking system while applying core software engineering principles such as:
 
@@ -33,59 +33,79 @@ This project aims to simulate a real-world inventory and sales tracking system w
 * Scalability considerations
 * Maintainability over time
 
-## Installing
-Make sure you have the following installed locally in your system:
+## Development (macOS) 🖥️
 
-* Go `v1.26.0`
-* Docker `v28.5.2`
-* npm `11.6.0`
-* Air `v1.64.5`
+### Prerequisites
 
-### Running
+Clone the repository:
+
 ```bash
 git clone https://github.com/jacomemateo/OutaStock/
 cd OutaStock
-
-# Copy the env file
-# If you don't do this nothing will work.
-cp .env.example .env
-
-# Running backend
-make backend # This will start the local PostgreSQL server in a docker container
-make seed # To get test data into postgresql
-
-# Running frontend
-make frontend
 ```
 
-## Other
+Ensure the following tools are installed:
 
-**Making frontend pretty**
+* Go `v1.26.0`
+* Docker `v28.5.2`
+* Node (NPM) `v11.6.0`
+* Task `v3.49.1`
+* Air `v1.64.5`
+
+Install them via Homebrew:
+
 ```bash
-cd web/
-npm run pretty
+brew install go
+brew install docker
+brew install node
+brew install go-task/tap/go-task
+brew install go-air
 ```
 
-**Making backend pretty**
+---
 
-Make sure u have this installed 
+### Running the Development Environment
+
+Open three terminal sessions to monitor each service independently:
+
+```bash
+task dev-back
+task dev-front
+task dev-docker
+```
+
+If the environment becomes unstable or services fail to start correctly, reset the Docker state:
+
+```bash
+task dev-nuke
+```
+
+---
+
+### Backend Code Formatting 🧹
+
+Install formatting tools:
+
 ```bash
 go install mvdan.cc/gofumpt@latest
 go install golang.org/x/tools/cmd/goimports@latest
 ```
 
-To see which packages ur not using run this
+Identify unused dependencies:
+
 ```bash
 npx knip
 ```
 
+Format and clean imports:
 
-Then run
 ```bash
 cd backend/
 gofumpt -w .
 goimports -w .
 ```
 
-### [View Project Architecture](./docs/ARCHITECTURE.md)
-### [View API Specification](./docs/API.md)
+
+## [View Project Architecture](./docs/ARCHITECTURE.md)
+
+## [View API Specification](./docs/API.md)
