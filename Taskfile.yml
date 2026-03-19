@@ -1,0 +1,65 @@
+version: '3'
+
+# This replaces all that hacky Makefile logic for loading .env files.
+# It handles colons in URLs perfectly.
+dotenv: ['.env.dev']
+
+tasks:
+  default:
+    cmds:
+      - task --list
+    silent: true
+
+  deps:
+    desc: Download and tidy Go dependencies
+    dir: backend
+    cmds:
+      - go mod download
+      - go mod tidy
+
+  dev-back:
+    desc: Run Go backend with hot reload (Air)
+    deps: [deps]
+    cmds:
+      - air
+
+  dev-docker:
+    desc: Start PostgreSQL and other services
+    cmds:
+      - docker compose -p outastock-dev -f docker-compose.dev.yml up
+
+  dev-nuke:
+    desc: Kill and remove PostgreSQL volumes and other services
+    cmds:
+      - docker compose -p outastock-dev -f docker-compose.dev.yml down -v
+
+  dev-front:
+    desc: Start the frontend dev server
+    dir: web
+    cmds:
+      - npm run dev
+
+  dev-connect:
+    desc: Access the database CLI
+    cmds:
+      - docker exec -it vending-db-dev psql -U {{.POSTGRES_USER}} -d {{.POSTGRES_DB}}
+
+  generate_sqlc:
+    desc: Regenerate Go code from SQL queries
+    cmds:
+      - rm -rf backend/internal/repository/*
+      - docker run --rm -v {{.PWD}}:/src -w /src sqlc/sqlc generate
+
+  seed:
+    desc: Run all database seeds
+    cmds:
+      - |
+        for file in db/seeds/*.sql; do
+          echo "Seeding $file..."
+          docker exec -i vending-db-dev psql -U {{.POSTGRES_USER}} -d {{.POSTGRES_DB}} < $file
+        done
+
+  prod:
+    desc: Build and run the production stack
+    cmds:
+      - docker compose -p outastock-prod -f docker-compose.prod.yml up --build
