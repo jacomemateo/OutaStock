@@ -1,7 +1,5 @@
 # OutaStock API Documentation
 
-Base URL: `http://localhost:8080`
-
 ## Health Check
 
 ### `GET /health`
@@ -27,20 +25,21 @@ Check if the API service and database are operational.
 
 # Transactions
 
-## `GET /api/transactions/recent`
+## `GET /api/transactions`
 
-Retrieve the most recent transactions.
+Retrieve a paginated list of recent transactions.
 
 ### Query Parameters
 
-| Name  | Type    | Description                              |
-| ----- | ------- | ---------------------------------------- |
-| limit | integer | Number of transactions to return (1-200) |
+| Name        | Type    | Description                                        |
+| ----------- | ------- | -------------------------------------------------- |
+| num_rows    | integer | Number of transactions to return per page.         |
+| page_offset | integer | Zero-based page index (e.g., 0 for page 1, 1 for page 2). |
 
 ### Example Request
 
 ```bash
-curl "http://localhost:8080/api/transactions/recent?limit=5"
+curl "http://localhost:8080/api/transactions?num_rows=5&page_offset=0"
 ```
 
 ### Success Response (200)
@@ -56,29 +55,7 @@ curl "http://localhost:8080/api/transactions/recent?limit=5"
 ]
 ```
 
-### Error Responses
-
-**400 Bad Request**
-
-```json
-{
-  "error": "Invalid limit parameter"
-}
-```
-
-```json
-{
-  "error": "Limit must be between 1 and 200"
-}
-```
-
-```json
-{
-  "error": "Limit parameter is required"
-}
-```
-
-**500 Internal Server Error**
+### Error Response (500)
 
 ```json
 {
@@ -88,16 +65,51 @@ curl "http://localhost:8080/api/transactions/recent?limit=5"
 
 ---
 
-# Inventory
+## `GET /api/transactions/count`
 
-## `GET /api/inventory/all`
-
-Retrieve all inventory slots.
+Retrieve the total number of transactions in the database. Used for calculating total pages on the frontend.
 
 ### Example Request
 
 ```bash
-curl "http://localhost:8080/api/inventory/all"
+curl "http://localhost:8080/api/transactions/count"
+```
+
+### Success Response (200)
+
+Returns a raw integer.
+
+```json
+54
+```
+
+### Error Response (500)
+
+```json
+{
+  "error": "Failed to get transactions count"
+}
+```
+
+---
+
+# Inventory
+
+## `GET /api/inventory`
+
+Retrieve inventory slots with pagination.
+
+### Query Parameters
+
+| Name        | Type    | Description                                        |
+| ----------- | ------- | -------------------------------------------------- |
+| num_rows    | integer | Number of inventory slots to return.               |
+| page_offset | integer | Zero-based page index.                             |
+
+### Example Request
+
+```bash
+curl "http://localhost:8080/api/inventory?num_rows=10&page_offset=0"
 ```
 
 ### Success Response (200)
@@ -116,19 +128,7 @@ curl "http://localhost:8080/api/inventory/all"
 ]
 ```
 
-If a slot has **no product assigned**, fields related to the product will be empty:
-
-```json
-{
-  "slotId": 5,
-  "slotLabel": "B3",
-  "quantity": 0,
-  "productName": "",
-  "priceCents": 0,
-  "productId": "",
-  "dateAdded": null
-}
-```
+**Note:** If a slot has no product assigned, product-related fields will be empty or null.
 
 ### Error Response (500)
 
@@ -140,15 +140,29 @@ If a slot has **no product assigned**, fields related to the product will be emp
 
 ---
 
+## `GET /api/inventory/count`
+
+Retrieve the total count of inventory slots.
+
+### Example Request
+
+```bash
+curl "http://localhost:8080/api/inventory/count"
+```
+
+### Success Response (200)
+
+Returns a raw integer.
+
+```json
+20
+```
+
+---
+
 ## `PATCH /api/inventory/:slotID`
 
-Update an inventory slot.
-
-This endpoint supports:
-
-* Assigning a product to a slot
-* Updating the quantity
-* Removing a product from a slot
+Update an inventory slot (assign product, update quantity, or clear slot).
 
 ### URL Parameters
 
@@ -176,14 +190,6 @@ This endpoint supports:
 curl -X PATCH "http://localhost:8080/api/inventory/1" \
   -H "Content-Type: application/json" \
   -d '{"productUUID":"019cac06-f112-7f43-a509-42a3ed771d70","quantity":0}'
-```
-
-### Example: Update Quantity
-
-```bash
-curl -X PATCH "http://localhost:8080/api/inventory/1" \
-  -H "Content-Type: application/json" \
-  -d '{"quantity":50}'
 ```
 
 ### Example: Clear Slot
@@ -226,19 +232,19 @@ curl -X PATCH "http://localhost:8080/api/inventory/1" \
 
 ## `GET /api/products`
 
-Retrieve products with optional pagination.
+Retrieve products with pagination.
 
 ### Query Parameters
 
-| Parameter   | Type | Description                               |
-| ----------- | ---- | ----------------------------------------- |
-| num_rows    | int  | Number of products to return |
-| page_offset | int  | Zero-based page index.         |
+| Name        | Type    | Description                                        |
+| ----------- | ------- | -------------------------------------------------- |
+| num_rows    | integer | Number of products to return.                      |
+| page_offset | integer | Zero-based page index.                             |
 
 ### Example Request
 
 ```bash
-curl "http://localhost:8080/api/products?num_rows=10&page_offset=2"
+curl "http://localhost:8080/api/products?num_rows=10&page_offset=0"
 ```
 
 ### Success Response (200)
@@ -262,11 +268,25 @@ curl "http://localhost:8080/api/products?num_rows=10&page_offset=2"
 }
 ```
 
-### Notes
+---
 
-* Pagination ensures that large datasets can be retrieved efficiently.
-* The last page will return fewer rows if there are not enough products to fill it.
+## `GET /api/products/count`
 
+Retrieve the total count of products.
+
+### Example Request
+
+```bash
+curl "http://localhost:8080/api/products/count"
+```
+
+### Success Response (200)
+
+Returns a raw integer.
+
+```json
+15
+```
 
 ---
 
@@ -291,20 +311,10 @@ Create a new product.
 
 ### Error Response (400)
 
-Validation errors return the failing fields:
-
 ```json
 {
   "Name": "required",
   "PriceCents": "gt"
-}
-```
-
-### Error Response (500)
-
-```json
-{
-  "error": "Failed to create new product"
 }
 ```
 
@@ -331,11 +341,6 @@ At least **one field must be provided**.
 }
 ```
 
-| Field      | Type           | Description            |
-| ---------- | -------------- | ---------------------- |
-| name       | string | null  | Updated product name   |
-| priceCents | integer | null | Updated price in cents |
-
 ### Example Request
 
 ```bash
@@ -360,29 +365,13 @@ curl -X PATCH "http://localhost:8080/api/products/019cbe99-8159-75ea-b44e-7fec97
 }
 ```
 
-**500 Internal Server Error**
-
-```json
-{
-  "error": "Failed to update products"
-}
-```
-
 ---
+
 ## `DELETE /api/products/:productID`
-Soft deletes product from database, reason for soft delete is beacuse all transaction and inventory data depends on the product UUID so both the transactions and inventory tables have constraints on deleteing product_info rows.
 
-```sql
-CREATE TABLE transactions (
-    product_id UUID REFERENCES product_info(product_id) ON DELETE RESTRICT NOT NULL
-    ...
-);
+Soft deletes a product from the database.
 
-CREATE TABLE inventory (
-    product_id UUID REFERENCES product_info(product_id) ON DELETE RESTRICT,
-    ...
-);
-```
+> **Note:** Soft delete is used because `transactions` and `inventory` tables have foreign key constraints (`ON DELETE RESTRICT`). This preserves historical data integrity.
 
 ### URL Parameters
 
@@ -397,6 +386,8 @@ curl -X DELETE "http://localhost:8080/api/products/019cd3fa-a89e-73e0-8d0b-2dbfe
 ```
 
 ### Success Response (204)
+
+No Content.
 
 ### Error Responses
 
@@ -414,3 +405,4 @@ curl -X DELETE "http://localhost:8080/api/products/019cd3fa-a89e-73e0-8d0b-2dbfe
 {
   "error": "Failed to update products"
 }
+```
