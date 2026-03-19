@@ -38,7 +38,7 @@ jobs:
 
       - name: Execute Remote Command
         run: |
-          ssh pi@ssh.lsds.fun << 'EOF'
+          ssh -vvv pi@ssh.lsds.fun << 'EOF'
             cd ~/OutaStock
             git fetch --all
             git checkout raspberry
