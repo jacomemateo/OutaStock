@@ -142,3 +142,12 @@ func (s *ProductsService) DeleteProduct(ctx context.Context, prodUUID uuid.UUID)
 
 	return nil
 }
+
+func (s *ProductsService) GetProductsCount(ctx context.Context) (int, error) {
+	count, err := s.database.Queries.CountProductRows(ctx)
+	if err != nil {
+		log.Warn().Msg("Unable to get inventory row count")
+		return 0, err
+	}
+	return int(count), nil
+}

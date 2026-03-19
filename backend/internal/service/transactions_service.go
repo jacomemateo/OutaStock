@@ -58,3 +58,12 @@ func (s *TransactionsService) GetTransactions(ctx context.Context, pageOffset in
 		return transactions, nil
 	})
 }
+
+func (s *TransactionsService) GetTransactionsCount(ctx context.Context) (int, error) {
+	count, err := s.database.Queries.CountTransactionRows(ctx)
+	if err != nil {
+		log.Warn().Msg("Unable to get transaction row count")
+		return 0, err
+	}
+	return int(count), nil
+}

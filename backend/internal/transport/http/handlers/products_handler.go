@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"net/http"
-	"strconv"
 
 	"github.com/google/uuid"
 	"github.com/jacomemateo/OutaStock/backend/internal/service"
@@ -32,25 +31,12 @@ func (h *ProductsHandler) RegisterRoutes(api *echo.Group) {
 
 // GetAllIProducts handles GET /api/products/?num_rows=&page_offset=
 func (h *ProductsHandler) GetAllProducts(c *echo.Context) error {
-	numRowsStr := c.QueryParam("num_rows")
-	numRows, err := strconv.ParseInt(numRowsStr, 10, 32)
+	paginationParams, err := ParsePagination(c)
 	if err != nil {
-		log.Warn().Msgf("Failed to parse num_rows parameter: %s", numRowsStr)
-		return c.JSON(http.StatusBadRequest, map[string]string{
-			"error": "Invalid num_rows parameter",
-		})
+		return err
 	}
 
-	pageOffsetStr := c.QueryParam("page_offset")
-	pageOffset, err := strconv.ParseInt(pageOffsetStr, 10, 32)
-	if err != nil {
-		log.Warn().Msgf("Failed to parse page_offset parameter: %s", pageOffsetStr)
-		return c.JSON(http.StatusBadRequest, map[string]string{
-			"error": "Invalid page_offset parameter",
-		})
-	}
-
-	products, err := h.productsService.GetAllProducts(c.Request().Context(), int(pageOffset), int(numRows))
+	products, err := h.productsService.GetAllProducts(c.Request().Context(), paginationParams.PageOffset, paginationParams.NumRows)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, map[string]string{
 			"error": "Failed to fetch products",
@@ -125,4 +111,15 @@ func (h *ProductsHandler) DeleteProduct(c *echo.Context) error {
 	}
 
 	return c.JSON(http.StatusNoContent, "Deleted product")
+}
+
+func (h *ProductsHandler) GetProductsCount(c *echo.Context) error {
+	count, err := h.productsService.GetProductsCount(c.Request().Context())
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, map[string]string{
+			"error": "Failed to Product count",
+		})
+	}
+
+	return c.JSON(http.StatusOK, count)
 }

@@ -31,25 +31,12 @@ func (h *InventoryHandler) RegisterRoutes(api *echo.Group) {
 
 // GetAllInventory handles GET /api/inventory/?num_rows=&page_offset=
 func (h *InventoryHandler) GetAllInventory(c *echo.Context) error {
-	numRowsStr := c.QueryParam("num_rows")
-	numRows, err := strconv.ParseInt(numRowsStr, 10, 32)
+	paginationParams, err := ParsePagination(c)
 	if err != nil {
-		log.Warn().Msgf("Failed to parse num_rows parameter: %s", numRowsStr)
-		return c.JSON(http.StatusBadRequest, map[string]string{
-			"error": "Invalid num_rows parameter",
-		})
+		return err
 	}
 
-	pageOffsetStr := c.QueryParam("page_offset")
-	pageOffset, err := strconv.ParseInt(pageOffsetStr, 10, 32)
-	if err != nil {
-		log.Warn().Msgf("Failed to parse page_offset parameter: %s", pageOffsetStr)
-		return c.JSON(http.StatusBadRequest, map[string]string{
-			"error": "Invalid page_offset parameter",
-		})
-	}
-
-	inventory, err := h.inventoryService.GetAllInventory(c.Request().Context(), int(pageOffset), int(numRows))
+	inventory, err := h.inventoryService.GetAllInventory(c.Request().Context(), paginationParams.PageOffset, paginationParams.NumRows)
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, map[string]string{
 			"error": "Failed to fetch inventory",
