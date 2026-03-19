@@ -4,9 +4,9 @@ package handlers
 import (
 	"net/http"
 
-	"github.com/rs/zerolog/log"
 	"github.com/jacomemateo/OutaStock/backend/internal/service"
 	"github.com/labstack/echo/v5"
+	"github.com/rs/zerolog/log"
 )
 
 type TransactionsHandler struct {
@@ -50,7 +50,6 @@ func (h *TransactionsHandler) GetTransactions(c *echo.Context) error {
 	// 4. Return DTOs
 	return c.JSON(http.StatusOK, transactions)
 }
-
 
 func (h *TransactionsHandler) GetTransactionsCount(c *echo.Context) error {
 	count, err := h.transactionsService.GetTransactionsCount(c.Request().Context())

@@ -37,8 +37,8 @@ func (h *BinderValidator) bindAndValidate(c *echo.Context, v any) (bool, error) 
 }
 
 type PaginationParams struct {
-    NumRows  int
-    PageOffset int
+	NumRows    int
+	PageOffset int
 }
 
 func ParsePagination(c *echo.Context) (*PaginationParams, error) {
@@ -60,5 +60,5 @@ func ParsePagination(c *echo.Context) (*PaginationParams, error) {
 		})
 	}
 
-    return &PaginationParams{NumRows: int(numRows), PageOffset: int(pageOffset)}, nil
+	return &PaginationParams{NumRows: int(numRows), PageOffset: int(pageOffset)}, nil
 }

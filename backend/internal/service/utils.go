@@ -20,12 +20,12 @@ func convertPgtypeUUIDToString(uuid pgtype.UUID) string {
 }
 
 // Internal utility to handle the pagination math
-func Paginate[T any] (total int, pageOffset int, numRows int, fetch func(offset, limit int) ([]T, error)) ([]T, error) {
-    offset := pageOffset * numRows
+func Paginate[T any](total int, pageOffset int, numRows int, fetch func(offset, limit int) ([]T, error)) ([]T, error) {
+	offset := pageOffset * numRows
 
-    if offset+numRows > total {
-		offset = max((total - 1) / numRows * numRows, 0)
-    }
+	if offset+numRows > total {
+		offset = max((total-1)/numRows*numRows, 0)
+	}
 
-    return fetch(offset, numRows)
+	return fetch(offset, numRows)
 }

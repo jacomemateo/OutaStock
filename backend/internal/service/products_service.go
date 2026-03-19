@@ -33,7 +33,6 @@ func (s *ProductsService) GetAllProducts(ctx context.Context, pageOffset int, nu
 
 	// 2. Wrap the DB call and DTO mapping in the Paginate helper
 	return Paginate(int(totalRows64), pageOffset, numRows, func(calculatedOffset, limit int) ([]dto.ProductResponse, error) {
-		
 		// 3. Call repository with safe offset and limit
 		rows, err := s.database.Queries.GetProducts(ctx, repository.GetProductsParams{
 			NumRows:    int32(limit),
