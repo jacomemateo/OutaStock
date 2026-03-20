@@ -16,7 +16,7 @@ const UpdateProducts = () => {
 
                 <div className="card low-stock-card">
                     <h2 className='card-title'> <BatteryCharging20Icon sx={{ color: "yellow" }}/> Low Stock Items</h2>
-                    <p className="card-subtitle">Number of items running low in stock</p>
+                    <p className="card-subtitle">Number of items that are running low</p>
                     <p className="card-value">30</p>
                 </div>
 
@@ -35,7 +35,7 @@ const UpdateProducts = () => {
 
             <div className="update-products-container">
                 <div className="update-products-header">
-                    <h2>Update Products</h2>
+                    <h2>Products Overview</h2>
                     <p className="update-products-subtitle">
                         View and modify all products
                     </p>
