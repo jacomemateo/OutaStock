@@ -60,7 +60,7 @@ jobs:
 
       - name: Execute Remote Command
         run: |
-          ssh -vvv ${{ secrets.PI_USER }}@${{ secrets.PI_HOST }} << 'EOF'
+          ssh ${{ secrets.PI_USER }}@${{ secrets.PI_HOST }} << 'EOF'
             cd ~/OutaStock
             git fetch --all
             git checkout raspberry
