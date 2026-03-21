@@ -4,7 +4,7 @@ on:
   push:
     branches:
       - raspberry
-    paths-ignore:  # Add this section
+    paths-ignore:
       - 'README.md'
       - 'docs/**'
       - '.gitignore'
@@ -17,6 +17,24 @@ jobs:
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Essential: fetches all history so branches can be merged
+
+      - name: Merge master into raspberry
+        run: |
+          # Configure Git identity
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          
+          # Fetch the latest master
+          git fetch origin master
+          
+          # Merge master into the current branch (raspberry)
+          # --no-edit prevents Git from asking for a commit message
+          git merge origin/master --no-edit
+          
+          # Push the merged changes back to the raspberry branch on GitHub
+          git push origin raspberry
 
       - name: Install cloudflared
         run: |
@@ -28,7 +46,7 @@ jobs:
         uses: shimataro/ssh-key-action@v2
         with:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
-          known_hosts: "ignored" # We use StrictHostKeyChecking=no below
+          known_hosts: "ignored"
 
       - name: Configure SSH Config
         run: |
