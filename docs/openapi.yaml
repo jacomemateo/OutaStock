@@ -1,0 +1,411 @@
+openapi: 3.0.3
+info:
+  title: OutaStock API
+  version: 1.0.0
+  description: API documentation for OutaStock vending system
+servers:
+  - url: /api
+    description: Local development server
+  - url: app.lsds.fun/api
+    description: Rasbperry PI 4 Server
+paths:
+  /health:
+    get:
+      summary: Health Check
+      description: Check if the API service and database are operational.
+      responses:
+        '200':
+          description: Service is healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  db:
+                    type: string
+                  time:
+                    type: string
+                    format: date-time
+              example:
+                status: healthy
+                db: connected
+                time: "2026-02-27 14:39:50.961872 -0500 EST"
+        '503':
+          description: Service unavailable
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+              example:
+                error: Database disconnected
+
+  /api/transactions:
+    get:
+      summary: Retrieve recent transactions
+      parameters:
+        - in: query
+          name: num_rows
+          schema:
+            type: integer
+          description: Number of transactions to return per page
+        - in: query
+          name: page_offset
+          schema:
+            type: integer
+          description: Zero-based page index
+      responses:
+        '200':
+          description: List of transactions
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                      format: uuid
+                    productName:
+                      type: string
+                    priceAtSaleCents:
+                      type: integer
+                    dateSold:
+                      type: string
+                      format: date-time
+              example:
+                - id: "019ca08b-1956-75e8-991b-08244a1b6ebd"
+                  productName: "Trail Mix"
+                  priceAtSaleCents: 249
+                  dateSold: "2026-02-27T01:34:56.496019-05:00"
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+              example:
+                error: Failed to fetch transactions
+
+  /api/transactions/count:
+    get:
+      summary: Retrieve total number of transactions
+      responses:
+        '200':
+          description: Total count
+          content:
+            application/json:
+              schema:
+                type: integer
+              example: 54
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+              example:
+                error: Failed to get transactions count
+
+  /api/inventory:
+    get:
+      summary: Retrieve inventory slots
+      parameters:
+        - in: query
+          name: num_rows
+          schema:
+            type: integer
+          description: Number of inventory slots to return
+        - in: query
+          name: page_offset
+          schema:
+            type: integer
+          description: Zero-based page index
+      responses:
+        '200':
+          description: List of inventory slots
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    slotId:
+                      type: integer
+                    slotLabel:
+                      type: string
+                    quantity:
+                      type: integer
+                    productName:
+                      type: string
+                    priceCents:
+                      type: integer
+                    productId:
+                      type: string
+                      format: uuid
+                    dateAdded:
+                      type: string
+                      format: date-time
+              example:
+                - slotId: 1
+                  slotLabel: "A1"
+                  quantity: 10
+                  productName: "Trail Mix"
+                  priceCents: 249
+                  productId: "019cac06-f112-7c18-874f-78fc806fd57e"
+                  dateAdded: "2026-02-27T01:00:00-05:00"
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+              example:
+                error: Failed to fetch inventory
+
+  /api/inventory/count:
+    get:
+      summary: Retrieve total count of inventory slots
+      responses:
+        '200':
+          description: Total inventory count
+          content:
+            application/json:
+              schema:
+                type: integer
+              example: 20
+
+  /api/inventory/{slotID}:
+    patch:
+      summary: Update an inventory slot
+      parameters:
+        - in: path
+          name: slotID
+          required: true
+          schema:
+            type: integer
+          description: Inventory slot ID
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                productUUID:
+                  type: string
+                  nullable: true
+                quantity:
+                  type: integer
+                  nullable: true
+      responses:
+        '200':
+          description: Slot updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+              example:
+                message: Slot updated successfully
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+              example:
+                error: Invalid slotID parameter
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+              example:
+                error: Failed to update inventory
+
+  /api/products:
+    get:
+      summary: Retrieve products
+      parameters:
+        - in: query
+          name: num_rows
+          schema:
+            type: integer
+          description: Number of products to return
+        - in: query
+          name: page_offset
+          schema:
+            type: integer
+          description: Zero-based page index
+      responses:
+        '200':
+          description: List of products
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                      format: uuid
+                    name:
+                      type: string
+                    priceCents:
+                      type: integer
+                    dateCreated:
+                      type: string
+                      format: date-time
+              example:
+                - id: "019cbe99-8159-732f-a262-480494020c64"
+                  name: "Coca-Cola"
+                  priceCents: 159
+                  dateCreated: "2026-03-05T10:24:17.112673-05:00"
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+              example:
+                error: Failed to fetch products
+
+  /api/products/count:
+    get:
+      summary: Retrieve total count of products
+      responses:
+        '200':
+          description: Total count
+          content:
+            application/json:
+              schema:
+                type: integer
+              example: 15
+
+  /api/products/new:
+    post:
+      summary: Create a new product
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                priceCents:
+                  type: integer
+      responses:
+        '201':
+          description: Product created
+          content:
+            application/json:
+              schema:
+                type: string
+              example: created product
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                type: object
+              example:
+                Name: required
+                PriceCents: gt
+
+  /api/products/{productID}:
+    patch:
+      summary: Update a product
+      parameters:
+        - in: path
+          name: productID
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: Product ID
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                priceCents:
+                  type: integer
+      responses:
+        '202':
+          description: Product updated
+          content:
+            application/json:
+              schema:
+                type: string
+              example: product updated
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                type: object
+              example:
+                error: Invalid productID parameter
+
+    delete:
+      summary: Soft delete a product
+      parameters:
+        - in: path
+          name: productID
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: Product ID
+      responses:
+        '204':
+          description: Product deleted successfully (No Content)
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                type: object
+              example:
+                error: Invalid productID parameter
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                type: object
+              example:
+                error: Failed to update products

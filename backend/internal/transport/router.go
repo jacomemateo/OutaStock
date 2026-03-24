@@ -82,8 +82,10 @@ func (r *Router) Start(ctx context.Context, address string) error {
 }
 
 func (r *Router) addRoutes() {
+	api := r.echo.Group("/api")
+
 	// Health check endpoint
-	r.echo.GET("/health", func(c *echo.Context) error {
+	api.GET("/health", func(c *echo.Context) error {
 		// Check if database is connected
 		ctx := c.Request().Context()
 		if err := r.database.Ping(ctx); err != nil {
@@ -102,7 +104,6 @@ func (r *Router) addRoutes() {
 	})
 
 	// API routes group
-	api := r.echo.Group("/api")
 
 	// Let each handler register its own routes
 	for _, h := range r.handlers {
