@@ -3,13 +3,10 @@
 <br />
 <div align="center">
   <a href="https://github.com/jacomemateo/OutaStock">
-    <img src="res/logo.png" alt="Logo" width="80" height="80">
+    <img src="res/logo.png" alt="Logo" height="200">
   </a>
-
-  <h3 align="center">OutaStock?</h3>
-
   <p align="center">
-    Awesome
+    Vending Machine Inventory Tracking System
     <br />
   </p>
 </div>
