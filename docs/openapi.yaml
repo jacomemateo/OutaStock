@@ -6,7 +6,7 @@ info:
 servers:
   - url: /api
     description: Local development server
-  - url: app.lsds.fun/api
+  - url: app.lsds.fun
     description: Rasbperry PI 4 Server
 paths:
   /health:
@@ -44,7 +44,7 @@ paths:
               example:
                 error: Database disconnected
 
-  /api/transactions:
+  /transactions:
     get:
       summary: Retrieve recent transactions
       parameters:
@@ -95,7 +95,7 @@ paths:
               example:
                 error: Failed to fetch transactions
 
-  /api/transactions/count:
+  /transactions/count:
     get:
       summary: Retrieve total number of transactions
       responses:
@@ -118,7 +118,7 @@ paths:
               example:
                 error: Failed to get transactions count
 
-  /api/inventory:
+  /inventory:
     get:
       summary: Retrieve inventory slots
       parameters:
@@ -178,7 +178,7 @@ paths:
               example:
                 error: Failed to fetch inventory
 
-  /api/inventory/count:
+  /inventory/count:
     get:
       summary: Retrieve total count of inventory slots
       responses:
@@ -190,7 +190,7 @@ paths:
                 type: integer
               example: 20
 
-  /api/inventory/{slotID}:
+  /inventory/{slotID}:
     patch:
       summary: Update an inventory slot
       parameters:
@@ -247,7 +247,7 @@ paths:
               example:
                 error: Failed to update inventory
 
-  /api/products:
+  /products:
     get:
       summary: Retrieve products
       parameters:
@@ -298,7 +298,7 @@ paths:
               example:
                 error: Failed to fetch products
 
-  /api/products/count:
+  /products/count:
     get:
       summary: Retrieve total count of products
       responses:
@@ -310,7 +310,7 @@ paths:
                 type: integer
               example: 15
 
-  /api/products/new:
+  /products/new:
     post:
       summary: Create a new product
       requestBody:
@@ -342,7 +342,7 @@ paths:
                 Name: required
                 PriceCents: gt
 
-  /api/products/{productID}:
+  /products/{productID}:
     patch:
       summary: Update a product
       parameters:
