@@ -1,4 +1,18 @@
-# OutaStock?
+<a id="readme-top"></a>
+
+<br />
+<div align="center">
+  <a href="https://github.com/jacomemateo/OutaStock">
+    <img src="res/logo.png" alt="Logo" width="80" height="80">
+  </a>
+
+  <h3 align="center">OutaStock?</h3>
+
+  <p align="center">
+    Awesome
+    <br />
+  </p>
+</div>
 
 ## Project Overview 
 The goal of this project is to design and build a digital system that manages the inventory of an older vending machine. The system keeps track of products, pricing, inventory levels, and transaction history in a structured and reliable way.
@@ -96,6 +110,14 @@ Identify unused dependencies and Format and clean imports:
 ```bash
 task pretty
 ```
+
+---
+
+### Top contributors:
+
+<a href="https://github.com/jacomemateo/OutaStock/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=jacomemateo/OutaStock" alt="contrib.rocks image" />
+</a>
 
 
 ## [View Project Architecture](./docs/ARCHITECTURE.md)
