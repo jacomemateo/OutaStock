@@ -69,3 +69,6 @@
 ## Authenthication (LogTo)
 - [ ] [LogTo](https://logto.io/) Website
 - [ ] Learn how to integrate
+
+## User Profiles
+- [ ] Learn how to add user profiles
