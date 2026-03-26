@@ -1,4 +1,24 @@
-# OutaStock?
+<div align="center">
+  <a href="https://go.dev/"><img src="https://img.shields.io/badge/Go-1.26+-00ADD8?style=flat&logo=go" alt="Go Version"></a>
+  <a href="https://react.dev/"><img src="https://img.shields.io/badge/React-18.3+-20232A?style=flat&logo=react" alt="React Version"></a>
+  <a href="https://www.typescriptlang.org/"><img src="https://img.shields.io/badge/TypeScript-5.3+-007ACC?style=flat&logo=typescript" alt="TypeScript Version"></a>
+  <a href="https://www.postgresql.org/"><img src="https://img.shields.io/badge/PostgreSQL-18+-316192?style=flat&logo=postgresql" alt="PostgreSQL Version"></a>
+  <a href="https://caddyserver.com/"><img src="https://img.shields.io/badge/Caddy-2.7+-00ADD8?style=flat&logo=caddy" alt="Caddy Version"></a>
+  <a href="https://www.docker.com/"><img src="https://img.shields.io/badge/Docker-28.5+-2496ED?style=flat&logo=docker" alt="Docker Version"></a>
+  <br />
+  <br />
+</div>
+    
+<div align="center">
+  <a href="https://github.com/jacomemateo/OutaStock">
+    <img src="res/logo.png" alt="Logo" height="180">
+  </a>
+  <p align="center">
+    Vending Machine Inventory Tracking System
+  </p>
+</div>
+
+
 
 ## Project Overview 
 The goal of this project is to design and build a digital system that manages the inventory of an older vending machine. The system keeps track of products, pricing, inventory levels, and transaction history in a structured and reliable way.
@@ -96,6 +116,14 @@ Identify unused dependencies and Format and clean imports:
 ```bash
 task pretty
 ```
+
+---
+
+### Top contributors:
+
+<a href="https://github.com/jacomemateo/OutaStock/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=jacomemateo/OutaStock" alt="contrib.rocks image" />
+</a>
 
 
 ## [View Project Architecture](./docs/ARCHITECTURE.md)
