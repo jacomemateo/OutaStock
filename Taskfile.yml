@@ -47,7 +47,6 @@ tasks:
   generate_sqlc:
     desc: Regenerate Go code from SQL queries
     cmds:
-      - rm -rf backend/internal/repository/*
       - docker run --rm -v {{.PWD}}:/src -w /src sqlc/sqlc generate
 
   seed:
