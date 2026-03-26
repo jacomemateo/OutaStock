@@ -15,20 +15,20 @@ type Config struct {
 func Load() (*Config, error) {
 	cfg := &Config{}
 
-	db_url, err := getEnv("DATABASE_URL")
+	db_url, err := GetEnv("DATABASE_URL")
 	if err != nil {
 		return nil, err
 	}
 	cfg.DatabaseURL = db_url
 
-	cfg.Port, err = getEnv("ECHO_PORT")
+	cfg.Port, err = GetEnv("ECHO_PORT")
 	if err != nil {
 		return nil, err
 	}
 
 	cfg.Port = ":" + cfg.Port // Prepend ":" for echo server
 
-	cfg.LogLevel, err = getEnv("ECHO_LOG_LEVEL")
+	cfg.LogLevel, err = GetEnv("ECHO_LOG_LEVEL")
 	if err != nil {
 		return nil, err
 	}
@@ -36,7 +36,7 @@ func Load() (*Config, error) {
 	return cfg, nil
 }
 
-func getEnv(key string) (string, error) {
+func GetEnv(key string) (string, error) {
 	if value := os.Getenv(key); value != "" {
 		return value, nil
 	}

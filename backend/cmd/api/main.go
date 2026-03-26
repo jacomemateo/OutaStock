@@ -14,8 +14,10 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
+
 func main() {
 	cfg, err := config.Load()
+
 	if err != nil {
 		log.Fatal().Err(err).Msg("Failed to load config")
 	}
@@ -58,13 +60,13 @@ func main() {
 	}()
 
 	// ---------- ECHO SERVER & GRACEFUL SHUTDOWN ----------
-	router := transport.NewRouter(db)
+	router := transport.NewRouter(db, cfg)
 
 	// Create signal-aware context
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
+	log.Info().Str("service", "echo_server").Str("PORT", cfg.Port).Str("log_level", cfg.LogLevel).Msg("Starting server")
 
-	log.Info().Str("service", "echo_server").Msgf("Starting server on %s", cfg.Port)
 
 	if err := router.Start(ctx, cfg.Port); err != nil {
 		log.Fatal().Err(err).Str("service", "echo_server").Msg("Server stopped with error")
