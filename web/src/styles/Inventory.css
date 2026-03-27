@@ -1,8 +1,8 @@
 .inventory-container {
-    background: var(--darker-black);
+    background: var(--lighter-black);
     border-radius: 12px;
     padding: 2rem;
-    box-shadow: var(--gold-shadow);
+    box-shadow: var(--cool-shadow);
     border: 1px solid var(--lighter-black);
     display: flex;
     flex-direction: column;

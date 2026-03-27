@@ -19,10 +19,11 @@ select {
     --umbc-gold: #f9ad1e;
     --black-grey: rgb(72, 72, 72);
     --even-lighter-black: #888;
-    --lighter-black: #2a2a2a;
-    --darker-black: #1a1a1a;
+    --lighter-black: #151417;
+    --darker-black: #000101;
     --black: #000000;
     --white: #ffffff;
     --error-red: #ff4d4d;
-    --gold-shadow: 0px 0px 13px rgba(255, 179, 98, 0.35);
+    --gold-shadow: 0px 0px 10px rgba(255, 255, 255, 0.106);
+    --cool-shadow: inset 0 0 5px 2px rgba(255, 255, 255, 0.2);
 }

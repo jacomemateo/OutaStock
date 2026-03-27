@@ -119,7 +119,10 @@
 .template-header {
     padding: 2rem;
     border-bottom: 1px solid #333;
-    background-color: var(--umbc-gold);
+    background-color: var(--darker-black);
+    box-shadow: var(--gold-shadow);
+    text-align: center;
+
 }
 
 .template-header h1 {
