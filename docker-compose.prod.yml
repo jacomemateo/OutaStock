@@ -1,9 +1,14 @@
 services:
+  # =============================================================================
+  # REVERSE PROXY — Caddy handles TLS and routes all traffic
+  # Needs to be on BOTH networks so it can reach app services AND Zitadel services
+  # =============================================================================
   caddy:
     image: caddy:latest
     environment:
       BACKEND_HOST: ${BACKEND_HOST}
       FRONTEND_HOST: ${FRONTEND_HOST}
+      ZITADEL_DOMAIN: ${ZITADEL_DOMAIN}
     restart: unless-stopped
     ports:
       - "80:80"    # HTTP
@@ -12,10 +17,18 @@ services:
       - ./Caddyfile:/etc/caddy/Caddyfile
       - caddy_data:/data
       - caddy_config:/config
+    networks:
+      - default   # talks to: backend, frontend
+      - zitadel   # talks to: zitadel-api, zitadel-login
     depends_on:
       - backend
       - frontend
+      - zitadel-api
+      - zitadel-login
 
+  # =============================================================================
+  # APP DATABASE — existing Postgres for inventory/products/transactions
+  # =============================================================================
   db:
     image: postgres:18
     container_name: vending-db-prod
@@ -31,7 +44,12 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
+    netowrks:
+      - default
 
+  # =============================================================================
+  # BACKEND — Go/Echo API
+  # =============================================================================
   backend:
     build:
       context: ./backend
@@ -43,7 +61,12 @@ services:
     depends_on:
       db:
         condition: service_healthy # Wait for DB to be ready
+    networks:
+      - default 
 
+  # =============================================================================
+  # FRONTEND — React app
+  # =============================================================================
   frontend:
     build:
       context: ./web
@@ -54,7 +77,12 @@ services:
     depends_on:
       - backend
     restart: unless-stopped
+    networks:
+      - default
 
+  # =============================================================================
+  # SWAGGER UI
+  # =============================================================================
   swagger:
       image: swaggerapi/swagger-ui:latest
       environment:
@@ -64,7 +92,13 @@ services:
         # Correct the destination path to the NGINX root
         - ./docs/openapi.yaml:/usr/share/nginx/html/openapi.yaml:ro
       restart: unless-stopped
+      networks:
+        - default
     
+  # =============================================================================
+  # ZITADEL API — the auth server itself
+  # All Traefik labels have been removed; Caddy handles routing instead
+  # =============================================================================
   zitadel-api:
     image: ghcr.io/zitadel/zitadel:${ZITADEL_VERSION}
     restart: unless-stopped
@@ -77,6 +111,7 @@ services:
       ZITADEL_EXTERNALSECURE: ${ZITADEL_EXTERNALSECURE}
       ZITADEL_TLS_ENABLED: false
 
+      # Points to zitadel-db (NOT our app's db service)
       ZITADEL_DATABASE_POSTGRES_DSN: ${ZITADEL_DATABASE_POSTGRES_DSN}
 
       ZITADEL_FIRSTINSTANCE_ORG_HUMAN_PASSWORDCHANGEREQUIRED: false
@@ -121,6 +156,10 @@ services:
       postgres:
         condition: service_healthy
 
+  # =============================================================================
+  # ZITADEL LOGIN UI — the Next.js login page users see
+  # All Traefik labels have been removed; Caddy handles routing instead
+  # =============================================================================
   zitadel-login:
     image: ghcr.io/zitadel/zitadel-login:${ZITADEL_VERSION}
     restart: unless-stopped
@@ -153,6 +192,10 @@ services:
       zitadel-api:
         condition: service_healthy
 
+  # =============================================================================
+  # ZITADEL DATABASE — separate Postgres instance, Zitadel owns this schema
+  # Using postgres:17 since that's what Zitadel's official image targets
+  # =============================================================================
   zitadel-db:
     image: ${POSTGRES_IMAGE}
     restart: unless-stopped
@@ -173,6 +216,10 @@ services:
     networks:
       - zitadel
 
+  # =============================================================================
+  # REDIS — optional cache for Zitadel (only starts if you run with --profile cache)
+  # Example: docker compose --profile cache -f docker-compose.prod.yml up
+  # =============================================================================
   redis:
     image: ${REDIS_IMAGE}
     restart: unless-stopped
@@ -186,6 +233,9 @@ services:
     networks:
       - zitadel
 
+  # =============================================================================
+  # OTEL COLLECTOR — optional tracing (only starts with --profile observability)
+  # =============================================================================
   otel-collector:
     image: ${OTEL_COLLECTOR_IMAGE}
     restart: unless-stopped
@@ -210,9 +260,9 @@ networks:
 
 
 volumes:
-  db-data:
+  db-data:            # OutaStock DB data
   caddy_data:   
   caddy_config:
-  db-data-zitadel:
-  zitadel-bootstrap:
+  db-data-zitadel:    # Zitadel DB data
+  zitadel-bootstrap:  # shared between zitadel-api and zitadel-login for first-time setup files
 
