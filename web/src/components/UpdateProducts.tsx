@@ -8,7 +8,8 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import AddIcon from '@mui/icons-material/Add';
 import { useEffect, useState } from 'react';
 import { fetchProducts, getProductCount } from '@/services/api';
-import { FaBoxOpen } from 'react-icons/fa';
+import { common } from '@mui/material/colors';
+import AddProductModal from '@components/AddProductModal';
 
 interface Product {
     id: number;
@@ -19,6 +20,7 @@ interface Product {
 
 const UpdateProducts = () => {
     const [products, setProducts] = useState<Product[]>([]);
+    const [isAddProductModalOpen, setIsAddProductModalOpen] = useState(false);
 
     const loadProducts = async () => {
         try {
@@ -29,6 +31,10 @@ const UpdateProducts = () => {
             console.error('Error loading products:', error);
         }
     };
+
+    const handleSaveNewProduct = (name: string, priceCents: number) => {
+        console.log('Saving new product:', { name, priceCents });
+    }
 
     useEffect(() => {
         loadProducts();
@@ -84,8 +90,19 @@ const UpdateProducts = () => {
                         </p>
                     </div>
                     <div className="add-product-btn">
-                        <AddIcon  />
+                        <AddIcon
+                            onClick={() =>
+                                setIsAddProductModalOpen(!isAddProductModalOpen)
+                            }
+                        />
                     </div>
+                    {isAddProductModalOpen && (
+                        <AddProductModal
+                            isOpen={isAddProductModalOpen}
+                            onClose={() => setIsAddProductModalOpen(false)}
+                            onSave={handleSaveNewProduct}
+                        />
+                    )}
                 </div>
 
                 <div className="products-list">

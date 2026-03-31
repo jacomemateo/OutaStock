@@ -291,6 +291,7 @@ const Inventory = () => {
                     isOpen={editingSlotID !== null}
                     onClose={() => setEditingSlotID(null)}
                     onSave={handleSave}
+        
                     /*
                     Pass full product catalog
                     */
