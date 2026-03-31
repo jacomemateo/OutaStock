@@ -37,3 +37,41 @@ api.localhost:80 {
 		reverse_proxy swagger:8080
 	}
 }
+
+# =============================================================================
+# ZITADEL AUTH SERVER
+#
+# Two important things happening here:
+#
+# 1. The login UI (/ui/v2/login/*) is a plain Next.js app — normal HTTP proxy.
+#
+# 2. Everything else goes to zitadel-api, which speaks HTTP/2 (gRPC) internally.
+#    Caddy handles HTTPS externally but connects to Zitadel using h2c
+#    (HTTP/2 cleartext) since there's no TLS between containers.
+# =============================================================================
+{$ZITADEL_DOMAIN} {
+    encode gzip zstd
+
+    header {
+        Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
+        X-Content-Type-Options "nosniff"
+    }
+
+    # Redirect bare root to the login page
+    redir / /ui/v2/login/ 302
+
+    # Login UI — plain HTTP/1.1 is fine for the Next.js frontend
+    handle /ui/v2/login* {
+        reverse_proxy zitadel-login:3000
+    }
+
+    # Everything else (OIDC endpoints, gRPC, admin console, etc.) → Zitadel API
+    # Must use h2c because Zitadel's API server requires HTTP/2
+    handle {
+        reverse_proxy zitadel-api:8080 {
+            transport http {
+                versions h2c
+            }
+        }
+    }
+}
