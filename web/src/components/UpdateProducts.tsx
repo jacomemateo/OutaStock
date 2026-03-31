@@ -3,9 +3,12 @@ import InventoryIcon from '@mui/icons-material/Inventory';
 import HourglassDisabledIcon from '@mui/icons-material/HourglassDisabled';
 import RunningWithErrorsIcon from '@mui/icons-material/RunningWithErrors';
 import BatteryCharging20Icon from '@mui/icons-material/BatteryCharging20';
+import EditIcon from '@mui/icons-material/Edit';
+import DeleteIcon from '@mui/icons-material/Delete';
+import AddIcon from '@mui/icons-material/Add';
 import { useEffect, useState } from 'react';
-import {fetchProducts, getProductCount } from '@/services/api';
-import { FaBoxOpen } from "react-icons/fa";
+import { fetchProducts, getProductCount } from '@/services/api';
+import { FaBoxOpen } from 'react-icons/fa';
 
 interface Product {
     id: number;
@@ -74,16 +77,23 @@ const UpdateProducts = () => {
 
             <div className="update-products-container">
                 <div className="update-products-header">
-                    <h2>Products Overview</h2>
-                    <p className="update-products-subtitle">
-                        View and modify all products
-                    </p>
+                    <div>
+                        <h2>Products Overview</h2>
+                        <p className="update-products-subtitle">
+                            View and modify all products
+                        </p>
+                    </div>
+                    <div className="add-product-btn">
+                        <AddIcon  />
+                    </div>
                 </div>
+
                 <div className="products-list">
                     <table className="products-table">
                         <thead>
                             <tr>
                                 <th>Product</th>
+                                <th>Cost</th>
                                 <th>Price</th>
                                 <th>Stock</th>
                                 <th>Actions</th>
@@ -92,13 +102,26 @@ const UpdateProducts = () => {
 
                         <tbody>
                             {products.map((product, index) => (
-                                <tr key={product.id} className="product-row" style={{ '--row-index': index } as React.CSSProperties}>
+                                <tr
+                                    key={product.id}
+                                    className="product-row"
+                                    style={
+                                        { '--row-index': index } as React.CSSProperties
+                                    }
+                                >
                                     <td>{product.name}</td>
+                                    <td>Waiting</td>
                                     <td>{(product.priceCents / 100).toFixed(2)}</td>
-                                    <td className='all-products-stock'>📦 {product.priceCents}</td>
+                                    <td className="all-products-stock">
+                                        📦 {product.priceCents}
+                                    </td>
                                     <td>
-                                        <button className="edit-btn-row">Edit</button>
-                                        <button className="delete-btn-row">Delete</button>
+                                        <button className="edit-btn-row">
+                                            <EditIcon fontSize="small" />
+                                        </button>
+                                        <button className="delete-btn-row">
+                                            <DeleteIcon fontSize="small" />
+                                        </button>
                                     </td>
                                 </tr>
                             ))}
