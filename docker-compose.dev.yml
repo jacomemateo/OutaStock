@@ -25,6 +25,16 @@ services:
     ports:
       - "5433:5432"
 
+  swagger:
+    image: swaggerapi/swagger-ui:latest
+    environment:
+        # This tells the UI to look for the file at the root of the web server
+      URL: /openapi.yaml          
+    volumes:
+        # Correct the destination path to the NGINX root
+      - ./docs/openapi.yaml:/usr/share/nginx/html/openapi.yaml:ro
+    restart: unless-stopped
+
 volumes:
   db-data:
   caddy_data:   
