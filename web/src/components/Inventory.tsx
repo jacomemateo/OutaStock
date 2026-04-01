@@ -5,6 +5,7 @@ import { useState, useEffect } from 'react';
 
 import EditInventoryModal from '@/components/EditInventoryModal';
 import ConfirmationModal from '@/components/ConfirmationModal';
+import { useAlert } from '@contexts/SnackBarAlertContext';
 
 import {
     fetchInventory,
@@ -41,6 +42,7 @@ interface Product {
 }
 
 const Inventory = () => {
+    const {showAlert} = useAlert();
     /*
     Which slot is currently being edited
     */
@@ -138,7 +140,7 @@ const Inventory = () => {
             Update backend
             */
             await updateSlotProductAndQuantity(slotId, productId, quantity);
-
+            showAlert(`Slot ${slotId} updated successfully!`, 'success');
             /*
             Update local UI state so the table updates immediately
             */
@@ -162,6 +164,7 @@ const Inventory = () => {
             setEditingSlotID(null);
         } catch (error) {
             console.error(`Failed to update slot ${slotId}`, error);
+            showAlert(`Failed to update slot ${slotId}`, 'error');
         }
     };
 
@@ -189,6 +192,7 @@ const Inventory = () => {
                         : slot,
                 ),
             );
+
         } catch (error) {
             console.error(`Failed to remove product from slot ${slotId}`, error);
         }
