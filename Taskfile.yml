@@ -70,5 +70,6 @@ tasks:
 
   prod:
     desc: Build and run the production stack
+    dotenv: [.env.prod]
     cmds:
       - docker compose -p outastock-prod -f docker-compose.prod.yml up --build
