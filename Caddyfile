@@ -9,9 +9,15 @@
 
 	# Add basic security headers (Good practice to start now)
 	header {
-		# Enable HSTS (Force HTTPS) - Only activates when you use a real domain
-		Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
+
+		# Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
+		
+		# REMOVED: Strict-Transport-Security — causes permanent HTTPS redirects
+        # which break localhost since it can't get a real certificate.
+        # Add this back ONLY when deploying to a real domain with real TLS.
+		
 		# Prevent clickjacking
+		
 		X-Frame-Options "SAMEORIGIN"
 		# Prevent MIME sniffing
 		X-Content-Type-Options "nosniff"
@@ -26,16 +32,15 @@
 	}
 }
 
+# Swagger UI
 api.localhost:80 {
-	# 1. Route API calls on THIS subdomain to the backend
-	handle /api/* {
-		reverse_proxy {$BACKEND_HOST}
-	}
+    handle /api/* {
+        reverse_proxy {$BACKEND_HOST}
+    }
 
-	# 2. Everything else is the Swagger UI
-	handle {
-		reverse_proxy swagger:8080
-	}
+    handle {
+        reverse_proxy swagger:8080
+    }
 }
 
 # =============================================================================
@@ -49,11 +54,12 @@ api.localhost:80 {
 #    Caddy handles HTTPS externally but connects to Zitadel using h2c
 #    (HTTP/2 cleartext) since there's no TLS between containers.
 # =============================================================================
-{$ZITADEL_DOMAIN} {
+# Zitadel — :80 prevents Caddy from auto-provisioning a self-signed cert
+{$ZITADEL_DOMAIN}:80 {
     encode gzip zstd
 
     header {
-        Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
+        # Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
         X-Content-Type-Options "nosniff"
     }
 

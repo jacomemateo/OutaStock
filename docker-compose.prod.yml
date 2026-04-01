@@ -33,18 +33,18 @@ services:
     image: postgres:18
     container_name: vending-db-prod
     environment:
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${APP_DB_USER}         # CHANGED (was POSTGRES_USER)
+      POSTGRES_PASSWORD: ${APP_DB_PASSWORD} # CHANGED
+      POSTGRES_DB: ${APP_DB_NAME}           # CHANGED
     volumes:
-      - db-data:/var/lib/postgresql
+      - db-data:/var/lib/postgresql # add /data later
       - ./db/migrations:/docker-entrypoint-initdb.d
     healthcheck: # Add healthcheck so backend waits for DB
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      test: ["CMD-SHELL", "pg_isready -U ${APP_DB_USER} -d ${APP_DB_NAME}"]
       interval: 5s
       timeout: 5s
       retries: 5
-    netowrks:
+    networks:
       - default
 
   # =============================================================================
@@ -55,7 +55,7 @@ services:
       context: ./backend
       dockerfile: Dockerfile
     environment:
-      DATABASE_URL: postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}?sslmode=disable
+      DATABASE_URL: postgres://${APP_DB_USER}:${APP_DB_PASSWORD}@db:5432/${APP_DB_NAME}?sslmode=disable  # FIXED VARS
       ECHO_PORT: ${ECHO_PORT}
       ECHO_LOG_LEVEL: ${ECHO_LOG_LEVEL}
     depends_on:
@@ -112,7 +112,16 @@ services:
       ZITADEL_TLS_ENABLED: false
 
       # Points to zitadel-db (NOT our app's db service)
-      ZITADEL_DATABASE_POSTGRES_DSN: ${ZITADEL_DATABASE_POSTGRES_DSN}
+      # ADD these in its place:
+      ZITADEL_DATABASE_POSTGRES_HOST: zitadel-db
+      ZITADEL_DATABASE_POSTGRES_PORT: 5432
+      ZITADEL_DATABASE_POSTGRES_DATABASE: ${ZITADEL_DB_NAME}
+      ZITADEL_DATABASE_POSTGRES_USER_USERNAME: ${ZITADEL_DB_USER}
+      ZITADEL_DATABASE_POSTGRES_USER_PASSWORD: ${ZITADEL_DB_PASSWORD}
+      ZITADEL_DATABASE_POSTGRES_USER_SSL_MODE: disable
+      ZITADEL_DATABASE_POSTGRES_ADMIN_USERNAME: ${ZITADEL_DB_USER}
+      ZITADEL_DATABASE_POSTGRES_ADMIN_PASSWORD: ${ZITADEL_DB_PASSWORD}
+      ZITADEL_DATABASE_POSTGRES_ADMIN_SSL_MODE: disable
 
       ZITADEL_FIRSTINSTANCE_ORG_HUMAN_PASSWORDCHANGEREQUIRED: false
       ZITADEL_FIRSTINSTANCE_LOGINCLIENTPATPATH: /zitadel/bootstrap/login-client.pat
@@ -135,9 +144,9 @@ services:
 
       ZITADEL_CACHES_CONNECTORS_REDIS_ENABLED: ${ZITADEL_CACHES_CONNECTORS_REDIS_ENABLED}
       ZITADEL_CACHES_CONNECTORS_REDIS_URL: ${ZITADEL_CACHES_CONNECTORS_REDIS_URL}
-      ZITADEL_CACHES_INSTANCE_CONNECTOR: ${ZITADEL_CACHES_INSTANCE_CONNECTOR}
-      ZITADEL_CACHES_MILESTONES_CONNECTOR: ${ZITADEL_CACHES_MILESTONES_CONNECTOR}
-      ZITADEL_CACHES_ORGANIZATION_CONNECTOR: ${ZITADEL_CACHES_ORGANIZATION_CONNECTOR}
+      ZITADEL_CACHES_INSTANCE_CONNECTOR: ${ZITADEL_CACHES_INSTANCE_CONNECTOR:-}         # The :- syntax allows these
+      ZITADEL_CACHES_MILESTONES_CONNECTOR: ${ZITADEL_CACHES_MILESTONES_CONNECTOR:-}     # to be optional and default 
+      ZITADEL_CACHES_ORGANIZATION_CONNECTOR: ${ZITADEL_CACHES_ORGANIZATION_CONNECTOR:-} # to empty if not set
 
     healthcheck:
       test:
@@ -153,7 +162,7 @@ services:
     networks:
       - zitadel
     depends_on:
-      postgres:
+      zitadel-db:   # FIXED (was postgres)
         condition: service_healthy
 
   # =============================================================================
@@ -200,13 +209,13 @@ services:
     image: ${POSTGRES_IMAGE}
     restart: unless-stopped
     environment:
-      POSTGRES_PASSWORD: ${POSTGRES_ADMIN_PASSWORD}
-      POSTGRES_USER: ${POSTGRES_ADMIN_USER}
-      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_PASSWORD: ${ZITADEL_DB_PASSWORD}  # CHANGED
+      POSTGRES_USER: ${ZITADEL_DB_USER}          # CHANGED
+      POSTGRES_DB: ${ZITADEL_DB_NAME}            # CHANGED
     healthcheck:
       test:
         - CMD-SHELL
-        - pg_isready -d ${POSTGRES_DB} -U ${POSTGRES_ADMIN_USER}
+        - pg_isready -d ${ZITADEL_DB_NAME} -U ${ZITADEL_DB_USER}  # FIXED
       interval: 10s
       timeout: 30s
       retries: 10
