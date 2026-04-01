@@ -12,7 +12,8 @@ services:
     restart: unless-stopped
     ports:
       - "80:80"    # HTTP
-      - "443:443"  # HTTPS
+      # Had to comment out HTTPS for now to get everything to work for production.
+      # - "443:443"  # HTTPS
     volumes:
       - ./Caddyfile:/etc/caddy/Caddyfile
       - caddy_data:/data
