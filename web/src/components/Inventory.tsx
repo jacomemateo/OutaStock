@@ -140,7 +140,7 @@ const Inventory = () => {
             Update backend
             */
             await updateSlotProductAndQuantity(slotId, productId, quantity);
-            showAlert(`Slot ${slotId} updated successfully!`, 'success');
+            showAlert(`Slot updated successfully!`, 'success');
             /*
             Update local UI state so the table updates immediately
             */
@@ -164,7 +164,7 @@ const Inventory = () => {
             setEditingSlotID(null);
         } catch (error) {
             console.error(`Failed to update slot ${slotId}`, error);
-            showAlert(`Failed to update slot ${slotId}`, 'error');
+            showAlert(`Failed to update slot` , 'error');
         }
     };
 
@@ -192,10 +192,10 @@ const Inventory = () => {
                         : slot,
                 ),
             );
-            showAlert(`Product removed from slot ${slotId}`, 'success');
+            showAlert(`Product removed from slot`, 'success');
 
         } catch (error) {
-            showAlert(`Failed to remove product from slot ${slotId}`, 'error');
+            showAlert(`Failed to remove product from slot`, 'error');
             console.error(`Failed to remove product from slot ${slotId}`, error);
         }
     };
