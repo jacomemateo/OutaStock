@@ -192,8 +192,10 @@ const Inventory = () => {
                         : slot,
                 ),
             );
+            showAlert(`Product removed from slot ${slotId}`, 'success');
 
         } catch (error) {
+            showAlert(`Failed to remove product from slot ${slotId}`, 'error');
             console.error(`Failed to remove product from slot ${slotId}`, error);
         }
     };
