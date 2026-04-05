@@ -10,6 +10,8 @@ import { useEffect, useState } from 'react';
 import { fetchProducts, getProductCount } from '@/services/api';
 import { common } from '@mui/material/colors';
 import AddProductModal from '@components/AddProductModal';
+import { useAlert } from '@contexts/SnackBarAlertContext'; 
+import { createProduct } from '@/services/api'; 
 
 interface Product {
     id: number;
@@ -19,6 +21,7 @@ interface Product {
 }
 
 const UpdateProducts = () => {
+    const { showAlert } = useAlert();
     const [products, setProducts] = useState<Product[]>([]);
     const [isAddProductModalOpen, setIsAddProductModalOpen] = useState(false);
 
@@ -32,9 +35,22 @@ const UpdateProducts = () => {
         }
     };
 
-    const handleSaveNewProduct = (name: string, priceCents: number) => {
-        console.log('Saving new product:', { name, priceCents });
-    }
+    const handleSaveNewProduct = async (name: string, priceCents: number) => {
+        if (products.some((product) => product.name.toLowerCase() === name.toLowerCase())) {
+            showAlert(`${name} already exists. Please add a new product.`, 'error');
+            return;
+        }
+        try {
+            // const newProduct = await createProduct(name, priceCents);
+            // setProducts((prevProducts) => [...prevProducts, newProduct]);
+            await createProduct(name, priceCents);
+            await loadProducts(); // Reload fresh data from backend
+            showAlert(`${name} added successfully!`, 'success');
+        } catch (error) {
+            console.error('Error saving new product:', error);
+            showAlert('Failed to add product.', 'error');
+        }
+    };
 
     useEffect(() => {
         loadProducts();

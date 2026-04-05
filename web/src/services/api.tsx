@@ -109,3 +109,18 @@ export const updateSlotProductAndQuantity = async (
         throw error;
     }
 };
+
+export const createProduct = async (name: string, priceCents: number) => {
+    try{
+        const response = await fetch(`${API_BASE_URL}/products/new`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name, priceCents }),
+        });
+        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+        return await response.json();
+    } catch (error) {
+        console.error(`Error creating product:`, error);
+        throw error;
+    }
+};
