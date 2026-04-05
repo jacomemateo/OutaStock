@@ -1,13 +1,13 @@
 import { useState } from 'react';
+import '@styles/AddProductModal.css';
 
 interface AddProoductModalProps {
     isOpen: boolean;
-    onClose: ()=> void;
+    onClose: () => void;
     onSave: (name: string, priceCents: number) => void;
 }
 
-
-const AddProductModal = ({isOpen, onClose, onSave}: AddProoductModalProps) => {
+const AddProductModal = ({ isOpen, onClose, onSave }: AddProoductModalProps) => {
     const [formData, setFormData] = useState({
         name: '',
         priceCents: '',
@@ -16,10 +16,10 @@ const AddProductModal = ({isOpen, onClose, onSave}: AddProoductModalProps) => {
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         const { name, priceCents } = formData;
-        onSave(name, parseInt(priceCents));
+        onSave(name, Math.round(parseFloat(priceCents) * 100));
         setFormData({ name: '', priceCents: '' }); // Reset form
         onClose(); // Close modal after saving
-    }
+    };
 
     if (!isOpen) return null;
 
@@ -39,7 +39,9 @@ const AddProductModal = ({isOpen, onClose, onSave}: AddProoductModalProps) => {
                         <input
                             type="text"
                             value={formData.name}
-                            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                            onChange={(e) =>
+                                setFormData({ ...formData, name: e.target.value })
+                            }
                             required
                         />
                     </label>
@@ -49,7 +51,10 @@ const AddProductModal = ({isOpen, onClose, onSave}: AddProoductModalProps) => {
                         <input
                             type="text"
                             value={formData.priceCents}
-                            onChange={(e) => setFormData({ ...formData, priceCents: e.target.value })}
+                            placeholder = "e.g. 1.50"
+                            onChange={(e) =>
+                                setFormData({ ...formData, priceCents: e.target.value })
+                            }
                             required
                         />
                     </label>
@@ -58,7 +63,7 @@ const AddProductModal = ({isOpen, onClose, onSave}: AddProoductModalProps) => {
                 </form>
             </div>
         </div>
-    )
-}
+    );
+};
 
 export default AddProductModal;
