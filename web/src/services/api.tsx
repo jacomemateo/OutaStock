@@ -124,3 +124,22 @@ export const createProduct = async (name: string, priceCents: number) => {
         throw error;
     }
 };
+
+// Delete a product by ID
+export const deleteProduct = async (productID: number) => {
+    try{
+        const response = await fetch(`${API_BASE_URL}/products/${productID}`, {
+            method: 'DELETE',
+        });
+        console.log(`Delete response for product ${productID}:`, response);
+        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+        const contentLength = response.headers.get('content-length');
+        if (contentLength === '0' || response.status === 204) {
+            return null; // or return true/success indicator
+        }
+        // return await response.json();
+    } catch (error) {
+        console.error(`Error deleting product:`, error);
+        throw error;    
+    }
+};

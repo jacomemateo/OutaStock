@@ -10,7 +10,9 @@ import { useEffect, useState } from 'react';
 import { fetchProducts, getProductCount } from '@/services/api';
 import AddProductModal from '@components/AddProductModal';
 import { useAlert } from '@contexts/SnackBarAlertContext';
-import {fetchInventory, getInventoryCount, createProduct} from '@/services/api';
+import { fetchInventory, getInventoryCount, createProduct } from '@/services/api';
+import ConfirmationModal from '@components/ConfirmationModal';
+import {deleteProduct} from '@/services/api';
 interface Product {
     id: number;
     name: string;
@@ -33,6 +35,8 @@ const UpdateProducts = () => {
     const [products, setProducts] = useState<Product[]>([]);
     const [isAddProductModalOpen, setIsAddProductModalOpen] = useState(false);
     const [lowStockCount, setLowStockCount] = useState(0);
+    const [confirmationOpen, setConfirmationOpen] = useState<boolean>(false);
+    const [slotToDelete, setSlotToDelete] = useState<number | null>(null);
 
     // Not working
     // const getLowStockCount = async () => {
@@ -89,6 +93,25 @@ const UpdateProducts = () => {
             showAlert('Failed to add product.', 'error');
         }
     };
+
+    const handleDeleteProduct = async (productID: number) => {
+        try{
+            await deleteProduct(productID);
+            showAlert(`Product deleted successfully!`, 'success');
+            await loadProducts(); // Reload fresh data from backend
+        }catch (error) {
+            console.error('Error deleting product:', error);
+            showAlert('Failed to delete product.', 'error');
+        }
+    }
+
+    const getUserDecision = (confirmed: boolean) => {
+        if (confirmed && slotToDelete !== null) {
+            handleDeleteProduct(slotToDelete);
+        }
+        setConfirmationOpen(false);
+        setSlotToDelete(null);
+    }
 
     useEffect(() => {
         // getLowStockCount();
@@ -188,7 +211,13 @@ const UpdateProducts = () => {
                                         <button className="edit-btn-row">
                                             <EditIcon fontSize="small" />
                                         </button>
-                                        <button className="delete-btn-row">
+                                        <button
+                                            className="delete-btn-row"
+                                            onClick={() => {
+                                                setConfirmationOpen(true);
+                                                setSlotToDelete(product.id);
+                                            }}
+                                        >
                                             <DeleteIcon fontSize="small" />
                                         </button>
                                     </td>
@@ -197,6 +226,14 @@ const UpdateProducts = () => {
                         </tbody>
                     </table>
                 </div>
+                {confirmationOpen && (
+                    <ConfirmationModal
+                    isOpen={confirmationOpen}
+                    onClose={() => setConfirmationOpen(false)}
+                    onConfirm={getUserDecision}
+                    title="Are you sure?"
+                    message="This action cannot be undone. Please confirm if you want to proceed."
+                    />)}
             </div>
         </>
     );
