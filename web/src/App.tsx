@@ -6,6 +6,7 @@ import LoadingScreen from '@components/LoadingScreen';
 import ProtectedRoute from '@components/ProtectedRoute';
 import Template from '@components/Template';
 import { useTheme } from '@contexts/ThemeContext';
+import AlertProvider  from '@contexts/SnackBarAlertContext';
 import { useEffect } from 'react';
 
 function App() {

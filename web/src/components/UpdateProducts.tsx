@@ -8,8 +8,11 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import AddIcon from '@mui/icons-material/Add';
 import { useEffect, useState } from 'react';
 import { fetchProducts, getProductCount } from '@/services/api';
-import { FaBoxOpen } from 'react-icons/fa';
-
+import AddProductModal from '@components/AddProductModal';
+import { useAlert } from '@contexts/SnackBarAlertContext';
+import { fetchInventory, getInventoryCount, createProduct } from '@/services/api';
+import ConfirmationModal from '@components/ConfirmationModal';
+import {deleteProduct} from '@/services/api';
 interface Product {
     id: number;
     name: string;
@@ -17,9 +20,51 @@ interface Product {
     dateCreated: string;
 }
 
-const UpdateProducts = () => {
-    const [products, setProducts] = useState<Product[]>([]);
+// interface InventoryItem{
+//     slotId: number;
+//     slotLabel: string;
+//     quantity: number;
+//     productName: string;
+//     priceCents: number;
+//     productId: string;
+//     dateAdded: string;
+// }
 
+const UpdateProducts = () => {
+    const { showAlert } = useAlert();
+    const [products, setProducts] = useState<Product[]>([]);
+    const [isAddProductModalOpen, setIsAddProductModalOpen] = useState(false);
+    const [lowStockCount, setLowStockCount] = useState(0);
+    const [confirmationOpen, setConfirmationOpen] = useState<boolean>(false);
+    const [slotToDelete, setSlotToDelete] = useState<number | null>(null);
+
+    // Not working
+    // const getLowStockCount = async () => {
+    //     try{
+    //         const inventoryData = await getAllInventory();
+    //         console.log('Inventory data for low stock count:', inventoryData);
+    //         const lowStockItems = inventoryData.filter((item: any) => item.quantity < 5);
+    //         setLowStockCount(lowStockItems.length);
+    //     } catch (error) {
+    //         console.error('Error fetching low stock count:', error);
+
+    //     }
+    // }
+
+    const loadInventory = async () => {
+        try {
+            const data = await fetchInventory(await getInventoryCount(), 0);
+            /*
+                    Ensure we always store an array
+                    */
+            const lowStockItems = data.filter((item: any) => item.quantity < 5);
+            setLowStockCount(lowStockItems.length);
+
+            console.log('Inventory slots:', data);
+        } catch (error) {
+            console.error('Failed to load inventory', error);
+        }
+    };
     const loadProducts = async () => {
         try {
             const data = await fetchProducts(await getProductCount(), 0);
@@ -30,8 +75,48 @@ const UpdateProducts = () => {
         }
     };
 
+    const handleSaveNewProduct = async (name: string, priceCents: number) => {
+        if (
+            products.some((product) => product.name.toLowerCase() === name.toLowerCase())
+        ) {
+            showAlert(`${name} already exists. Please add a new product.`, 'error');
+            return;
+        }
+        try {
+            // const newProduct = await createProduct(name, priceCents);
+            // setProducts((prevProducts) => [...prevProducts, newProduct]);
+            await createProduct(name, priceCents);
+            await loadProducts(); // Reload fresh data from backend
+            showAlert(`${name} added successfully!`, 'success');
+        } catch (error) {
+            console.error('Error saving new product:', error);
+            showAlert('Failed to add product.', 'error');
+        }
+    };
+
+    const handleDeleteProduct = async (productID: number) => {
+        try{
+            await deleteProduct(productID);
+            showAlert(`Product deleted successfully!`, 'success');
+            await loadProducts(); // Reload fresh data from backend
+        }catch (error) {
+            console.error('Error deleting product:', error);
+            showAlert('Failed to delete product.', 'error');
+        }
+    }
+
+    const getUserDecision = (confirmed: boolean) => {
+        if (confirmed && slotToDelete !== null) {
+            handleDeleteProduct(slotToDelete);
+        }
+        setConfirmationOpen(false);
+        setSlotToDelete(null);
+    }
+
     useEffect(() => {
+        // getLowStockCount();
         loadProducts();
+        loadInventory();
     }, []);
 
     return (
@@ -52,7 +137,7 @@ const UpdateProducts = () => {
                         <BatteryCharging20Icon sx={{ color: 'yellow' }} /> Low Stock Items
                     </h2>
                     <p className="card-subtitle">Number of items that are running low</p>
-                    <p className="card-value">30</p>
+                    <p className="card-value">{lowStockCount}</p>
                 </div>
 
                 <div className="card out-of-stock-card">
@@ -84,8 +169,19 @@ const UpdateProducts = () => {
                         </p>
                     </div>
                     <div className="add-product-btn">
-                        <AddIcon  />
+                        <AddIcon
+                            onClick={() =>
+                                setIsAddProductModalOpen(!isAddProductModalOpen)
+                            }
+                        />
                     </div>
+                    {isAddProductModalOpen && (
+                        <AddProductModal
+                            isOpen={isAddProductModalOpen}
+                            onClose={() => setIsAddProductModalOpen(false)}
+                            onSave={handleSaveNewProduct}
+                        />
+                    )}
                 </div>
 
                 <div className="products-list">
@@ -95,7 +191,6 @@ const UpdateProducts = () => {
                                 <th>Product</th>
                                 <th>Cost</th>
                                 <th>Price</th>
-                                <th>Stock</th>
                                 <th>Actions</th>
                             </tr>
                         </thead>
@@ -112,14 +207,17 @@ const UpdateProducts = () => {
                                     <td>{product.name}</td>
                                     <td>Waiting</td>
                                     <td>{(product.priceCents / 100).toFixed(2)}</td>
-                                    <td className="all-products-stock">
-                                        📦 {product.priceCents}
-                                    </td>
                                     <td>
                                         <button className="edit-btn-row">
                                             <EditIcon fontSize="small" />
                                         </button>
-                                        <button className="delete-btn-row">
+                                        <button
+                                            className="delete-btn-row"
+                                            onClick={() => {
+                                                setConfirmationOpen(true);
+                                                setSlotToDelete(product.id);
+                                            }}
+                                        >
                                             <DeleteIcon fontSize="small" />
                                         </button>
                                     </td>
@@ -128,6 +226,14 @@ const UpdateProducts = () => {
                         </tbody>
                     </table>
                 </div>
+                {confirmationOpen && (
+                    <ConfirmationModal
+                    isOpen={confirmationOpen}
+                    onClose={() => setConfirmationOpen(false)}
+                    onConfirm={getUserDecision}
+                    title="Are you sure?"
+                    message="This action cannot be undone. Please confirm if you want to proceed."
+                    />)}
             </div>
         </>
     );
