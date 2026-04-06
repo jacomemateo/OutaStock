@@ -127,8 +127,8 @@ export const updateSlotProductAndQuantity = async (
 };
 
 export const createProduct = async (name: string, priceCents: number) => {
-    try{
-        const response = await fetch(`${API_BASE_URL}/products/new`, {
+    try {
+        const response = await authFetch(`${API_BASE_URL}/products/new`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ name, priceCents }),
@@ -142,9 +142,9 @@ export const createProduct = async (name: string, priceCents: number) => {
 };
 
 // Delete a product by ID
-export const deleteProduct = async (productID: number) => {
-    try{
-        const response = await fetch(`${API_BASE_URL}/products/${productID}`, {
+export const deleteProduct = async (productID: string) => {
+    try {
+        const response = await authFetch(`${API_BASE_URL}/products/${productID}`, {
             method: 'DELETE',
         });
         console.log(`Delete response for product ${productID}:`, response);

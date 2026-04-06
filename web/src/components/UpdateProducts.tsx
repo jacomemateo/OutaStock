@@ -14,7 +14,7 @@ import { fetchInventory, getInventoryCount, createProduct } from '@/services/api
 import ConfirmationModal from '@components/ConfirmationModal';
 import {deleteProduct} from '@/services/api';
 interface Product {
-    id: number;
+    id: string;
     name: string;
     priceCents: number;
     dateCreated: string;
@@ -36,7 +36,7 @@ const UpdateProducts = () => {
     const [isAddProductModalOpen, setIsAddProductModalOpen] = useState(false);
     const [lowStockCount, setLowStockCount] = useState(0);
     const [confirmationOpen, setConfirmationOpen] = useState<boolean>(false);
-    const [slotToDelete, setSlotToDelete] = useState<number | null>(null);
+    const [slotToDelete, setSlotToDelete] = useState<string | null>(null);
 
     // Not working
     // const getLowStockCount = async () => {
@@ -94,16 +94,16 @@ const UpdateProducts = () => {
         }
     };
 
-    const handleDeleteProduct = async (productID: number) => {
-        try{
+    const handleDeleteProduct = async (productID: string) => {
+        try {
             await deleteProduct(productID);
             showAlert(`Product deleted successfully!`, 'success');
             await loadProducts(); // Reload fresh data from backend
-        }catch (error) {
+        } catch (error) {
             console.error('Error deleting product:', error);
             showAlert('Failed to delete product.', 'error');
         }
-    }
+    };
 
     const getUserDecision = (confirmed: boolean) => {
         if (confirmed && slotToDelete !== null) {
@@ -111,7 +111,7 @@ const UpdateProducts = () => {
         }
         setConfirmationOpen(false);
         setSlotToDelete(null);
-    }
+    };
 
     useEffect(() => {
         // getLowStockCount();
