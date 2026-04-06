@@ -55,6 +55,8 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile
+    env_file:
+      - ./terraform/zitadel-backend.env
     environment:
       DATABASE_URL: postgres://${APP_DB_USER}:${APP_DB_PASSWORD}@db:5432/${APP_DB_NAME}?sslmode=disable  # FIXED VARS
       ECHO_PORT: ${ECHO_PORT}
@@ -63,7 +65,8 @@ services:
       db:
         condition: service_healthy # Wait for DB to be ready
     networks:
-      - default 
+      - default
+      - zitadel
 
   # =============================================================================
   # FRONTEND — React app
@@ -72,6 +75,8 @@ services:
     build:
       context: ./web
       dockerfile: Dockerfile
+    env_file:
+      - ./terraform/zitadel-web.env
     environment:
       # This is injected into window.env at runtime
       API_BASE_URL: ${API_BASE_URL}
@@ -106,6 +111,26 @@ services:
     user: "0"
     command: start-from-init --masterkey "${ZITADEL_MASTERKEY}"
     environment:
+
+      # Log in credentials for the first human user created on first startup.
+      ZITADEL_FIRSTINSTANCE_ORG_HUMAN_USERNAME: admin
+      ZITADEL_FIRSTINSTANCE_ORG_HUMAN_PASSWORD: SecurePassword123!
+      ZITADEL_FIRSTINSTANCE_ORG_HUMAN_FIRSTNAME: Zitadel
+      ZITADEL_FIRSTINSTANCE_ORG_HUMAN_LASTNAME: Admin
+      ZITADEL_FIRSTINSTANCE_ORG_HUMAN_EMAIL: admin@zitadel.example.com
+      ZITADEL_FIRSTINSTANCE_ORG_HUMAN_PASSWORDCHANGEREQUIRED: false
+
+      # Organization name
+      ZITADEL_FIRSTINSTANCE_ORG_NAME: outastock
+      ZITADEL_FIRSTINSTANCE_MACHINEKEYPATH: /terraform/zitadel-admin-sa.json
+      ZITADEL_FIRSTINSTANCE_ORG_MACHINE_MACHINE_USERNAME: terraform-admin
+      ZITADEL_FIRSTINSTANCE_ORG_MACHINE_MACHINE_NAME: Terraform Admin
+      ZITADEL_FIRSTINSTANCE_ORG_MACHINE_MACHINEKEY_TYPE: 1
+      ZITADEL_FIRSTINSTANCE_LOGINCLIENTPATPATH: /zitadel/bootstrap/login-client.pat
+      ZITADEL_FIRSTINSTANCE_ORG_LOGINCLIENT_MACHINE_USERNAME: login-client
+      ZITADEL_FIRSTINSTANCE_ORG_LOGINCLIENT_MACHINE_NAME: Automatically Initialized IAM_LOGIN_CLIENT
+      ZITADEL_FIRSTINSTANCE_ORG_LOGINCLIENT_PAT_EXPIRATIONDATE: ${LOGIN_CLIENT_PAT_EXPIRATION}
+
       ZITADEL_PORT: 8080
       ZITADEL_EXTERNALDOMAIN: ${ZITADEL_DOMAIN}
       ZITADEL_EXTERNALPORT: ${ZITADEL_EXTERNALPORT}
@@ -123,12 +148,6 @@ services:
       ZITADEL_DATABASE_POSTGRES_ADMIN_USERNAME: ${ZITADEL_DB_USER}
       ZITADEL_DATABASE_POSTGRES_ADMIN_PASSWORD: ${ZITADEL_DB_PASSWORD}
       ZITADEL_DATABASE_POSTGRES_ADMIN_SSL_MODE: disable
-
-      ZITADEL_FIRSTINSTANCE_ORG_HUMAN_PASSWORDCHANGEREQUIRED: false
-      ZITADEL_FIRSTINSTANCE_LOGINCLIENTPATPATH: /zitadel/bootstrap/login-client.pat
-      ZITADEL_FIRSTINSTANCE_ORG_LOGINCLIENT_MACHINE_USERNAME: login-client
-      ZITADEL_FIRSTINSTANCE_ORG_LOGINCLIENT_MACHINE_NAME: Automatically Initialized IAM_LOGIN_CLIENT
-      ZITADEL_FIRSTINSTANCE_ORG_LOGINCLIENT_PAT_EXPIRATIONDATE: ${LOGIN_CLIENT_PAT_EXPIRATION}
 
       ZITADEL_DEFAULTINSTANCE_FEATURES_LOGINV2_REQUIRED: true
       ZITADEL_DEFAULTINSTANCE_FEATURES_LOGINV2_BASEURI: ${ZITADEL_PUBLIC_SCHEME}://${ZITADEL_DOMAIN}:${ZITADEL_EXTERNALPORT}/ui/v2/login/
@@ -160,6 +179,7 @@ services:
       start_period: 20s
     volumes:
       - zitadel-bootstrap:/zitadel/bootstrap:rw
+      - ./terraform/bootstrap:/terraform:rw
     networks:
       - zitadel
     depends_on:
@@ -275,4 +295,3 @@ volumes:
   caddy_config:
   db-data-zitadel:    # Zitadel DB data
   zitadel-bootstrap:  # shared between zitadel-api and zitadel-login for first-time setup files
-

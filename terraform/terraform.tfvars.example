@@ -1,0 +1,17 @@
+project_name = "OutaStock Local"
+application_name = "OutaStock Web"
+admin_username = "admin"
+admin_email = "admin@zitadel.example.com"
+admin_password = "SecurePassword123!"
+
+redirect_uris = [
+  "http://localhost/auth/callback",
+]
+
+post_logout_redirect_uris = [
+  "http://localhost/",
+]
+
+additional_origins = [
+  "http://localhost",
+]

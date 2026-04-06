@@ -94,3 +94,14 @@ dist-ssr
 
 temp.tsx
 
+# Terraform
+terraform/.terraform/
+terraform/*.tfstate
+terraform/*.tfstate.*
+terraform/*.tfvars
+terraform/*.tfvars.json
+terraform/crash.log
+terraform/bootstrap/*
+terraform/zitadel-backend.env
+terraform/zitadel-web.env
+!terraform/bootstrap/.gitkeep

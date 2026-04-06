@@ -4,7 +4,7 @@
 	email jacome.mateo@icloud.com
 }
 
-:80 {
+localhost:80 {
 	encode gzip zstd
 
 	# Add basic security headers (Good practice to start now)
