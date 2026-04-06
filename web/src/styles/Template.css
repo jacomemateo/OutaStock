@@ -122,10 +122,66 @@
     background-color: var(--umbc-gold);
 }
 
+.template-header-content {
+    align-items: center;
+    display: flex;
+    gap: 1rem;
+    justify-content: space-between;
+}
+
 .template-header h1 {
     color: white;
     margin: 0;
     font-size: 2rem;
+}
+
+.template-subtitle {
+    color: rgba(255, 255, 255, 0.88);
+    margin: 0.4rem 0 0;
+}
+
+.template-user-section {
+    align-items: center;
+    display: flex;
+    gap: 0.85rem;
+}
+
+.template-user-chip {
+    background: rgba(255, 255, 255, 0.14);
+    border: 1px solid rgba(255, 255, 255, 0.22);
+    border-radius: 999px;
+    color: var(--white);
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+    padding: 0.75rem 1rem;
+}
+
+.template-user-name {
+    font-size: 0.95rem;
+    font-weight: 700;
+}
+
+.template-user-email {
+    font-size: 0.8rem;
+    opacity: 0.85;
+}
+
+.template-logout-btn {
+    background: rgba(26, 26, 26, 0.85);
+    border: none;
+    border-radius: 999px;
+    color: var(--white);
+    cursor: pointer;
+    font-size: 0.92rem;
+    font-weight: 700;
+    padding: 0.9rem 1.1rem;
+    transition: background-color 0.2s ease, transform 0.2s ease;
+}
+
+.template-logout-btn:hover {
+    background: rgba(26, 26, 26, 1);
+    transform: translateY(-1px);
 }
 
 .content {

@@ -17,10 +17,12 @@ import ViewAllTransactions from '@components/ViewAllTransactions';
 
 import '@styles/Template.css';
 import { useNavigate, useLocation, Routes, Route } from 'react-router-dom';
+import { useAuth } from '@contexts/AuthContext';
 
 const Template = () => {
     const navigate = useNavigate();
     const location = useLocation();
+    const { signOut, user } = useAuth();
 
     const pages = [
         {
@@ -102,7 +104,30 @@ const Template = () => {
 
             <main className="main-content">
                 <header className="template-header">
-                    <h1>{activePage.label}</h1>
+                    <div className="template-header-content">
+                        <div>
+                            <h1>{activePage.label}</h1>
+                            <p className="template-subtitle">
+                                Connected to your local ZITADEL organization
+                            </p>
+                        </div>
+                        <div className="template-user-section">
+                            <div className="template-user-chip">
+                                <span className="template-user-name">
+                                    {user?.name ?? 'Authenticated User'}
+                                </span>
+                                <span className="template-user-email">
+                                    {user?.email ?? user?.preferred_username ?? 'No email'}
+                                </span>
+                            </div>
+                            <button
+                                className="template-logout-btn"
+                                onClick={() => void signOut()}
+                            >
+                                Sign Out
+                            </button>
+                        </div>
+                    </div>
                 </header>
                 <div className="content">
                     {/* The Routes block now decides what to show based on the URL */}

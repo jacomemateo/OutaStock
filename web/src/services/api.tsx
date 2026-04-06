@@ -1,6 +1,8 @@
 // src/services/api.tsx
 // src/services/api.js
 
+import { getAccessToken } from '@/services/auth';
+
 let API_BASE_URL = window.env?.API_BASE_URL;
 
 if (!API_BASE_URL || API_BASE_URL === '__API_BASE_URL__') {
@@ -9,13 +11,27 @@ if (!API_BASE_URL || API_BASE_URL === '__API_BASE_URL__') {
 
 console.log('API Base URL:', API_BASE_URL);
 
+const authFetch = (input: string, init: RequestInit = {}) => {
+    const headers = new Headers(init.headers);
+    const accessToken = getAccessToken();
+
+    if (accessToken) {
+        headers.set('Authorization', `Bearer ${accessToken}`);
+    }
+
+    return fetch(input, {
+        ...init,
+        headers,
+    });
+};
+
 // To get paginated
 const getPaginated = async (endpoint: string, numRows: number, pageOffset: number) => {
     const params = new URLSearchParams({
         num_rows: numRows.toString(),
         page_offset: pageOffset.toString(),
     });
-    const response = await fetch(`${API_BASE_URL}${endpoint}?${params.toString()}`);
+    const response = await authFetch(`${API_BASE_URL}${endpoint}?${params.toString()}`);
     if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
     return await response.json();
 };
@@ -27,7 +43,7 @@ export const fetchProducts = (n: number, p: number) => getPaginated('/products/'
 
 // To get row counts for each
 const getCount = async (endpoint: string) => {
-    const response = await fetch(`${API_BASE_URL}${endpoint}`);
+    const response = await authFetch(`${API_BASE_URL}${endpoint}`);
     if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status} at ${endpoint}`);
     }
@@ -45,7 +61,7 @@ export const assignProductToSlot = async (
     quantity = 0,
 ) => {
     try {
-        const response = await fetch(`${API_BASE_URL}/inventory/${slotID}`, {
+        const response = await authFetch(`${API_BASE_URL}/inventory/${slotID}`, {
             method: 'PATCH',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ productUUID, quantity }),
@@ -61,7 +77,7 @@ export const assignProductToSlot = async (
 // Remove a product from a slot (unassign)
 export const unassignProductFromSlot = async (slotID: number) => {
     try {
-        const response = await fetch(`${API_BASE_URL}/inventory/${slotID}`, {
+        const response = await authFetch(`${API_BASE_URL}/inventory/${slotID}`, {
             method: 'PATCH',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ productUUID: null, quantity: null }),
@@ -77,7 +93,7 @@ export const unassignProductFromSlot = async (slotID: number) => {
 //  Update only the quantity of a slot
 export const updateSlotQuantity = async (slotID: number, quantity: number) => {
     try {
-        const response = await fetch(`${API_BASE_URL}/inventory/${slotID}`, {
+        const response = await authFetch(`${API_BASE_URL}/inventory/${slotID}`, {
             method: 'PATCH',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ productUUID: null, quantity }),
@@ -97,7 +113,7 @@ export const updateSlotProductAndQuantity = async (
     quantity: number,
 ) => {
     try {
-        const response = await fetch(`${API_BASE_URL}/inventory/${slotID}`, {
+        const response = await authFetch(`${API_BASE_URL}/inventory/${slotID}`, {
             method: 'PATCH',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ productUUID, quantity }),

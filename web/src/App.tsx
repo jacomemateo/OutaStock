@@ -1,7 +1,9 @@
 import '@/App.css';
 import '@styles/Global.css';
-import { Route, Routes } from 'react-router-dom';
+import { Navigate, Route, Routes } from 'react-router-dom';
+import AuthCallback from '@components/AuthCallback';
 import LoadingScreen from '@components/LoadingScreen';
+import ProtectedRoute from '@components/ProtectedRoute';
 import Template from '@components/Template';
 import { useTheme } from '@contexts/ThemeContext';
 import { useEffect } from 'react';
@@ -15,8 +17,16 @@ function App() {
     return (
         <Routes>
             <Route path="/" element={<LoadingScreen />} />
-            {/* The /* tells the router: "Let Template handle any sub-paths after /dashboard" */}
-            <Route path="/dashboard/*" element={<Template />} />
+            <Route path="/auth/callback" element={<AuthCallback />} />
+            <Route
+                path="/dashboard/*"
+                element={
+                    <ProtectedRoute>
+                        <Template />
+                    </ProtectedRoute>
+                }
+            />
+            <Route path="*" element={<Navigate replace to="/" />} />
         </Routes>
     );
 }
