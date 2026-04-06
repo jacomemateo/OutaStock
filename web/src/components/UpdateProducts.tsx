@@ -8,12 +8,9 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import AddIcon from '@mui/icons-material/Add';
 import { useEffect, useState } from 'react';
 import { fetchProducts, getProductCount } from '@/services/api';
-import { common } from '@mui/material/colors';
 import AddProductModal from '@components/AddProductModal';
 import { useAlert } from '@contexts/SnackBarAlertContext';
-import { createProduct } from '@/services/api';
-import { getAllInventory } from '@/services/api';
-import {fetchInventory, getInventoryCount} from '@/services/api';
+import {fetchInventory, getInventoryCount, createProduct} from '@/services/api';
 interface Product {
     id: number;
     name: string;
