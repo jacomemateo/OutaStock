@@ -69,12 +69,58 @@ tasks:
         npm run pretty
 
   prod:
-    desc: Build and run the production stack
+    desc: Bootstrap ZITADEL, apply Terraform, sync auth envs, and run the production stack
     dotenv: [.env]
     cmds:
-      - docker compose -p outastock-prod -f docker-compose.prod.yml up --build
+      - mkdir -p terraform/bootstrap
+      - |
+        if [ ! -f terraform/zitadel-web.env ]; then
+          cat > terraform/zitadel-web.env <<'EOF'
+        ZITADEL_ISSUER=http://auth.localhost
+        ZITADEL_CLIENT_ID=bootstrap-pending
+        ZITADEL_ORGANIZATION_ID=bootstrap-pending
+        ZITADEL_REDIRECT_URI=http://localhost/auth/callback
+        ZITADEL_POST_LOGOUT_REDIRECT_URI=http://localhost/
+        ZITADEL_SCOPE=openid profile email
+        EOF
+        fi
+      - |
+        if [ ! -f terraform/zitadel-backend.env ]; then
+          cat > terraform/zitadel-backend.env <<'EOF'
+        AUTH_ENABLED=false
+        EOF
+        fi
+      - |
+        docker compose -p outastock-prod --env-file .env -f docker-compose.prod.yml up -d --no-deps zitadel-db zitadel-api zitadel-login caddy
+      - |
+        until [ -f terraform/bootstrap/zitadel-admin-sa.json ]; do
+          echo "Waiting for ZITADEL bootstrap machine key..."
+          sleep 2
+        done
+      - |
+        until curl -s -o /tmp/outastock-zitadel-ready.json -w '%{http_code}' http://auth.localhost/.well-known/openid-configuration | grep -q '^200$'; do
+          echo "Waiting for ZITADEL OIDC discovery endpoint..."
+          sleep 2
+        done
+      - |
+        cd terraform
+        terraform init
+        terraform apply -auto-approve
+      - task: prod-auth-sync
+      - docker compose -p outastock-prod --env-file .env -f docker-compose.prod.yml up --build
+  prod-auth-sync:
+    desc: Export frontend and backend ZITADEL auth settings from Terraform outputs
+    cmds:
+      - sh terraform/export-web-env.sh
+      - sh terraform/export-backend-env.sh
   prod-nuke:
-    desc: Delete the whole production stack and volumes
+    desc: Delete the production stack, volumes, and local Terraform runtime artifacts
     dotenv: [.env]
     cmds:
-      - docker compose -p outastock-prod -f docker-compose.prod.yml down -v
+      - docker compose -p outastock-prod --env-file .env -f docker-compose.prod.yml down -v --remove-orphans
+      - rm -rf terraform/.terraform
+      - rm -f terraform/terraform.tfstate terraform/terraform.tfstate.backup terraform/terraform.tfstate.*.backup
+      - rm -f terraform/zitadel-web.env terraform/zitadel-backend.env
+      - rm -f terraform/bootstrap/zitadel-admin-sa.json
+      - mkdir -p terraform/bootstrap
+      - touch terraform/bootstrap/.gitkeep
