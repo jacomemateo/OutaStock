@@ -10,9 +10,10 @@ import { useEffect, useState } from 'react';
 import { fetchProducts, getProductCount } from '@/services/api';
 import { common } from '@mui/material/colors';
 import AddProductModal from '@components/AddProductModal';
-import { useAlert } from '@contexts/SnackBarAlertContext'; 
-import { createProduct } from '@/services/api'; 
-
+import { useAlert } from '@contexts/SnackBarAlertContext';
+import { createProduct } from '@/services/api';
+import { getAllInventory } from '@/services/api';
+import {fetchInventory, getInventoryCount} from '@/services/api';
 interface Product {
     id: number;
     name: string;
@@ -20,11 +21,49 @@ interface Product {
     dateCreated: string;
 }
 
+// interface InventoryItem{
+//     slotId: number;
+//     slotLabel: string;
+//     quantity: number;
+//     productName: string;
+//     priceCents: number;
+//     productId: string;
+//     dateAdded: string;
+// }
+
 const UpdateProducts = () => {
     const { showAlert } = useAlert();
     const [products, setProducts] = useState<Product[]>([]);
     const [isAddProductModalOpen, setIsAddProductModalOpen] = useState(false);
+    const [lowStockCount, setLowStockCount] = useState(0);
 
+    // Not working
+    // const getLowStockCount = async () => {
+    //     try{
+    //         const inventoryData = await getAllInventory();
+    //         console.log('Inventory data for low stock count:', inventoryData);
+    //         const lowStockItems = inventoryData.filter((item: any) => item.quantity < 5);
+    //         setLowStockCount(lowStockItems.length);
+    //     } catch (error) {
+    //         console.error('Error fetching low stock count:', error);
+
+    //     }
+    // }
+
+    const loadInventory = async () => {
+        try {
+            const data = await fetchInventory(await getInventoryCount(), 0);
+            /*
+                    Ensure we always store an array
+                    */
+            const lowStockItems = data.filter((item: any) => item.quantity < 5);
+            setLowStockCount(lowStockItems.length);
+
+            console.log('Inventory slots:', data);
+        } catch (error) {
+            console.error('Failed to load inventory', error);
+        }
+    };
     const loadProducts = async () => {
         try {
             const data = await fetchProducts(await getProductCount(), 0);
@@ -36,7 +75,9 @@ const UpdateProducts = () => {
     };
 
     const handleSaveNewProduct = async (name: string, priceCents: number) => {
-        if (products.some((product) => product.name.toLowerCase() === name.toLowerCase())) {
+        if (
+            products.some((product) => product.name.toLowerCase() === name.toLowerCase())
+        ) {
             showAlert(`${name} already exists. Please add a new product.`, 'error');
             return;
         }
@@ -53,7 +94,9 @@ const UpdateProducts = () => {
     };
 
     useEffect(() => {
+        // getLowStockCount();
         loadProducts();
+        loadInventory();
     }, []);
 
     return (
@@ -74,7 +117,7 @@ const UpdateProducts = () => {
                         <BatteryCharging20Icon sx={{ color: 'yellow' }} /> Low Stock Items
                     </h2>
                     <p className="card-subtitle">Number of items that are running low</p>
-                    <p className="card-value">30</p>
+                    <p className="card-value">{lowStockCount}</p>
                 </div>
 
                 <div className="card out-of-stock-card">
@@ -128,7 +171,6 @@ const UpdateProducts = () => {
                                 <th>Product</th>
                                 <th>Cost</th>
                                 <th>Price</th>
-                                <th>Stock</th>
                                 <th>Actions</th>
                             </tr>
                         </thead>
@@ -145,9 +187,6 @@ const UpdateProducts = () => {
                                     <td>{product.name}</td>
                                     <td>Waiting</td>
                                     <td>{(product.priceCents / 100).toFixed(2)}</td>
-                                    <td className="all-products-stock">
-                                        📦 {product.priceCents}
-                                    </td>
                                     <td>
                                         <button className="edit-btn-row">
                                             <EditIcon fontSize="small" />
