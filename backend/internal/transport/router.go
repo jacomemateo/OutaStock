@@ -12,18 +12,20 @@ import (
 	config "github.com/jacomemateo/OutaStock/backend/cmd"
 	"github.com/jacomemateo/OutaStock/backend/internal/service"
 	"github.com/jacomemateo/OutaStock/backend/internal/transport/http/handlers"
+	httpmiddleware "github.com/jacomemateo/OutaStock/backend/internal/transport/http/middleware"
 )
 
 type Router struct {
 	handlers []handlers.Handler
 	echo     *echo.Echo
 	database *service.Database // Just store the Database, not the raw pool
-	config 	 *config.Config
+	config   *config.Config
 }
 
 func NewRouter(database *service.Database, config *config.Config) *Router {
 	r := Router{}
 	r.database = database
+	r.config = config
 	r.echo = echo.New()
 
 	r.echo.Use(middleware.RequestLogger())
@@ -33,12 +35,12 @@ func NewRouter(database *service.Database, config *config.Config) *Router {
 	//
 	// God i wish Go had macros this would be a lot nicer!
 	if config.LogLevel == "debug" {
-		log.Info().Str("CORS", "ENABLED").Str("Origins", "http://localhost:5173 http://localhost:8081" ).Msg("CORS Config")
+		log.Info().Str("CORS", "ENABLED").Str("Origins", "http://localhost:5173 http://localhost:8081").Msg("CORS Config")
 		r.echo.Use(middleware.CORSWithConfig(middleware.CORSConfig{
 			AllowOrigins: []string{
-			"http://localhost:5173", 
-            "http://localhost:8081",
-            },
+				"http://localhost:5173",
+				"http://localhost:8081",
+			},
 			AllowMethods: []string{
 				http.MethodGet,
 				http.MethodPost,
@@ -111,10 +113,24 @@ func (r *Router) addRoutes() {
 		})
 	})
 
-	// API routes group
+	protectedAPI := api.Group("")
+
+	if r.config.AuthEnabled {
+		log.Info().
+			Str("service", "auth").
+			Str("issuer", r.config.ZitadelIssuer).
+			Str("project_id", r.config.ZitadelProjectID).
+			Msg("ZITADEL bearer token protection enabled")
+
+		protectedAPI.Use(httpmiddleware.NewZitadelAuthenticator(r.config).Middleware())
+	} else {
+		log.Warn().
+			Str("service", "auth").
+			Msg("ZITADEL bearer token protection is disabled")
+	}
 
 	// Let each handler register its own routes
 	for _, h := range r.handlers {
-		h.RegisterRoutes(api)
+		h.RegisterRoutes(protectedAPI)
 	}
 }
