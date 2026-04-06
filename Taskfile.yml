@@ -124,3 +124,13 @@ tasks:
       - rm -f terraform/bootstrap/zitadel-admin-sa.json
       - mkdir -p terraform/bootstrap
       - touch terraform/bootstrap/.gitkeep
+  
+  prod-seed:
+    desc: Run all database seeds on production database
+    dotenv: [.env]
+    cmds:
+      - |
+        for file in db/seeds/*.sql; do
+          echo "Seeding $file..."
+          docker exec -i vending-db-prod psql -U $APP_DB_USER -d $APP_DB_NAME < $file
+        done
