@@ -80,16 +80,23 @@ type ZitadelAuthenticator struct {
 	apiClientID      string
 	apiClientSecret  string
 	httpClient       *http.Client
+	instanceHost     string
 	introspectionURL string
 	issuer           string
 	projectID        string
 }
 
 func NewZitadelAuthenticator(cfg *config.Config) *ZitadelAuthenticator {
+	instanceHost := ""
+	if issuerURL, err := url.Parse(cfg.ZitadelIssuer); err == nil {
+		instanceHost = issuerURL.Host
+	}
+
 	return &ZitadelAuthenticator{
 		apiClientID:      cfg.APIClientID,
 		apiClientSecret:  cfg.APIClientSecret,
 		httpClient:       &http.Client{Timeout: 10 * time.Second},
+		instanceHost:     instanceHost,
 		introspectionURL: cfg.IntrospectionURL,
 		issuer:           cfg.ZitadelIssuer,
 		projectID:        cfg.ZitadelProjectID,
@@ -157,6 +164,9 @@ func (authenticator *ZitadelAuthenticator) introspectToken(ctx context.Context, 
 
 	request.SetBasicAuth(authenticator.apiClientID, authenticator.apiClientSecret)
 	request.Header.Set(echo.HeaderContentType, echo.MIMEApplicationForm)
+	if authenticator.instanceHost != "" {
+		request.Host = authenticator.instanceHost
+	}
 
 	response, err := authenticator.httpClient.Do(request)
 	if err != nil {
