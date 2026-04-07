@@ -1,14 +1,14 @@
 <div align="center">
   <a href="https://go.dev/"><img src="https://img.shields.io/badge/Go-1.26+-00ADD8?style=flat&logo=go" alt="Go Version"></a>
-  <a href="https://react.dev/"><img src="https://img.shields.io/badge/React-18.3+-20232A?style=flat&logo=react" alt="React Version"></a>
-  <a href="https://www.typescriptlang.org/"><img src="https://img.shields.io/badge/TypeScript-5.3+-007ACC?style=flat&logo=typescript" alt="TypeScript Version"></a>
-  <a href="https://www.postgresql.org/"><img src="https://img.shields.io/badge/PostgreSQL-18+-316192?style=flat&logo=postgresql" alt="PostgreSQL Version"></a>
+  <a href="https://react.dev/"><img src="https://img.shields.io/badge/React-19+-20232A?style=flat&logo=react" alt="React Version"></a>
+  <a href="https://www.typescriptlang.org/"><img src="https://img.shields.io/badge/TypeScript-5.9+-007ACC?style=flat&logo=typescript" alt="TypeScript Version"></a>
+  <a href="https://www.postgresql.org/"><img src="https://img.shields.io/badge/PostgreSQL-17+-316192?style=flat&logo=postgresql" alt="PostgreSQL Version"></a>
   <a href="https://caddyserver.com/"><img src="https://img.shields.io/badge/Caddy-2.7+-00ADD8?style=flat&logo=caddy" alt="Caddy Version"></a>
-  <a href="https://www.docker.com/"><img src="https://img.shields.io/badge/Docker-28.5+-2496ED?style=flat&logo=docker" alt="Docker Version"></a>
+  <a href="https://www.docker.com/"><img src="https://img.shields.io/badge/Docker-28+-2496ED?style=flat&logo=docker" alt="Docker Version"></a>
   <br />
   <br />
 </div>
-    
+
 <div align="center">
   <a href="https://github.com/jacomemateo/OutaStock">
     <img src="res/logo.png" alt="Logo" height="180">
@@ -18,44 +18,86 @@
   </p>
 </div>
 
+## Project Overview
 
+OutaStock is a vending machine inventory and transaction tracking system built with:
 
-## Project Overview 
-The goal of this project is to design and build a digital system that manages the inventory of an older vending machine. The system keeps track of products, pricing, inventory levels, and transaction history in a structured and reliable way.
+* Go backend
+* React + Vite frontend
+* PostgreSQL
+* Caddy reverse proxy
+* ZITADEL for authentication
+* Terraform for local ZITADEL/project/application bootstrap
 
-Transaction data is provided through a CBORD CSV log, which includes the timestamp and price of each purchase. An example format is shown below:
+Transaction data is based on a CBORD CSV export where each vend includes a timestamp and sale price.
 
 | DateTime | Transaction Price |
 | ---- | --- |
 | 2025-02-25 12:20:32 | $1.50 |
 | 2025-02-25 12:21:34 | $2.25 |
 
-The reason this system works is because each item in the vending machine has a unique price so we can perform a `price -> item` conversion.
+Because each item in the machine has a unique price, the system can infer which product was sold from the logged transaction amount.
 
 At a high level, the system is responsible for:
+
 * Managing a catalog of products and their prices
-* Tracking which products are stocked in each vending machine slot
+* Tracking which products are stocked in each machine slot
 * Monitoring current inventory levels
-* Recording all completed sales transactions
+* Recording completed sales transactions
 * Preserving historical pricing data at the time of sale
+* Restricting dashboard access behind ZITADEL authentication
 
-The project emphasizes data integrity, clear system design, and separation of responsibilities between different layers of the application (database, business logic, and user interface).
+The project emphasizes clean architecture, clear service boundaries, and a usable dashboard for day-to-day vending machine management.
 
-Another aim of the project is to create a modern frontend that's intuative and easy to use.
+## Architecture
 
-### Purpose
+Production mode runs entirely through Docker:
 
-This project aims to simulate a real-world inventory and sales tracking system while applying core software engineering principles such as:
+* `frontend` serves the React app
+* `backend` serves the Go API
+* `db` stores application data
+* `zitadel-api` and `zitadel-login` provide auth
+* `caddy` routes:
+  * `http://localhost` -> frontend
+  * `http://localhost/api/*` -> backend
+  * `http://api.localhost` -> API / Swagger
+  * `http://auth.localhost` -> ZITADEL
 
-* Clean architecture and modular design
-* Separation of concerns
-* Data consistency and validation
-* Scalability considerations
-* Maintainability over time
+Development mode is hybrid:
 
-## Development (macOS) 🖥️
+* Docker runs support services only:
+  * Postgres
+  * Swagger
+  * Caddy
+  * ZITADEL
+* Local processes run the hot-reload app servers:
+  * `air` for the Go backend
+  * `vite` for the React frontend
 
-### Prerequisites
+## Authentication
+
+Local authentication is powered by ZITADEL and bootstrapped with Terraform.
+
+Terraform creates and manages:
+
+* the local ZITADEL project
+* the frontend OIDC application
+* the backend API application
+* the local admin human user
+* the required org membership
+
+The frontend signs in with OIDC + PKCE. The backend validates bearer tokens with ZITADEL introspection before serving protected API routes.
+
+Default local admin credentials:
+
+* Username: `admin`
+* Password: `SecurePassword123!`
+
+ZITADEL console:
+
+* [http://auth.localhost/ui/console](http://auth.localhost/ui/console)
+
+## Prerequisites
 
 Clone the repository:
 
@@ -64,45 +106,214 @@ git clone https://github.com/jacomemateo/OutaStock/
 cd OutaStock
 ```
 
-Ensure the following tools are installed:
+Install the required tools:
 
-* Go `v1.26.0`
-* Docker `v28.5.2`
-* Node (NPM) `v11.6.0`
-* Task `v3.49.1`
-* Air `v1.64.5`
+* Go
+* Docker
+* Node.js + npm
+* Task
+* Air
+* Terraform
 
-Install them via Homebrew:
+Example Homebrew install:
 
 ```bash
 brew install go
 brew install docker
 brew install node
 brew install go-task/tap/go-task
-brew install go-air
+brew install air
+brew install terraform
 ```
 
----
+You will also need Docker Desktop running locally.
 
-### Running the Development Environment
+## Environment Files
 
-Open three terminal sessions to monitor each service independently:
+Production uses:
+
+* `.env`
+* `.env.example` as the template
+
+Development uses:
+
+* `.env.dev`
+* generated `.env.dev.local`
+* generated `web/.env.local`
+
+Generated auth/runtime files:
+
+* `terraform/zitadel-web.env`
+* `terraform/zitadel-backend.env`
+* `terraform/bootstrap/zitadel-admin-sa.json`
+* `.env.dev.local`
+* `web/.env.local`
+
+Do not hand-edit generated files unless you know exactly why you are overriding Terraform output.
+
+## Production Workflow
+
+The production-style stack is fully Dockerized and includes automatic local ZITADEL bootstrap.
+
+### First-time production setup
+
+Create `.env` from the template if you do not already have one:
+
+```bash
+cp .env.example .env
+```
+
+Then start the full stack:
+
+```bash
+task prod
+```
+
+What `task prod` does:
+
+* ensures `.env` exists
+* starts the ZITADEL bootstrap services
+* waits for the local machine key
+* waits for the OIDC discovery endpoint
+* runs `terraform init`
+* runs `terraform apply -auto-approve`
+* exports frontend/backend auth env files
+* builds and starts the full Docker stack
+
+### Production URLs
+
+* App: [http://localhost](http://localhost)
+* API docs / reverse-proxied API host: [http://api.localhost](http://api.localhost)
+* ZITADEL login / auth: [http://auth.localhost](http://auth.localhost)
+* ZITADEL console: [http://auth.localhost/ui/console](http://auth.localhost/ui/console)
+
+### Resetting production locally
+
+To destroy the production-style local stack, Docker volumes, Terraform runtime state, and generated auth artifacts:
+
+```bash
+task nuke
+```
+
+Then recreate everything:
+
+```bash
+task prod
+```
+
+## Development Workflow
+
+Development mode is optimized for fast frontend and backend iteration.
+
+Use this when you want:
+
+* Vite HMR for the frontend
+* Air live-reload for the backend
+* real ZITADEL auth
+* Docker only for support services
+
+### Start the shared Docker services
+
+In one terminal:
+
+```bash
+task dev
+```
+
+This starts:
+
+* development Postgres
+* Swagger
+* Caddy
+* ZITADEL database
+* ZITADEL API
+* ZITADEL login UI
+
+It also:
+
+* waits for ZITADEL to become ready
+* runs Terraform against the local instance
+* generates `.env.dev.local`
+* generates `web/.env.local`
+
+### Start the local backend
+
+In a second terminal:
 
 ```bash
 task dev-back
-task dev-front
-task dev-docker
 ```
 
-If the environment becomes unstable or services fail to start correctly, reset the Docker state:
+This runs the Go API locally with `air`.
+
+### Start the local frontend
+
+In a third terminal:
+
+```bash
+task dev-front
+```
+
+This runs the React app locally with Vite.
+
+### Development URLs
+
+* Vite frontend: [http://localhost:5173](http://localhost:5173)
+* Local backend: [http://localhost:8080](http://localhost:8080)
+* ZITADEL: [http://auth.localhost](http://auth.localhost)
+* API host / Swagger through Caddy: [http://api.localhost](http://api.localhost)
+
+### Stop development services
+
+```bash
+task dev-down
+```
+
+### Reset development services
 
 ```bash
 task dev-nuke
 ```
 
----
+This removes:
 
-### Code Formatting 🧹
+* dev Docker containers and volumes
+* `.env.dev.local`
+* `web/.env.local`
+
+## Database Tasks
+
+Connect to the production database:
+
+```bash
+task connect
+```
+
+Connect to the development database:
+
+```bash
+task dev-connect
+```
+
+Run all seed files against production:
+
+```bash
+task seed
+```
+
+Run all seed files against development:
+
+```bash
+task dev-seed
+```
+
+Regenerate SQLC code:
+
+```bash
+task generate_sqlc
+```
+
+## Formatting
 
 Install formatting tools:
 
@@ -111,21 +322,76 @@ go install mvdan.cc/gofumpt@latest
 go install golang.org/x/tools/cmd/goimports@latest
 ```
 
-Identify unused dependencies and Format and clean imports:
+Then run:
 
 ```bash
 task pretty
 ```
 
----
+## Common Tasks
 
-### Top contributors:
+List all tasks:
+
+```bash
+task
+```
+
+Refresh production auth env files from Terraform outputs:
+
+```bash
+task auth-sync
+```
+
+Refresh development auth env files from Terraform outputs:
+
+```bash
+task dev-auth-sync
+```
+
+## Troubleshooting
+
+### Sign-in succeeds but the dashboard does not load
+
+Make sure you are using the correct URL for your current mode:
+
+* Production: `http://localhost`
+* Development: `http://localhost:5173`
+
+If auth values changed, regenerate them:
+
+```bash
+task auth-sync
+task dev-auth-sync
+```
+
+### Terraform drift after resetting ZITADEL
+
+If the local ZITADEL instance was reset outside Terraform, remove stale Terraform resources from state and re-apply, or run a full local reset with:
+
+```bash
+task nuke
+task prod
+```
+
+### Backend returns `401`
+
+That usually means the route is protected and the frontend is unauthenticated, the token is missing, or the token is no longer valid for the configured ZITADEL app/project.
+
+### Backend returns `503` during auth validation
+
+That usually means ZITADEL is not reachable or not ready yet. Confirm:
+
+* Docker services are running
+* [http://auth.localhost/.well-known/openid-configuration](http://auth.localhost/.well-known/openid-configuration) returns `200`
+
+## Additional Docs
+
+* [Architecture](/Users/mateo/Code/School/CMSC447/OutaStock/docs/ARCHITECTURE.md)
+* [API Specification](/Users/mateo/Code/School/CMSC447/OutaStock/docs/API.md)
+* [Terraform Notes](/Users/mateo/Code/School/CMSC447/OutaStock/terraform/README.md)
+
+## Top Contributors
 
 <a href="https://github.com/jacomemateo/OutaStock/graphs/contributors">
   <img src="https://contrib.rocks/image?repo=jacomemateo/OutaStock" alt="contrib.rocks image" />
 </a>
-
-
-## [View Project Architecture](./docs/ARCHITECTURE.md)
-
-## [View API Specification](./docs/API.md)
