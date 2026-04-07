@@ -107,9 +107,6 @@ const Template = () => {
                     <div className="template-header-content">
                         <div>
                             <h1>{activePage.label}</h1>
-                            <p className="template-subtitle">
-                                Connected to your local ZITADEL organization
-                            </p>
                         </div>
                         <div className="template-user-section">
                             <div className="template-user-chip">
