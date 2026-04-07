@@ -204,6 +204,7 @@ tasks:
     deps: [dev-auth-sync]
     dotenv: [../.env.dev, ../.env.dev.local]
     cmds:
+      - npm install
       - npm run dev
 
   dev-down:
@@ -219,3 +220,18 @@ tasks:
       - docker compose -p outastock-dev --env-file .env.dev -f docker-compose.dev.yml down -v
       - rm -f .env.dev.local
       - rm -f web/.env.local
+
+  dev-auth-rebootstrap:
+    desc: Recreate the local shared ZITADEL bootstrap state when the machine key has been lost
+    cmds:
+      - docker compose -p outastock-dev --env-file .env.dev -f docker-compose.dev.yml down -v --remove-orphans
+      - docker compose -p outastock-prod --env-file .env -f docker-compose.yml down -v --remove-orphans
+      - docker volume rm -f outastock-prod_db-data-zitadel outastock-prod_zitadel-bootstrap
+      - rm -rf terraform/.terraform
+      - rm -f terraform/terraform.tfstate terraform/terraform.tfstate.backup terraform/terraform.tfstate.*.backup
+      - rm -f terraform/bootstrap/zitadel-admin-sa.json
+      - rm -f terraform/zitadel-web.env terraform/zitadel-backend.env
+      - rm -f .env.dev.local web/.env.local
+      - mkdir -p terraform/bootstrap
+      - touch terraform/bootstrap/.gitkeep
+      - echo "Local ZITADEL auth state was reset. Run 'task dev' or 'task prod' next."
