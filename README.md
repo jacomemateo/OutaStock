@@ -151,6 +151,18 @@ Generated auth/runtime files:
 
 Do not hand-edit generated files unless you know exactly why you are overriding Terraform output.
 
+Taskfile helpers now handle the normal Terraform auth bootstrap flow automatically:
+
+* `task auth-sync`
+* `task dev-auth-sync`
+
+Both commands will:
+
+* wait for local ZITADEL to be reachable
+* run `terraform init`
+* run `terraform apply`
+* regenerate the relevant env files
+
 ## Production Workflow
 
 The production-style stack is fully Dockerized and includes automatic local ZITADEL bootstrap.
@@ -198,6 +210,13 @@ task nuke
 Then recreate everything:
 
 ```bash
+task prod
+```
+
+If the local ZITADEL bootstrap credential was lost but the Docker volumes still exist, reset the local auth state with:
+
+```bash
+task rebootstrap
 task prod
 ```
 
@@ -256,6 +275,15 @@ task dev-front
 
 This runs the React app locally with Vite.
 
+Important first-run order:
+
+1. `task reboostrap`
+2. `task dev`
+3. `task dev-back`
+4. `task dev-front`
+
+`task dev-back` and `task dev-front` now depend on `dev-auth-sync`, which means they expect the local ZITADEL bootstrap credentials and OIDC endpoints to exist already.
+
 ### Development URLs
 
 * Vite frontend: [http://localhost:5173](http://localhost:5173)
@@ -280,6 +308,27 @@ This removes:
 * dev Docker containers and volumes
 * `.env.dev.local`
 * `web/.env.local`
+
+### Recover a broken local auth bootstrap
+
+If `terraform/bootstrap/zitadel-admin-sa.json` was lost but the old shared ZITADEL volumes still exist, normal auth sync can no longer recreate it automatically because ZITADEL first-instance bootstrap only runs on a fresh auth database.
+
+Use:
+
+```bash
+task rebootstrap
+task dev
+task dev-back
+task dev-front
+```
+
+This will:
+
+* stop dev and prod local stacks
+* remove the shared local ZITADEL volumes
+* clear local Terraform state
+* remove generated auth env files
+* allow ZITADEL to recreate the Terraform machine key on the next `task dev` or `task prod`
 
 ## Database Tasks
 
@@ -370,6 +419,20 @@ If the local ZITADEL instance was reset outside Terraform, remove stale Terrafor
 
 ```bash
 task nuke
+task prod
+```
+
+If the problem is specifically a missing `terraform/bootstrap/zitadel-admin-sa.json` file on an otherwise old local ZITADEL instance, use:
+
+```bash
+task rebootstrap
+task dev
+```
+
+or:
+
+```bash
+task rebootstrap
 task prod
 ```
 
