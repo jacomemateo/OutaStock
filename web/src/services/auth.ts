@@ -70,6 +70,41 @@ function getWindowOrigin() {
     return typeof window === 'undefined' ? 'http://localhost' : window.location.origin;
 }
 
+function isLoopbackHostname(hostname: string) {
+    return hostname === 'localhost' || hostname === '127.0.0.1' || hostname === '::1' || hostname === '[::1]';
+}
+
+function resolveRedirectUrl(configuredUrl: string | undefined, defaultPath: string) {
+    const currentOrigin = getWindowOrigin();
+    const fallbackUrl = new URL(defaultPath, currentOrigin).toString();
+
+    if (!configuredUrl) {
+        return fallbackUrl;
+    }
+
+    try {
+        const currentUrl = new URL(currentOrigin);
+        const resolvedUrl = new URL(configuredUrl);
+
+        // In local dev, treat localhost/127.0.0.1 as the same browser origin family
+        // so the callback always lands on the exact host the user started from.
+        if (
+            isLoopbackHostname(currentUrl.hostname) &&
+            isLoopbackHostname(resolvedUrl.hostname) &&
+            currentUrl.port === resolvedUrl.port
+        ) {
+            resolvedUrl.protocol = currentUrl.protocol;
+            resolvedUrl.hostname = currentUrl.hostname;
+            resolvedUrl.port = currentUrl.port;
+            return resolvedUrl.toString();
+        }
+    } catch {
+        return configuredUrl;
+    }
+
+    return configuredUrl;
+}
+
 function normalizeIssuer(issuer: string) {
     return issuer.replace(/\/+$/, '');
 }
@@ -221,14 +256,16 @@ export function getAuthConfig(): AuthConfig | null {
     const clientId =
         cleanRuntimeValue(window.env?.ZITADEL_CLIENT_ID) ??
         cleanRuntimeValue(import.meta.env.VITE_ZITADEL_CLIENT_ID);
-    const redirectUri =
+    const redirectUri = resolveRedirectUrl(
         cleanRuntimeValue(window.env?.ZITADEL_REDIRECT_URI) ??
-        cleanRuntimeValue(import.meta.env.VITE_ZITADEL_REDIRECT_URI) ??
-        `${getWindowOrigin()}/auth/callback`;
-    const postLogoutRedirectUri =
+            cleanRuntimeValue(import.meta.env.VITE_ZITADEL_REDIRECT_URI),
+        '/auth/callback',
+    );
+    const postLogoutRedirectUri = resolveRedirectUrl(
         cleanRuntimeValue(window.env?.ZITADEL_POST_LOGOUT_REDIRECT_URI) ??
-        cleanRuntimeValue(import.meta.env.VITE_ZITADEL_POST_LOGOUT_REDIRECT_URI) ??
-        `${getWindowOrigin()}/`;
+            cleanRuntimeValue(import.meta.env.VITE_ZITADEL_POST_LOGOUT_REDIRECT_URI),
+        '/',
+    );
     const scope =
         cleanRuntimeValue(window.env?.ZITADEL_SCOPE) ??
         cleanRuntimeValue(import.meta.env.VITE_ZITADEL_SCOPE) ??

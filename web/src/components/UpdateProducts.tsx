@@ -206,7 +206,7 @@ const UpdateProducts = () => {
                                 >
                                     <td>{product.name}</td>
                                     <td>Waiting</td>
-                                    <td>{(product.priceCents / 100).toFixed(2)}</td>
+                                    <td>${(product.priceCents / 100).toFixed(2)}</td>
                                     <td>
                                         <button className="edit-btn-row">
                                             <EditIcon fontSize="small" />

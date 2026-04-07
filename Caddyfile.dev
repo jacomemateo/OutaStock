@@ -1,0 +1,45 @@
+{
+	email jacome.mateo@icloud.com
+}
+
+localhost:80 {
+	handle /api/* {
+		reverse_proxy {$BACKEND_HOST}
+	}
+
+	handle {
+		redir http://localhost:5173{uri} 302
+	}
+}
+
+api.localhost:80 {
+	handle /api/* {
+		reverse_proxy {$BACKEND_HOST}
+	}
+
+	handle {
+		reverse_proxy swagger:8080
+	}
+}
+
+{$ZITADEL_DOMAIN}:80 {
+	encode gzip zstd
+
+	header {
+		X-Content-Type-Options "nosniff"
+	}
+
+	redir / /ui/v2/login/ 302
+
+	handle /ui/v2/login* {
+		reverse_proxy zitadel-login:3000
+	}
+
+	handle {
+		reverse_proxy zitadel-api:8080 {
+			transport http {
+				versions h2c
+			}
+		}
+	}
+}

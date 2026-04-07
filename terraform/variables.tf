@@ -58,6 +58,8 @@ variable "redirect_uris" {
   type        = list(string)
   default = [
     "http://localhost/auth/callback",
+    "http://localhost:5173/auth/callback",
+    "http://127.0.0.1:5173/auth/callback",
   ]
 }
 
@@ -66,6 +68,8 @@ variable "post_logout_redirect_uris" {
   type        = list(string)
   default = [
     "http://localhost/",
+    "http://localhost:5173/",
+    "http://127.0.0.1:5173/",
   ]
 }
 
@@ -74,5 +78,7 @@ variable "additional_origins" {
   type        = list(string)
   default = [
     "http://localhost",
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
   ]
 }

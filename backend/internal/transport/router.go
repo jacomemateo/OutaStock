@@ -35,11 +35,16 @@ func NewRouter(database *service.Database, config *config.Config) *Router {
 	//
 	// God i wish Go had macros this would be a lot nicer!
 	if config.LogLevel == "debug" {
-		log.Info().Str("CORS", "ENABLED").Str("Origins", "http://localhost:5173 http://localhost:8081").Msg("CORS Config")
+		log.Info().
+			Str("CORS", "ENABLED").
+			Str("Origins", "http://localhost:5173 http://127.0.0.1:5173 http://localhost http://127.0.0.1").
+			Msg("CORS Config")
 		r.echo.Use(middleware.CORSWithConfig(middleware.CORSConfig{
 			AllowOrigins: []string{
 				"http://localhost:5173",
-				"http://localhost:8081",
+				"http://127.0.0.1:5173",
+				"http://localhost",
+				"http://127.0.0.1",
 			},
 			AllowMethods: []string{
 				http.MethodGet,

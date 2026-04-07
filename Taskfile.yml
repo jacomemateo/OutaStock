@@ -10,10 +10,51 @@ tasks:
       - task --list
     silent: true
 
+  dev-env-setup:
+    desc: Create the local development env file if it is missing
+    cmds:
+      - test -f .env.dev
+
+  dev-auth-sync:
+    desc: Export local Air and Vite ZITADEL settings into .env.dev.local
+    cmds:
+      - sh terraform/export-dev-env.sh
+
+  dev:
+    desc: Start the shared Docker services for local Air and Vite development
+    dotenv: [.env.dev]
+    cmds:
+      - task: dev-env-setup
+      - mkdir -p terraform/bootstrap
+      - docker volume create outastock-prod_db-data-zitadel >/dev/null
+      - docker volume create outastock-prod_zitadel-bootstrap >/dev/null
+      - docker compose -p outastock-dev --env-file .env.dev -f docker-compose.dev.yml up db swagger zitadel-db zitadel-api zitadel-login caddy
+      - |
+        until [ -f terraform/bootstrap/zitadel-admin-sa.json ]; do
+          echo "Waiting for ZITADEL bootstrap machine key..."
+          sleep 2
+        done
+      - |
+        until curl -s -o /tmp/outastock-dev-zitadel-ready.json -w '%{http_code}' http://auth.localhost/.well-known/openid-configuration | grep -q '^200$'; do
+          echo "Waiting for ZITADEL OIDC discovery endpoint..."
+          sleep 2
+        done
+      - |
+        cd terraform
+        terraform init
+        terraform apply -auto-approve
+      - task: dev-auth-sync
+
   connect:
     desc: Access the database CLI
     cmds:
       - docker exec -it vending-db-prod psql -U $APP_DB_USER -d $APP_DB_NAME
+
+  dev-connect:
+    desc: Access the development database CLI
+    dotenv: [.env.dev]
+    cmds:
+      - docker exec -it vending-db-dev psql -U $APP_DB_USER -d $APP_DB_NAME
 
   generate_sqlc:
     desc: Regenerate Go code from SQL queries
@@ -98,8 +139,47 @@ tasks:
           docker exec -i vending-db-prod psql -U $APP_DB_USER -d $APP_DB_NAME < $file
         done
 
+  dev-seed:
+    desc: Run all database seeds on the development database
+    dotenv: [.env.dev]
+    cmds:
+      - |
+        for file in db/seeds/*.sql; do
+          echo "Seeding $file..."
+          docker exec -i vending-db-dev psql -U $APP_DB_USER -d $APP_DB_NAME < $file
+        done
+
   prod:
     desc: Run the production stack
     cmds:
       - task: setup
       - docker compose -p outastock-prod --env-file .env -f docker-compose.yml up --build
+
+  dev-back:
+    desc: Run the Go backend locally with Air against the development stack
+    dotenv: [.env.dev]
+    cmds:
+      - task: dev-auth-sync
+      - air
+
+  dev-front:
+    desc: Run the Vite frontend locally against the development stack
+    dir: web
+    deps: [dev-auth-sync]
+    dotenv: [.env.dev, .env.dev.local]
+    cmds:
+      - npm run dev
+
+  dev-down:
+    desc: Stop the development Docker services
+    dotenv: [.env.dev]
+    cmds:
+      - docker compose -p outastock-dev --env-file .env.dev -f docker-compose.dev.yml down
+
+  dev-nuke:
+    desc: Stop and remove the development Docker services and local auth cache
+    dotenv: [.env.dev]
+    cmds:
+      - docker compose -p outastock-dev --env-file .env.dev -f docker-compose.dev.yml down -v
+      - rm -f .env.dev.local
+      - rm -f web/.env.local

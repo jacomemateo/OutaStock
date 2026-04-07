@@ -1,7 +1,7 @@
 root = "."
 testdata_dir = "testdata"
 tmp_dir = "backend/out/dev"
-env_files = [".env"]
+env_files = [".env.dev", ".env.dev.local"]
 
 [build]
 args_bin = []

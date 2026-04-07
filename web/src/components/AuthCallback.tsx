@@ -2,30 +2,40 @@ import { useEffect, useRef, useState } from 'react';
 import { useAuth } from '@contexts/AuthContext';
 import LoadingScreen from '@components/LoadingScreen';
 
+let activeCallbackUrl: string | null = null;
+let activeCompletionPromise: Promise<string> | null = null;
+
+function getCompletionPromise(
+    completeSignIn: (callbackUrl?: string) => Promise<string>,
+    callbackUrl: string,
+) {
+    if (!activeCompletionPromise || activeCallbackUrl !== callbackUrl) {
+        activeCallbackUrl = callbackUrl;
+        activeCompletionPromise = completeSignIn(callbackUrl);
+    }
+
+    return activeCompletionPromise;
+}
+
 const AuthCallback = () => {
     const { completeSignIn } = useAuth();
     const [error, setError] = useState<string | null>(null);
-    const hasStarted = useRef(false);
     const completeSignInRef = useRef(completeSignIn);
 
     completeSignInRef.current = completeSignIn;
 
     useEffect(() => {
-        if (hasStarted.current) {
-            return;
-        }
+        let isActive = true;
+        const callbackUrl = window.location.href;
 
-        hasStarted.current = true;
-        let isMounted = true;
-
-        completeSignInRef.current(window.location.href)
+        getCompletionPromise(completeSignInRef.current, callbackUrl)
             .then((returnTo) => {
-                if (isMounted) {
+                if (isActive) {
                     window.location.replace(returnTo);
                 }
             })
             .catch((caughtError) => {
-                if (isMounted) {
+                if (isActive) {
                     setError(
                         caughtError instanceof Error
                             ? caughtError.message
@@ -35,7 +45,7 @@ const AuthCallback = () => {
             });
 
         return () => {
-            isMounted = false;
+            isActive = false;
         };
     }, []);
 
