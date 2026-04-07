@@ -15,11 +15,52 @@ tasks:
     cmds:
       - test -f .env.dev
 
-  dev-auth-sync:
-    desc: Export local Air and Vite ZITADEL settings into .env.dev.local
+  terraform-init:
+    desc: Initialize the Terraform working directory
     dir: terraform
     cmds:
-      - sh export-dev-env.sh
+      - terraform init -input=false
+
+  terraform-bootstrap-check:
+    desc: Ensure the local ZITADEL machine key exists before Terraform apply
+    cmds:
+      - |
+        if [ ! -f terraform/bootstrap/zitadel-admin-sa.json ]; then
+          echo "Missing terraform/bootstrap/zitadel-admin-sa.json." >&2
+          echo "Start the local auth stack first with 'task dev' or 'task prod'." >&2
+          exit 1
+        fi
+
+  zitadel-ready-check:
+    desc: Wait for the local ZITADEL OIDC discovery endpoint to become reachable
+    cmds:
+      - |
+        attempts=0
+        until curl -fsS http://auth.localhost/.well-known/openid-configuration >/dev/null; do
+          attempts=$((attempts + 1))
+          if [ "$attempts" -ge 30 ]; then
+            echo "ZITADEL is not reachable at http://auth.localhost." >&2
+            echo "Start the local auth stack first with 'task dev' or 'task prod'." >&2
+            exit 1
+          fi
+          echo "Waiting for ZITADEL at http://auth.localhost..."
+          sleep 2
+        done
+
+  terraform-apply:
+    desc: Apply the local Terraform configuration
+    dir: terraform
+    cmds:
+      - task: terraform-bootstrap-check
+      - task: zitadel-ready-check
+      - task: terraform-init
+      - terraform apply -auto-approve -input=false
+
+  dev-auth-sync:
+    desc: Export local Air and Vite ZITADEL settings into .env.dev.local
+    deps: [terraform-apply]
+    cmds:
+      - sh terraform/export-dev-env.sh
 
   dev:
     desc: Start the shared Docker services for local Air and Vite development
@@ -40,10 +81,6 @@ tasks:
           echo "Waiting for ZITADEL OIDC discovery endpoint..."
           sleep 2
         done
-      - |
-        cd terraform
-        terraform init
-        terraform apply -auto-approve
       - task: dev-auth-sync
 
   connect:
@@ -108,14 +145,12 @@ tasks:
           echo "Waiting for ZITADEL OIDC discovery endpoint..."
           sleep 2
         done
-      - |
-        cd terraform
-        terraform init
-        terraform apply -auto-approve
+      - task: terraform-apply
       - task: auth-sync
 
   auth-sync:
     desc: Export frontend and backend ZITADEL auth settings from Terraform outputs
+    deps: [terraform-apply]
     cmds:
       - sh terraform/export-web-env.sh
       - sh terraform/export-backend-env.sh
@@ -158,16 +193,16 @@ tasks:
 
   dev-back:
     desc: Run the Go backend locally with Air against the development stack
+    deps: [dev-auth-sync]
     dotenv: [.env.dev]
     cmds:
-      - task: dev-auth-sync
       - air
 
   dev-front:
     desc: Run the Vite frontend locally against the development stack
     dir: web
     deps: [dev-auth-sync]
-    dotenv: [.env.dev, .env.dev.local]
+    dotenv: [../.env.dev, ../.env.dev.local]
     cmds:
       - npm run dev
 
