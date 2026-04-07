@@ -221,9 +221,10 @@ tasks:
       - rm -f .env.dev.local
       - rm -f web/.env.local
 
-  dev-auth-rebootstrap:
+  rebootstrap:
     desc: Recreate the local shared ZITADEL bootstrap state when the machine key has been lost
     cmds:
+      - cp .env.example .env
       - docker compose -p outastock-dev --env-file .env.dev -f docker-compose.dev.yml down -v --remove-orphans
       - docker compose -p outastock-prod --env-file .env -f docker-compose.yml down -v --remove-orphans
       - docker volume rm -f outastock-prod_db-data-zitadel outastock-prod_zitadel-bootstrap
