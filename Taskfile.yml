@@ -17,8 +17,9 @@ tasks:
 
   dev-auth-sync:
     desc: Export local Air and Vite ZITADEL settings into .env.dev.local
+    dir: terraform
     cmds:
-      - sh terraform/export-dev-env.sh
+      - sh export-dev-env.sh
 
   dev:
     desc: Start the shared Docker services for local Air and Vite development
