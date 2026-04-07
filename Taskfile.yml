@@ -2,7 +2,7 @@ version: '3'
 
 # This replaces all that hacky Makefile logic for loading .env files.
 # It handles colons in URLs perfectly.
-dotenv: ['.env.dev']
+dotenv: ['.env']
 
 tasks:
   default:
@@ -10,53 +10,15 @@ tasks:
       - task --list
     silent: true
 
-  deps:
-    desc: Download and tidy Go dependencies
-    dir: backend
-    cmds:
-      - go mod download
-      - go mod tidy
-
-  dev-back:
-    desc: Run Go backend with hot reload (Air)
-    deps: [deps]
-    cmds:
-      - air
-
-  dev-docker:
-    desc: Start PostgreSQL and other services
-    cmds:
-      - docker compose -p outastock-dev -f docker-compose.dev.yml up
-
-  dev-nuke:
-    desc: Kill and remove PostgreSQL volumes and other services
-    cmds:
-      - docker compose -p outastock-dev -f docker-compose.dev.yml down -v
-
-  dev-front:
-    desc: Start the frontend dev server
-    dir: web
-    cmds:
-      - npm run dev
-
-  dev-connect:
+  connect:
     desc: Access the database CLI
     cmds:
-      - docker exec -it vending-db-dev psql -U {{.POSTGRES_USER}} -d {{.POSTGRES_DB}}
+      - docker exec -it vending-db-prod psql -U $APP_DB_USER -d $APP_DB_NAME
 
   generate_sqlc:
     desc: Regenerate Go code from SQL queries
     cmds:
       - docker run --rm -v {{.PWD}}:/src -w /src sqlc/sqlc generate
-
-  seed:
-    desc: Run all database seeds
-    cmds:
-      - |
-        for file in db/seeds/*.sql; do
-          echo "Seeding $file..."
-          docker exec -i vending-db-dev psql -U {{.POSTGRES_USER}} -d {{.POSTGRES_DB}} < $file
-        done
 
   pretty:
     desc: Run code formatters
@@ -68,30 +30,32 @@ tasks:
         cd ../web/
         npm run pretty
 
-  prod:
-    desc: Bootstrap ZITADEL, apply Terraform, sync auth envs, and run the production stack
-    dotenv: [.env]
+  env-setup:
+    desc: Create .env file for production from .env.example
     cmds:
+      # Use 'test -f' so we don't overwrite an existing .env 
+      # which would lose your manual changes (like the Master Key)
+      - test -f .env || cp .env.example .env
       - mkdir -p terraform/bootstrap
       - |
-        if [ ! -f terraform/zitadel-web.env ]; then
-          cat > terraform/zitadel-web.env <<'EOF'
-        ZITADEL_ISSUER=http://auth.localhost
-        ZITADEL_CLIENT_ID=bootstrap-pending
-        ZITADEL_ORGANIZATION_ID=bootstrap-pending
-        ZITADEL_REDIRECT_URI=http://localhost/auth/callback
-        ZITADEL_POST_LOGOUT_REDIRECT_URI=http://localhost/
-        ZITADEL_SCOPE=openid profile email
+        cat > terraform/zitadel-web.env <<EOF
+        ZITADEL_ISSUER=${ZITADEL_ISSUER}
+        ZITADEL_CLIENT_ID=${ZITADEL_CLIENT_ID}
+        ZITADEL_ORGANIZATION_ID=${ZITADEL_ORGANIZATION_ID}
+        ZITADEL_REDIRECT_URI=${ZITADEL_REDIRECT_URI}
+        ZITADEL_POST_LOGOUT_REDIRECT_URI=${ZITADEL_POST_LOGOUT_REDIRECT_URI}
+        ZITADEL_SCOPE=${ZITADEL_SCOPE}
         EOF
-        fi
       - |
-        if [ ! -f terraform/zitadel-backend.env ]; then
-          cat > terraform/zitadel-backend.env <<'EOF'
-        AUTH_ENABLED=false
+        cat > terraform/zitadel-backend.env <<EOF
+        ZITADEL_AUTH_ENABLED=${ZITADEL_AUTH_ENABLED}
         EOF
-        fi
-      - |
-        docker compose -p outastock-prod --env-file .env -f docker-compose.prod.yml up -d --no-deps zitadel-db zitadel-api zitadel-login caddy
+
+  setup:
+    desc: Bootstrap ZITADEL, apply Terraform, sync auth envs, and run the production stack
+    cmds:
+      - task: env-setup
+      - docker compose -p outastock-prod --env-file .env -f docker-compose.yml up -d --no-deps zitadel-db zitadel-api zitadel-login caddy
       - |
         until [ -f terraform/bootstrap/zitadel-admin-sa.json ]; do
           echo "Waiting for ZITADEL bootstrap machine key..."
@@ -106,18 +70,18 @@ tasks:
         cd terraform
         terraform init
         terraform apply -auto-approve
-      - task: prod-auth-sync
-      - docker compose -p outastock-prod --env-file .env -f docker-compose.prod.yml up --build
-  prod-auth-sync:
+      - task: auth-sync
+
+  auth-sync:
     desc: Export frontend and backend ZITADEL auth settings from Terraform outputs
     cmds:
       - sh terraform/export-web-env.sh
       - sh terraform/export-backend-env.sh
-  prod-nuke:
+
+  nuke:
     desc: Delete the production stack, volumes, and local Terraform runtime artifacts
-    dotenv: [.env]
     cmds:
-      - docker compose -p outastock-prod --env-file .env -f docker-compose.prod.yml down -v --remove-orphans
+      - docker compose -p outastock-prod --env-file .env -f docker-compose.yml down -v --remove-orphans
       - rm -rf terraform/.terraform
       - rm -f terraform/terraform.tfstate terraform/terraform.tfstate.backup terraform/terraform.tfstate.*.backup
       - rm -f terraform/zitadel-web.env terraform/zitadel-backend.env
@@ -125,12 +89,17 @@ tasks:
       - mkdir -p terraform/bootstrap
       - touch terraform/bootstrap/.gitkeep
   
-  prod-seed:
+  seed:
     desc: Run all database seeds on production database
-    dotenv: [.env]
     cmds:
       - |
         for file in db/seeds/*.sql; do
           echo "Seeding $file..."
           docker exec -i vending-db-prod psql -U $APP_DB_USER -d $APP_DB_NAME < $file
         done
+
+  prod:
+    desc: Run the production stack
+    cmds:
+      - task: setup
+      - docker compose -p outastock-prod --env-file .env -f docker-compose.yml up --build

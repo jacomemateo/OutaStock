@@ -22,8 +22,6 @@ services:
       - default   # talks to: backend, frontend
       - zitadel   # talks to: zitadel-api, zitadel-login
     depends_on:
-      - backend
-      - frontend
       - zitadel-api
       - zitadel-login
 
@@ -62,8 +60,10 @@ services:
       ECHO_PORT: ${ECHO_PORT}
       ECHO_LOG_LEVEL: ${ECHO_LOG_LEVEL}
     depends_on:
+      caddy:
+        condition: service_started
       db:
-        condition: service_healthy # Wait for DB to be ready
+        condition: service_healthy
     networks:
       - default
       - zitadel
@@ -81,7 +81,10 @@ services:
       # This is injected into window.env at runtime
       API_BASE_URL: ${API_BASE_URL}
     depends_on:
-      - backend
+      backend:
+        condition: service_started
+      caddy:
+        condition: service_started
     restart: unless-stopped
     networks:
       - default
