@@ -176,6 +176,8 @@
 
 .template-user-section:hover {
     background-color: var(--lighter-black);
+    color: white;
+    border-left-color: var(--umbc-gold);
 }
 
 .template-user-name,
