@@ -1,9 +1,9 @@
 .inventory-container {
-    background: var(--darker-black);
+    background: var(--container-bg);
     border-radius: 12px;
     padding: 2rem;
-    box-shadow: var(--gold-shadow);
-    border: 1px solid var(--lighter-black);
+    /* box-shadow: var(--gold-shadow); */
+    border: var(--border-color);
     display: flex;
     flex-direction: column;
     animation: boxFadeIn 0.6s ease-out;
@@ -81,7 +81,7 @@
 .products-table thead th {
     position: sticky;
     top: 0;
-    background: var(--darker-black); /* important so rows don't show through */
+    background: var(--container-bg); /* important so rows don't show through */
     z-index: 1;
 }
 
@@ -136,7 +136,7 @@
 }
 
 .products-table tbody tr:hover {
-    background-color: var(--darker-black);
+    background-color: var(--container-bg);
 }
 .edit-btn-cell,
 .delete-btn-cell {
@@ -145,7 +145,7 @@
 .edit-btn-row,
 .delete-btn-row {
     background-color: transparent;
-    color: var(--even-lighter-black);
+    color: var(--container-bg);
     border: none;
     cursor: pointer;
     padding: 0;

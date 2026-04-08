@@ -6,10 +6,10 @@
 }
 
 .profile-card {
-    background: linear-gradient(145deg, rgba(42, 42, 42, 0.95), rgba(26, 26, 26, 0.92));
-    border: 1px solid rgba(249, 173, 30, 0.18);
+    background: var(--container-bg);
+    border: var(--border-color);
     border-radius: 18px;
-    box-shadow: var(--gold-shadow);
+    /* box-shadow: var(--gold-shadow); */
     padding: 1.5rem;
 }
 
@@ -30,8 +30,8 @@
 }
 
 .profile-field {
-    background: rgba(255, 255, 255, 0.03);
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: var(--container-bg);
+    border: var(--border-color);
     border-radius: 14px;
     padding: 1rem;
 }

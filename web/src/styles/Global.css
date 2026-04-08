@@ -15,14 +15,29 @@ select {
 }
 
 :root[data-theme='dark'] {
+    /* base colors */
     --light-gold: #e8c547;
     --umbc-gold: #f9ad1e;
     --black-grey: rgb(72, 72, 72);
     --even-lighter-black: #888;
-    --lighter-black: #2a2a2a;
+    --lighter-black: rgba(255, 255, 255, 0.03);
     --darker-black: #1a1a1a;
     --black: #000000;
     --white: #ffffff;
     --error-red: #ff4d4d;
     --gold-shadow: 0px 0px 13px rgba(255, 179, 98, 0.35);
+    
+    
+    --border-color: 1px solid rgba(249, 173, 30, 0.18);
+    /* semantic (meta) variables */
+    --page-bg: var(--darker-black);
+    --container-bg: linear-gradient(145deg, rgba(42, 42, 42, 0.95), rgba(26, 26, 26, 0.92));
+
+    --text-primary: var(--white);
+    --text-secondary: var(--even-lighter-black);
+
+    --accent-primary: var(--umbc-gold);
+    --accent-secondary: var(--light-gold);
+
+    --error-color: var(--error-red);
 }
