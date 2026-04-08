@@ -9,7 +9,8 @@
     width: 250px;
     background-color: var(--darker-black);
     padding: 2rem 0;
-    box-shadow: var(--gold-shadow);
+    border: var(--border-color);
+    /* box-shadow: var(--gold-shadow); */
 
     display: flex; /* ADD THIS */
     flex-direction: column; /* ADD THIS */
