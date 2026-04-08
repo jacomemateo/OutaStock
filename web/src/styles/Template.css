@@ -158,11 +158,11 @@
     justify-content: flex-start;
     align-items: center;
     border-top: 1px solid var(--lighter-black);
+    border-left: 3px solid transparent;
     /* margin-top: auto; */
 }
 
 .template-user-chip {
-    background-color: var(--darker-black); /* match sidebar bg */
     display: flex;
 
     flex-direction: column;
@@ -171,13 +171,15 @@
     width: 100%;
     transition: all 0.3s ease;
     cursor: default;
-    min-width: 0;
+    min-width: 0;;
 }
 
 .template-user-section:hover {
     background-color: var(--lighter-black);
     color: white;
     border-left-color: var(--umbc-gold);
+    transition: all 0.3s ease;
+    
 }
 
 .template-user-name,

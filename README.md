@@ -455,6 +455,6 @@ That usually means ZITADEL is not reachable or not ready yet. Confirm:
 
 ## Top Contributors
 
-<a href="https://github.com/jacomemateo/OutaStock/graphs/contributors">
+<a href="https://github.com/jacomemateo/OgiutaStock/graphs/contributors">
   <img src="https://contrib.rocks/image?repo=jacomemateo/OutaStock" alt="contrib.rocks image" />
 </a>
