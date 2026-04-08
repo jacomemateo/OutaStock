@@ -49,45 +49,8 @@ At a high level, the system is responsible for:
 
 The project emphasizes clean architecture, clear service boundaries, and a usable dashboard for day-to-day vending machine management.
 
-## Architecture
-
-Production mode runs entirely through Docker:
-
-* `frontend` serves the React app
-* `backend` serves the Go API
-* `db` stores application data
-* `zitadel-api` and `zitadel-login` provide auth
-* `caddy` routes:
-  * `http://localhost` -> frontend
-  * `http://localhost/api/*` -> backend
-  * `http://api.localhost` -> API / Swagger
-  * `http://auth.localhost` -> ZITADEL
-
-Development mode is hybrid:
-
-* Docker runs support services only:
-  * Postgres
-  * Swagger
-  * Caddy
-  * ZITADEL
-* Local processes run the hot-reload app servers:
-  * `air` for the Go backend
-  * `vite` for the React frontend
 
 ## Authentication
-
-Local authentication is powered by ZITADEL and bootstrapped with Terraform.
-
-Terraform creates and manages:
-
-* the local ZITADEL project
-* the frontend OIDC application
-* the backend API application
-* the local admin human user
-* the required org membership
-
-The frontend signs in with OIDC + PKCE. The backend validates bearer tokens with ZITADEL introspection before serving protected API routes.
-
 Default local admin credentials:
 
 * Username: `admin`
