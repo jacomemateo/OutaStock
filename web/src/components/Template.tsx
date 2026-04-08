@@ -27,7 +27,7 @@ const Template = () => {
     const pages = [
         {
             id: 'dashboard',
-            label: 'dashboard',
+            label: 'Dashboard',
             icon: <DashboardIcon />,
             component: <DashBoard />,
             path: '',
