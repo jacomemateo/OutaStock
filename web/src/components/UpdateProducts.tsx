@@ -12,7 +12,7 @@ import AddProductModal from '@components/AddProductModal';
 import { useAlert } from '@contexts/SnackBarAlertContext';
 import { fetchInventory, getInventoryCount, createProduct } from '@/services/api';
 import ConfirmationModal from '@components/ConfirmationModal';
-import {deleteProduct} from '@/services/api';
+import { deleteProduct } from '@/services/api';
 interface Product {
     id: string;
     name: string;
@@ -228,12 +228,13 @@ const UpdateProducts = () => {
                 </div>
                 {confirmationOpen && (
                     <ConfirmationModal
-                    isOpen={confirmationOpen}
-                    onClose={() => setConfirmationOpen(false)}
-                    onConfirm={getUserDecision}
-                    title="Are you sure?"
-                    message="This action cannot be undone. Please confirm if you want to proceed."
-                    />)}
+                        isOpen={confirmationOpen}
+                        onClose={() => setConfirmationOpen(false)}
+                        onConfirm={getUserDecision}
+                        title="Are you sure?"
+                        message="This action cannot be undone. Please confirm if you want to proceed."
+                    />
+                )}
             </div>
         </>
     );

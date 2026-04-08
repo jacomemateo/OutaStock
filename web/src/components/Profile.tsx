@@ -18,8 +18,8 @@ const Profile = () => {
             <section className="profile-card">
                 <h2>{user?.name ?? 'ZITADEL User'}</h2>
                 <p>
-                    This profile comes from the local ZITADEL session and confirms the
-                    app is using the OIDC client managed in Terraform.
+                    This profile comes from the local ZITADEL session and confirms the app
+                    is using the OIDC client managed in Terraform.
                 </p>
             </section>
 

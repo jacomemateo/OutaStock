@@ -50,13 +50,7 @@ const AuthCallback = () => {
     }, []);
 
     if (error) {
-        return (
-            <LoadingScreen
-                message={error}
-                mode="processing"
-                title="Sign-in Failed"
-            />
-        );
+        return <LoadingScreen message={error} mode="processing" title="Sign-in Failed" />;
     }
 
     return (

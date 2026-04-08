@@ -71,7 +71,12 @@ function getWindowOrigin() {
 }
 
 function isLoopbackHostname(hostname: string) {
-    return hostname === 'localhost' || hostname === '127.0.0.1' || hostname === '::1' || hostname === '[::1]';
+    return (
+        hostname === 'localhost' ||
+        hostname === '127.0.0.1' ||
+        hostname === '::1' ||
+        hostname === '[::1]'
+    );
 }
 
 function resolveRedirectUrl(configuredUrl: string | undefined, defaultPath: string) {
@@ -125,7 +130,10 @@ function base64UrlEncode(bytes: Uint8Array) {
 
 function decodeBase64Url(input: string) {
     const normalized = input.replace(/-/g, '+').replace(/_/g, '/');
-    const padded = normalized.padEnd(normalized.length + ((4 - (normalized.length % 4)) % 4), '=');
+    const padded = normalized.padEnd(
+        normalized.length + ((4 - (normalized.length % 4)) % 4),
+        '=',
+    );
     return atob(padded);
 }
 
@@ -169,7 +177,10 @@ function removePendingLogin() {
 }
 
 function storePendingLogin(pendingLogin: PendingLogin) {
-    window.localStorage.setItem(AUTH_PENDING_LOGIN_STORAGE_KEY, JSON.stringify(pendingLogin));
+    window.localStorage.setItem(
+        AUTH_PENDING_LOGIN_STORAGE_KEY,
+        JSON.stringify(pendingLogin),
+    );
 }
 
 function getPendingLogin() {
@@ -350,7 +361,11 @@ export async function startLogin(returnTo = '/dashboard') {
     window.location.assign(authorizeUrl.toString());
 }
 
-async function exchangeCodeForTokens(code: string, pendingLogin: PendingLogin, config: AuthConfig) {
+async function exchangeCodeForTokens(
+    code: string,
+    pendingLogin: PendingLogin,
+    config: AuthConfig,
+) {
     const metadata = await getOidcMetadata();
     const body = new URLSearchParams({
         client_id: config.clientId,
@@ -457,14 +472,12 @@ export async function startLogout(session: AuthSession | null) {
 
     const metadata = await getOidcMetadata();
     const endSessionEndpoint =
-        metadata.end_session_endpoint ?? `${normalizeIssuer(config.issuer)}/oidc/v1/end_session`;
+        metadata.end_session_endpoint ??
+        `${normalizeIssuer(config.issuer)}/oidc/v1/end_session`;
     const logoutUrl = new URL(endSessionEndpoint);
 
     logoutUrl.searchParams.set('client_id', config.clientId);
-    logoutUrl.searchParams.set(
-        'post_logout_redirect_uri',
-        config.postLogoutRedirectUri,
-    );
+    logoutUrl.searchParams.set('post_logout_redirect_uri', config.postLogoutRedirectUri);
 
     if (session?.idToken) {
         logoutUrl.searchParams.set('id_token_hint', session.idToken);

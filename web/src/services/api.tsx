@@ -156,6 +156,6 @@ export const deleteProduct = async (productID: string) => {
         // return await response.json();
     } catch (error) {
         console.error(`Error deleting product:`, error);
-        throw error;    
+        throw error;
     }
 };

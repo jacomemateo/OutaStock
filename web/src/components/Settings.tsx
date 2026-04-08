@@ -1,7 +1,8 @@
 import '@styles/Settings.css';
 import { useNavigate, useLocation, Routes, Route } from 'react-router-dom';
 import BedtimeIcon from '@mui/icons-material/Bedtime';
-import AccountCircleIcon from '@mui/icons-material/AccountCircle';
+import PersonIcon from '@mui/icons-material/Person';
+
 import { useEffect } from 'react';
 
 //Components
@@ -17,7 +18,7 @@ const Settings = () => {
             id: 'profile',
             label: 'Profile',
             section: 'Account',
-            icon: <AccountCircleIcon />,
+            icon: <PersonIcon />,
             component: <Profile />,
             path: 'profile',
         },

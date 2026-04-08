@@ -65,7 +65,9 @@
     font-size: 0.95rem;
     font-weight: 700;
     padding: 0.8rem 1.2rem;
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    transition:
+        transform 0.2s ease,
+        box-shadow 0.2s ease;
 }
 
 .profile-button:hover {

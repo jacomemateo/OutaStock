@@ -42,7 +42,7 @@ interface Product {
 }
 
 const Inventory = () => {
-    const {showAlert} = useAlert();
+    const { showAlert } = useAlert();
     /*
     Which slot is currently being edited
     */
@@ -164,7 +164,7 @@ const Inventory = () => {
             setEditingSlotID(null);
         } catch (error) {
             console.error(`Failed to update slot ${slotId}`, error);
-            showAlert(`Failed to update slot` , 'error');
+            showAlert(`Failed to update slot`, 'error');
         }
     };
 
@@ -193,7 +193,6 @@ const Inventory = () => {
                 ),
             );
             showAlert(`Product removed from slot`, 'success');
-
         } catch (error) {
             showAlert(`Failed to remove product from slot`, 'error');
             console.error(`Failed to remove product from slot ${slotId}`, error);
@@ -297,7 +296,6 @@ const Inventory = () => {
                     isOpen={editingSlotID !== null}
                     onClose={() => setEditingSlotID(null)}
                     onSave={handleSave}
-        
                     /*
                     Pass full product catalog
                     */

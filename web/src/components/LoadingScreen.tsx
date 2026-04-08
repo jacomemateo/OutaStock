@@ -16,7 +16,8 @@ const LoadingScreen = ({
 }: LoadingScreenProps) => {
     const navigate = useNavigate();
     const location = useLocation();
-    const { config, isAuthenticated, isConfigured, signIn, signOut, status, user } = useAuth();
+    const { config, isAuthenticated, isConfigured, signIn, signOut, status, user } =
+        useAuth();
 
     if (mode === 'processing' || status === 'loading') {
         return (
@@ -32,9 +33,10 @@ const LoadingScreen = ({
         );
     }
 
-    const returnTo =
-        new URLSearchParams(location.search).get('returnTo') ?? '/dashboard';
-    const primaryActionLabel = isAuthenticated ? 'Open Dashboard' : 'Sign in with ZITADEL';
+    const returnTo = new URLSearchParams(location.search).get('returnTo') ?? '/dashboard';
+    const primaryActionLabel = isAuthenticated
+        ? 'Open Dashboard'
+        : 'Sign in with ZITADEL';
     const statusText = isAuthenticated
         ? `Signed in as ${user?.name ?? user?.email ?? user?.preferred_username ?? 'OutaStock User'}`
         : isConfigured

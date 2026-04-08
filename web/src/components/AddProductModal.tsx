@@ -51,7 +51,7 @@ const AddProductModal = ({ isOpen, onClose, onSave }: AddProoductModalProps) => 
                         <input
                             type="text"
                             value={formData.priceCents}
-                            placeholder = "e.g. 1.50"
+                            placeholder="e.g. 1.50"
                             onChange={(e) =>
                                 setFormData({ ...formData, priceCents: e.target.value })
                             }

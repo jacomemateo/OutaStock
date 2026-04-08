@@ -176,7 +176,9 @@
     font-size: 0.92rem;
     font-weight: 700;
     padding: 0.9rem 1.1rem;
-    transition: background-color 0.2s ease, transform 0.2s ease;
+    transition:
+        background-color 0.2s ease,
+        transform 0.2s ease;
 }
 
 .template-logout-btn:hover {
