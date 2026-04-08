@@ -6,6 +6,7 @@ import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import AddAlertIcon from '@mui/icons-material/AddAlert';
 import SettingsIcon from '@mui/icons-material/Settings';
 import ReceiptLongIcon from '@mui/icons-material/ReceiptLong';
+import HomeIcon from '@mui/icons-material/Home';
 
 // Page Components
 import UpdateProducts from '@components/UpdateProducts';
@@ -26,9 +27,9 @@ const Template = () => {
 
     const pages = [
         {
-            id: 'dashboard',
-            label: 'Dashboard',
-            icon: <DashboardIcon />,
+            id: 'Home',
+            label: 'Home',
+            icon: <HomeIcon />,
             component: <DashBoard />,
             path: '',
         },
