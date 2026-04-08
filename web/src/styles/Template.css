@@ -10,6 +10,10 @@
     background-color: var(--darker-black);
     padding: 2rem 0;
     box-shadow: var(--gold-shadow);
+
+    display: flex; /* ADD THIS */
+    flex-direction: column; /* ADD THIS */
+    height: 100vh; /* ADD THIS (important) */
 }
 
 .sidebar-header {
@@ -140,7 +144,6 @@
     margin: 0.4rem 0 0;
 }
 
-
 .content {
     flex: 1;
     padding: 2rem;
@@ -154,40 +157,44 @@
     display: flex;
     justify-content: flex-start;
     align-items: center;
+    border-top: 1px solid var(--lighter-black);
+    /* margin-top: auto; */
 }
 
 .template-user-chip {
     background-color: var(--darker-black); /* match sidebar bg */
-    border: 1px solid rgba(255, 255, 255, 0.22);
     display: flex;
+
     flex-direction: column;
-    gap: 0.15rem;
+    gap: 0.4rem;
     padding: 0.75rem 1rem;
     width: 100%;
     transition: all 0.3s ease;
     cursor: default;
+    min-width: 0;
 }
 
-.template-user-chip:hover {
+.template-user-section:hover {
     background-color: var(--lighter-black);
 }
 
 .template-user-name,
 .template-user-email {
-    white-space: nowrap;      /* prevent wrapping */
-    overflow: hidden;         /* hide overflow */
-    text-overflow: ellipsis;  /* show ... when too long */
-    color: #b0b0b0;           /* same as nav text */
+    white-space: nowrap; /* prevent wrapping */
+    overflow: hidden; /* hide overflow */
+    text-overflow: ellipsis; /* show ... when too long */
+    color: #b0b0b0; /* same as nav text */
 }
 
 .template-user-name {
-    font-size: 0.95rem;
+    font-size: 1rem; /* Adjust to match your previous font size */
+
     font-weight: 700;
     color: #b0b0b0; /* same text color as nav */
 }
 
 .template-user-email {
-    font-size: 0.8rem;
+    font-size: 0.85rem;
     opacity: 0.85;
     color: #b0b0b0;
 }
@@ -197,5 +204,19 @@
     width: 24px;
     height: 24px;
     margin-right: 0.5rem;
+    flex-shrink: 0;
+}
+
+.user-icon {
+    width: 2rem;
+    height: 2rem;
+    border-radius: 1000000px;
+    background: linear-gradient(135deg, var(--umbc-gold) 0%, #d4a574 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+    font-weight: 500;
+    color: white;
     flex-shrink: 0;
 }

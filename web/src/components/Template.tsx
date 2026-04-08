@@ -6,7 +6,6 @@ import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import AddAlertIcon from '@mui/icons-material/AddAlert';
 import SettingsIcon from '@mui/icons-material/Settings';
 import ReceiptLongIcon from '@mui/icons-material/ReceiptLong';
-import PersonIcon from '@mui/icons-material/Person';
 
 // Page Components
 import UpdateProducts from '@components/UpdateProducts';
@@ -23,7 +22,7 @@ import { useAuth } from '@contexts/AuthContext';
 const Template = () => {
     const navigate = useNavigate();
     const location = useLocation();
-    const { signOut, user } = useAuth();
+    const { user } = useAuth();
 
     const pages = [
         {
@@ -102,18 +101,19 @@ const Template = () => {
                     </ul>
                 </nav>
                 <div className="template-user-section">
-    <div
-        className="template-user-chip clickable"
-        onClick={() => navigate('/dashboard/settings/profile')}
-    >
-        <span className="template-user-name">
-            {user?.name ?? 'Authenticated User'}
-        </span>
-        <span className="template-user-email">
-            {user?.email ?? user?.preferred_username ?? 'No email'}
-        </span>
-    </div>
-</div>
+                    <div className="user-icon">{user?.name?.charAt(0)}</div>
+                    <div
+                        className="template-user-chip clickable"
+                        onClick={() => navigate('/dashboard/settings/profile')}
+                    >
+                        <span className="template-user-name">
+                            {user?.name ?? 'Authenticated User'}
+                        </span>
+                        <span className="template-user-email">
+                            {user?.email ?? user?.preferred_username ?? 'No email'}
+                        </span>
+                    </div>
+                </div>
             </aside>
 
             <main className="main-content">
