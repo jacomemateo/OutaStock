@@ -6,6 +6,7 @@ import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import AddAlertIcon from '@mui/icons-material/AddAlert';
 import SettingsIcon from '@mui/icons-material/Settings';
 import ReceiptLongIcon from '@mui/icons-material/ReceiptLong';
+import PersonIcon from '@mui/icons-material/Person';
 
 // Page Components
 import UpdateProducts from '@components/UpdateProducts';
@@ -100,6 +101,19 @@ const Template = () => {
                         ))}
                     </ul>
                 </nav>
+                <div className="template-user-section">
+    <div
+        className="template-user-chip clickable"
+        onClick={() => navigate('/dashboard/settings/profile')}
+    >
+        <span className="template-user-name">
+            {user?.name ?? 'Authenticated User'}
+        </span>
+        <span className="template-user-email">
+            {user?.email ?? user?.preferred_username ?? 'No email'}
+        </span>
+    </div>
+</div>
             </aside>
 
             <main className="main-content">
@@ -107,22 +121,6 @@ const Template = () => {
                     <div className="template-header-content">
                         <div>
                             <h1>{activePage.label}</h1>
-                        </div>
-                        <div className="template-user-section">
-                            <div className="template-user-chip">
-                                <span className="template-user-name">
-                                    {user?.name ?? 'Authenticated User'}
-                                </span>
-                                <span className="template-user-email">
-                                    {user?.email ?? user?.preferred_username ?? 'No email'}
-                                </span>
-                            </div>
-                            <button
-                                className="template-logout-btn"
-                                onClick={() => void signOut()}
-                            >
-                                Sign Out
-                            </button>
                         </div>
                     </div>
                 </header>

@@ -140,54 +140,62 @@
     margin: 0.4rem 0 0;
 }
 
-.template-user-section {
-    align-items: center;
-    display: flex;
-    gap: 0.85rem;
-}
-
-.template-user-chip {
-    background: rgba(255, 255, 255, 0.14);
-    border: 1px solid rgba(255, 255, 255, 0.22);
-    border-radius: 999px;
-    color: var(--white);
-    display: flex;
-    flex-direction: column;
-    gap: 0.15rem;
-    padding: 0.75rem 1rem;
-}
-
-.template-user-name {
-    font-size: 0.95rem;
-    font-weight: 700;
-}
-
-.template-user-email {
-    font-size: 0.8rem;
-    opacity: 0.85;
-}
-
-.template-logout-btn {
-    background: rgba(26, 26, 26, 0.85);
-    border: none;
-    border-radius: 999px;
-    color: var(--white);
-    cursor: pointer;
-    font-size: 0.92rem;
-    font-weight: 700;
-    padding: 0.9rem 1.1rem;
-    transition:
-        background-color 0.2s ease,
-        transform 0.2s ease;
-}
-
-.template-logout-btn:hover {
-    background: rgba(26, 26, 26, 1);
-    transform: translateY(-1px);
-}
 
 .content {
     flex: 1;
     padding: 2rem;
     color: #b0b0b0;
+}
+
+/* Sidebar Account Info */
+.template-user-section {
+    margin-top: auto; /* push to bottom of sidebar */
+    padding: 1rem 1.5rem;
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+}
+
+.template-user-chip {
+    background-color: var(--darker-black); /* match sidebar bg */
+    border: 1px solid rgba(255, 255, 255, 0.22);
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+    padding: 0.75rem 1rem;
+    width: 100%;
+    transition: all 0.3s ease;
+    cursor: default;
+}
+
+.template-user-chip:hover {
+    background-color: var(--lighter-black);
+}
+
+.template-user-name,
+.template-user-email {
+    white-space: nowrap;      /* prevent wrapping */
+    overflow: hidden;         /* hide overflow */
+    text-overflow: ellipsis;  /* show ... when too long */
+    color: #b0b0b0;           /* same as nav text */
+}
+
+.template-user-name {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: #b0b0b0; /* same text color as nav */
+}
+
+.template-user-email {
+    font-size: 0.8rem;
+    opacity: 0.85;
+    color: #b0b0b0;
+}
+
+/* Optional: add icon like nav buttons */
+.template-user-chip svg {
+    width: 24px;
+    height: 24px;
+    margin-right: 0.5rem;
+    flex-shrink: 0;
 }
