@@ -171,7 +171,7 @@
     width: 100%;
     transition: all 0.3s ease;
     cursor: default;
-    min-width: 0;;
+    min-width: 0;
 }
 
 .template-user-section:hover {
@@ -179,7 +179,6 @@
     color: white;
     border-left-color: var(--umbc-gold);
     transition: all 0.3s ease;
-    
 }
 
 .template-user-name,
