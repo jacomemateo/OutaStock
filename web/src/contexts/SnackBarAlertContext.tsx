@@ -41,7 +41,12 @@ const AlertProvider = ({ children }: AlertProviderProps) => {
         // put showAlert function in context box
         <AlertContext.Provider value={{ showAlert }}>
             {children}
-            <Snackbar open={snackbar.open} autoHideDuration={4000} onClose={handleClose}>
+            <Snackbar
+                open={snackbar.open}
+                autoHideDuration={4000}
+                onClose={handleClose}
+                anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+                >
                 <MuiAlert
                     elevation={6}
                     variant="filled"
