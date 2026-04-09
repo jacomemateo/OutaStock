@@ -10,11 +10,12 @@ import { useTheme } from '@contexts/ThemeContext';
 import { useEffect } from 'react';
 
 function App() {
-    const { theme } = useTheme();
+    const { theme, motionPreference } = useTheme();
 
     useEffect(() => {
         document.documentElement.setAttribute('data-theme', theme);
-    }, [theme]);
+        document.documentElement.setAttribute('data-motion', motionPreference);
+    }, [theme, motionPreference]);
 
     return (
         <AlertProvider>

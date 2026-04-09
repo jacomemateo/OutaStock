@@ -2,6 +2,109 @@
     --Montserrat: 'Montserrat', sans-serif;
     --GoogleSansCode: 'Google Sans Code', monospace;
     --container-radius: 8px;
+    --motion-duration-fast: 200ms;
+    --motion-duration-medium: 300ms;
+    --motion-duration-slow: 500ms;
+    --motion-duration-slower: 600ms;
+    --motion-duration-slowest: 800ms;
+    --motion-duration-nav: 1000ms;
+    --motion-duration-spinner: 1500ms;
+    --motion-delay-short: 150ms;
+    --motion-delay-long: 1200ms;
+    --motion-delay-stagger: 100ms;
+    --motion-ease-standard: ease;
+    --motion-ease-enter: ease-in;
+    --motion-ease-emphasized: ease-out;
+    --motion-ease-decelerate: cubic-bezier(0.4, 0, 0.2, 1);
+    --motion-ease-linear: linear;
+    --motion-distance-xs: 3px;
+    --motion-distance-sm: 4px;
+    --motion-distance-md: 10px;
+    --motion-distance-lg: 20px;
+    --motion-distance-xl: 30px;
+
+    --transition-all-fast: all var(--motion-duration-fast) var(--motion-ease-standard);
+    --transition-all-medium: all var(--motion-duration-medium) var(--motion-ease-standard);
+    --transition-all-emphasized: all var(--motion-duration-medium) var(--motion-ease-decelerate);
+    --transition-background: background var(--motion-duration-fast) var(--motion-ease-standard);
+    --transition-background-color: background-color var(--motion-duration-fast)
+        var(--motion-ease-standard);
+    --transition-background-color-text: background-color var(--motion-duration-fast)
+            var(--motion-ease-standard),
+        color var(--motion-duration-fast) var(--motion-ease-standard);
+    --transition-border-color: border-color var(--motion-duration-fast)
+        var(--motion-ease-standard);
+    --transition-color: color var(--motion-duration-fast) var(--motion-ease-standard);
+    --transition-input: border-color var(--motion-duration-fast)
+            var(--motion-ease-standard),
+        background-color var(--motion-duration-fast) var(--motion-ease-standard);
+    --transition-opacity: opacity var(--motion-duration-fast) var(--motion-ease-standard);
+    --transition-transform: transform var(--motion-duration-fast)
+        var(--motion-ease-standard);
+    --transition-transform-shadow: transform var(--motion-duration-fast)
+            var(--motion-ease-standard),
+        box-shadow var(--motion-duration-fast) var(--motion-ease-standard);
+    --transition-width: width var(--motion-duration-medium) var(--motion-ease-standard);
+
+    --animation-box-fade: ds-box-fade var(--motion-duration-slower)
+        var(--motion-ease-emphasized);
+    --animation-box-fade-quick: ds-box-fade var(--motion-duration-fast)
+        var(--motion-ease-emphasized);
+    --animation-card-fade: ds-card-fade var(--motion-duration-slow)
+        var(--motion-ease-emphasized) forwards;
+    --animation-fade-in: ds-fade-in var(--motion-duration-slowest)
+        var(--motion-ease-enter);
+    --animation-fade-in-delayed: ds-fade-in var(--motion-duration-slowest)
+        var(--motion-ease-enter) var(--motion-delay-long) forwards;
+    --animation-modal-overlay: ds-fade-in var(--motion-duration-medium)
+        var(--motion-ease-emphasized);
+    --animation-modal-slide: ds-slide-up var(--motion-duration-medium)
+        var(--motion-ease-emphasized);
+    --animation-nav-item: ds-nav-item-fade-up var(--motion-duration-nav)
+        var(--motion-ease-emphasized) forwards;
+    --animation-slide-up-large: ds-slide-up-large var(--motion-duration-slower)
+        var(--motion-ease-emphasized);
+    --animation-spinner: ds-spin var(--motion-duration-spinner)
+        var(--motion-ease-linear) infinite;
+    --animation-table-fade: ds-table-fade var(--motion-duration-slow)
+        var(--motion-ease-emphasized) forwards;
+}
+
+:root[data-motion='moderate'] {
+    --motion-duration-fast: 120ms;
+    --motion-duration-medium: 180ms;
+    --motion-duration-slow: 260ms;
+    --motion-duration-slower: 360ms;
+    --motion-duration-slowest: 500ms;
+    --motion-duration-nav: 550ms;
+    --motion-duration-spinner: 1200ms;
+    --motion-delay-short: 80ms;
+    --motion-delay-long: 250ms;
+    --motion-delay-stagger: 50ms;
+    --motion-distance-xs: 1px;
+    --motion-distance-sm: 2px;
+    --motion-distance-md: 6px;
+    --motion-distance-lg: 10px;
+    --motion-distance-xl: 16px;
+}
+
+:root[data-motion='reduced'] {
+    --motion-duration-fast: 1ms;
+    --motion-duration-medium: 1ms;
+    --motion-duration-slow: 1ms;
+    --motion-duration-slower: 1ms;
+    --motion-duration-slowest: 1ms;
+    --motion-duration-nav: 1ms;
+    --motion-duration-spinner: 1ms;
+    --motion-delay-short: 0ms;
+    --motion-delay-long: 0ms;
+    --motion-delay-stagger: 0ms;
+    --motion-distance-xs: 0px;
+    --motion-distance-sm: 0px;
+    --motion-distance-md: 0px;
+    --motion-distance-lg: 0px;
+    --motion-distance-xl: 0px;
+    --animation-spinner: none;
 }
 
 html {
@@ -13,6 +116,90 @@ input,
 textarea,
 select {
     font-family: inherit;
+}
+
+@keyframes ds-fade-in {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes ds-box-fade {
+    from {
+        opacity: 0;
+        transform: translateY(var(--motion-distance-lg));
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes ds-card-fade {
+    from {
+        opacity: 0;
+        transform: translateY(var(--motion-distance-md));
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes ds-table-fade {
+    from {
+        opacity: 0;
+        transform: translateY(var(--motion-distance-md));
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes ds-slide-up {
+    from {
+        opacity: 0;
+        transform: translateY(var(--motion-distance-lg));
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes ds-slide-up-large {
+    from {
+        opacity: 0;
+        transform: translateY(var(--motion-distance-xl));
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes ds-nav-item-fade-up {
+    from {
+        opacity: 0;
+        transform: translateY(calc(var(--motion-distance-xl) * -1));
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes ds-spin {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
 }
 
 :root[data-theme='dark'] {
