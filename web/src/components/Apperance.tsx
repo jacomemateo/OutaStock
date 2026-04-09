@@ -1,9 +1,9 @@
-import '@styles/ThemeChoice.css';
+import '@styles/Apperance.css';
 import DarkModeIcon from '@mui/icons-material/DarkMode';
 import LightModeIcon from '@mui/icons-material/LightMode';
 import { useTheme } from '@contexts/ThemeContext';
 
-const ThemeChoice = () => {
+const Apperance = () => {
     // const [theme, setTheme] = useState<string>('dark');
     const { theme, setTheme } = useTheme();
     return (
@@ -28,4 +28,4 @@ const ThemeChoice = () => {
     );
 };
 
-export default ThemeChoice;
+export default Apperance;

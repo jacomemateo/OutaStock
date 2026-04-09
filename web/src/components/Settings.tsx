@@ -6,7 +6,7 @@ import PersonIcon from '@mui/icons-material/Person';
 import { useEffect } from 'react';
 
 //Components
-import ThemeChoice from '@components/ThemeChoice';
+import Apperance from '@/components/Apperance';
 import Profile from '@components/Profile';
 
 const Settings = () => {
@@ -37,7 +37,7 @@ const Settings = () => {
             label: 'Appearance',
             section: 'Preferences',
             icon: <BedtimeIcon />,
-            component: <ThemeChoice />,
+            component: <Apperance />,
             path: 'appearance',
         },
     ];
