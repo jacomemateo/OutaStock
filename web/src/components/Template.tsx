@@ -48,10 +48,10 @@ const Template = () => {
         },
         {
             id: 'view-all-transactions',
-            label: 'View All Transactions',
+            label: 'Transactions',
             icon: <ReceiptLongIcon />,
             component: <ViewAllTransactions />,
-            path: 'view-all-transactions',
+            path: 'transactions',
         },
         {
             id: 'alerts',
