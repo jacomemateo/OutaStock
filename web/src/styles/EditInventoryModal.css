@@ -31,6 +31,7 @@
     width: 90%;
     box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
     animation: slideUp 0.3s ease-out;
+    color: var(--text-primary);
 }
 
 @keyframes slideUp {

@@ -10,5 +10,4 @@ label input {
     border: 1px solid var(--lighter-black);
     border-radius: 4px;
     background: var(--darker-black);
-    color: var(--white);
 }
