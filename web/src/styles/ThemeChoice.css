@@ -25,9 +25,7 @@
 }
 
 .theme-options-section p {
-    color: var(--white);
-    font-size: 1rem;
-    word-break: break-word;
+    font-family: ;
 }
 
 .theme-option {
@@ -38,14 +36,16 @@
     border-radius: 4px;
     padding: 0.6rem 0.8rem;
     transition: all 0.2s ease;
+    background: transparent;
 }
 
 .theme-option:hover {
-    /* box-shadow: 0 0 8px rgba(212, 165, 116, 0.2); */
+    box-shadow: 0 0 8px var(--umbc-gold);
 }
 
 .theme-option:focus-within {
-    box-shadow: 0 0 12px rgba(212, 165, 116, 0.4);
+    box-shadow: 0 0 8px var(--umbc-gold);
+
 }
 
 .theme-option svg {
@@ -66,12 +66,6 @@
     min-width: 100px;
 }
 
-
-/* .theme-option select:focus {
-    outline: none;
-    border-color: var(--umbc-gold);
-    box-shadow: 0 0 12px rgba(212, 165, 116, 0.4);
-} */
 
 .theme-option option {
     background-color: var(--darker-black);
