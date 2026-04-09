@@ -11,6 +11,7 @@
     border-radius: 18px;
     /* box-shadow: var(--gold-shadow); */
     padding: 1.5rem;
+    margin-top: 1rem;
 }
 
 .profile-card h2 {
