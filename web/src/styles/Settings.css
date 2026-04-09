@@ -2,6 +2,7 @@
     background: var(--container-bg);
 
     border-radius: 12px;
+    border: var(--border-color);
     padding: 0;
     /* box-shadow: var(--gold-shadow);
     border: 1px solid var(--lighter-black); */

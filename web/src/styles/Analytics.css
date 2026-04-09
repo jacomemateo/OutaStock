@@ -1,6 +1,7 @@
 .analytics-container {
     background: var(--container-bg);
     border-radius: 12px;
+    border: var(--border-color);
     padding: 2rem;
     /* box-shadow: var(--gold-shadow); */
     /* border: 1px solid var(--lighter-black); */

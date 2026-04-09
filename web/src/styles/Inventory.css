@@ -78,13 +78,6 @@
     }
 }
 
-.products-table thead th {
-    position: sticky;
-    top: 0;
-    background: var(--container-bg); /* important so rows don't show through */
-    z-index: 1;
-}
-
 .products-list::-webkit-scrollbar {
     width: 8px;
 }
@@ -172,4 +165,11 @@
 
 .inventory-container {
     animation: boxFadeIn 0.2s ease-out;
+}
+
+.inventory-container .products-table thead th {
+    position: static;
+    top: auto;
+    z-index: auto;
+    background: none;
 }

@@ -182,3 +182,11 @@
         transform: translateY(0);
     }
 }
+
+
+.transactions-container .transaction-card {
+    position: static;
+    top: auto;
+    z-index: auto;
+    background: none;
+}
