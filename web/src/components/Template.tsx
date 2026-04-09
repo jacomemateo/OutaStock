@@ -8,6 +8,8 @@ import SettingsIcon from '@mui/icons-material/Settings';
 import ReceiptLongIcon from '@mui/icons-material/ReceiptLong';
 import HomeIcon from '@mui/icons-material/Home';
 import { useState } from 'react';
+import { Tooltip } from 'react-tooltip';
+import 'react-tooltip/dist/react-tooltip.css';
 
 // Page Components
 import UpdateProducts from '@components/UpdateProducts';
@@ -109,7 +111,11 @@ const Template = () => {
                             <li
                                 key={page.id}
                                 className={currentId === page.id ? 'active' : ''} // If current url matches page id, add 'active' class for styling
-                                title={isSidebarExpanded ? '' : page.label} // Show tooltip only when sidebar is collapsed
+                                data-tooltip-id="nav-tooltip"
+                                data-tooltip-content={
+                                    !isSidebarExpanded ? page.label : ''
+                                }
+                                data-tooltip-place="right"
                             >
                                 <button
                                     className="nav-link-btn"
@@ -127,6 +133,11 @@ const Template = () => {
                                 <li
                                     key={page.id}
                                     className={currentId === page.id ? 'active' : ''}
+                                    data-tooltip-id="nav-tooltip"
+                                    data-tooltip-content={
+                                        !isSidebarExpanded ? page.label : ''
+                                    }
+                                    data-tooltip-place="right"
                                 >
                                     <button
                                         className="nav-link-btn"
@@ -162,7 +173,15 @@ const Template = () => {
                         </>
                     )}
                     {!isSidebarExpanded && (
-                        <div className="user-icon">{user?.name?.charAt(0)}</div>
+                        <div
+                            className="user-icon clickable"
+                            onClick={() => navigate('/dashboard/settings/profile')}
+                            data-tooltip-id="user-tooltip"
+                            data-tooltip-content={user?.name ?? 'Profile'}
+                            data-tooltip-place="right"
+                        >
+                            {user?.name?.charAt(0)}
+                        </div>
                     )}
                 </div>
             </aside>
@@ -181,6 +200,8 @@ const Template = () => {
                     </Routes>
                 </div>
             </main>
+            <Tooltip id="nav-tooltip" />
+            <Tooltip id="user-tooltip" />
         </div>
     );
 };
