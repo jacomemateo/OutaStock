@@ -240,3 +240,44 @@
     color: white;
     flex-shrink: 0;
 }
+
+/* Logo button styling */
+.logo-button {
+    background-color: #2a2a2a;
+    border: none;
+    cursor: pointer;
+    padding: 0.5rem;
+    border-radius: 6px;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.logo-button:hover {
+    background-color: #3a3a3a;
+}
+
+.logo-button img {
+    width: 100%;
+    height: auto;
+}
+
+/* Sidebar expanded/collapsed states */
+.sidebar.expanded {
+    width: 250px;
+    transition: width 0.3s ease;
+}
+
+.sidebar.collapsed {
+    width: 80px;
+    transition: width 0.3s ease;
+}
+
+.sidebar.collapsed .sidebar-header img {
+    width: 50px;
+}
+
+.sidebar.expanded .sidebar-header img {
+    width: 220px;
+}
