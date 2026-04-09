@@ -1,6 +1,5 @@
 import '@styles/Template.css';
 import logo from '@assets/transparent-gold-logo.png';
-import DashboardIcon from '@mui/icons-material/Dashboard';
 import SystemUpdateIcon from '@mui/icons-material/SystemUpdate';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import AddAlertIcon from '@mui/icons-material/AddAlert';

@@ -77,11 +77,6 @@
     }
 }
 
-/* header fade-in animation */
-.template-header {
-    animation: headerFadeIn 1s ease-out forwards;
-    opacity: 0;
-}
 
 @keyframes headerFadeIn {
     from {
@@ -146,11 +141,6 @@
     padding: 0;
 }
 
-.template-header {
-    padding: 1.95rem;
-    border-bottom: 1px solid #333;
-    background-color: var(--umbc-gold);
-}
 
 .template-header-content {
     align-items: center;
@@ -171,9 +161,10 @@
 }
 
 .content {
-    flex: 1;
-    padding: 2rem;
-    color: #b0b0b0;
+    flex: 1;                  /* 🔥 THIS is the missing piece */
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
 }
 
 /* Sidebar Account Info */

@@ -1,7 +1,7 @@
 .settings-container {
     background: var(--container-bg);
 
-    border-radius: 12px;
+    border-radius: var(--container-radius);
     border: var(--border-color);
     padding: 0;
     /* box-shadow: var(--gold-shadow);

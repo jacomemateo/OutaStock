@@ -1,13 +1,17 @@
 .dashboard-container {
-    padding: 2rem;
-    min-height: 90vh;
+    padding-left: 4rem;
+    padding-right: 4rem;
+    height: 100%;
+    align-content: center
 }
 
 .dashboard-grid {
     display: grid;
     grid-template-columns: 1.25fr 2fr;
     gap: 4rem;
-    margin: 0 auto;
+
+    height: 100%;              /* 🔥 key */
+    align-content: center;     /* centers grid rows vertically */
 }
 
 .dashboard-box {

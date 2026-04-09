@@ -13,9 +13,9 @@
 .theme-options-section {
     background: var(--container-bg);
     margin-left: 12px;
-    border-radius: 12px;
+    border-radius: var(--container-radius);
     border: var(--border-color);
-    border-radius: 12px;
+    border-radius: var(--container-radius);
     padding: 1rem;
     display: flex;
     justify-content: space-between;

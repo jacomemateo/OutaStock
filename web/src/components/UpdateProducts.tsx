@@ -121,6 +121,7 @@ const UpdateProducts = () => {
 
     return (
         <>
+        <div className="update-products-layout">
             <div className="metric-cards">
                 <div className="card total-items-card">
                     <h2 className="card-title">
@@ -235,6 +236,7 @@ const UpdateProducts = () => {
                         message="This action cannot be undone. Please confirm if you want to proceed."
                     />
                 )}
+            </div>
             </div>
         </>
     );
