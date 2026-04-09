@@ -1,11 +1,13 @@
 import '@styles/Template.css';
 import logo from '@assets/transparent-gold-logo.png';
+import smallLogo from '@assets/tab-logo.png';
 import SystemUpdateIcon from '@mui/icons-material/SystemUpdate';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import AddAlertIcon from '@mui/icons-material/AddAlert';
 import SettingsIcon from '@mui/icons-material/Settings';
 import ReceiptLongIcon from '@mui/icons-material/ReceiptLong';
 import HomeIcon from '@mui/icons-material/Home';
+import { useState } from 'react';
 
 // Page Components
 import UpdateProducts from '@components/UpdateProducts';
@@ -22,6 +24,8 @@ const Template = () => {
     const navigate = useNavigate();
     const location = useLocation();
     const { user } = useAuth();
+
+    const [isSidebarExpanded, setIsSidebarExpanded] = useState(true);
 
     type NavPosition = 'top' | 'bottom';
 
@@ -86,9 +90,18 @@ const Template = () => {
 
     return (
         <div className="template-container">
-            <aside className="sidebar">
+            <aside className={`sidebar ${isSidebarExpanded ? 'expanded' : 'collapsed'}`}>
                 <div className="sidebar-header">
-                    <img src={logo} alt="Company Logo" />
+                    <button
+                        className="logo-button"
+                        onClick={() => setIsSidebarExpanded(!isSidebarExpanded)}
+                        aria-label="Toggle sidebar"
+                    >
+                        <img
+                            src={isSidebarExpanded ? logo : smallLogo}
+                            alt="Company Logo"
+                        />
+                    </button>
                 </div>
                 <nav className="sidebar-nav">
                     <ul className="sidebar-nav-list sidebar-nav-list-top">
@@ -96,12 +109,14 @@ const Template = () => {
                             <li
                                 key={page.id}
                                 className={currentId === page.id ? 'active' : ''} // If current url matches page id, add 'active' class for styling
+                                title={isSidebarExpanded ? '' : page.label} // Show tooltip only when sidebar is collapsed
                             >
                                 <button
                                     className="nav-link-btn"
                                     onClick={() => navigate(`/dashboard/${page.path}`)}
                                 >
-                                    {page.icon} {page.label}
+                                    {page.icon}{' '}
+                                    {isSidebarExpanded && <span>{page.label}</span>}
                                 </button>
                             </li>
                         ))}
@@ -115,9 +130,12 @@ const Template = () => {
                                 >
                                     <button
                                         className="nav-link-btn"
-                                        onClick={() => navigate(`/dashboard/${page.path}`)}
+                                        onClick={() =>
+                                            navigate(`/dashboard/${page.path}`)
+                                        }
                                     >
-                                        {page.icon} {page.label}
+                                        {page.icon}{' '}
+                                        {isSidebarExpanded && <span>{page.label}</span>}
                                     </button>
                                 </li>
                             ))}
@@ -125,18 +143,27 @@ const Template = () => {
                     ) : null}
                 </nav>
                 <div className="template-user-section">
-                    <div className="user-icon">{user?.name?.charAt(0)}</div>
-                    <div
-                        className="template-user-chip clickable"
-                        onClick={() => navigate('/dashboard/settings/profile')}
-                    >
-                        <span className="template-user-name">
-                            {user?.name ?? 'Authenticated User'}
-                        </span>
-                        <span className="template-user-email">
-                            {user?.email ?? user?.preferred_username ?? 'No email'}
-                        </span>
-                    </div>
+                    {isSidebarExpanded && (
+                        <>
+                            <div className="user-icon">{user?.name?.charAt(0)}</div>
+                            <div
+                                className="template-user-chip clickable"
+                                onClick={() => navigate('/dashboard/settings/profile')}
+                            >
+                                <span className="template-user-name">
+                                    {user?.name ?? 'Authenticated User'}
+                                </span>
+                                <span className="template-user-email">
+                                    {user?.email ??
+                                        user?.preferred_username ??
+                                        'No email'}
+                                </span>
+                            </div>
+                        </>
+                    )}
+                    {!isSidebarExpanded && (
+                        <div className="user-icon">{user?.name?.charAt(0)}</div>
+                    )}
                 </div>
             </aside>
 
