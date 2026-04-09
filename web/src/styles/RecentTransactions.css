@@ -2,12 +2,10 @@
     background: var(--container-bg);
     border-radius: var(--container-radius);
     padding: 2rem;
-    /* box-shadow: var(--gold-shadow); */
     border: var(--border-color);
     animation: boxFadeIn 0.6s ease-out;
     display: flex;
     flex-direction: column;
-    /* Add fade-in animation */
 }
 
 .transactions-header {
@@ -38,27 +36,40 @@
 }
 
 .transaction-card {
-    background: var(--container-bg);
+    position: relative;
+    background: transparent;
     border-radius: var(--container-radius);
     padding: 1.25rem;
-    border: 0px solid;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: transform 0.2s ease;
+    cursor: pointer;
+    overflow: hidden;
     animation: cardFadeIn 0.5s ease-out forwards;
     animation-delay: calc(var(--card-index, 0) * 0.1s);
     opacity: 0;
-    cursor: pointer;
 }
 
-/* Add divider ONLY if there is a card before it
-.transaction-card + .transaction-card {
-  border-top: 2px solid rgba(245, 245, 245, 0.2);
-} */
+.transaction-card::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: transparent;
+    border-radius: inherit;
+    transition: background 0.2s ease;
+    pointer-events: none;
+    z-index: 0;
+}
 
 .transaction-card:hover {
-    transform: translateX(6px);
-    box-shadow: var(--gold-shadow);
-    border-color: var(--umbc-gold);
-    background: var(--container-bg);
+    transform: translateX(4px);
+}
+
+.transaction-card:hover::before {
+    background: var(--darker-black)
+}
+
+.transaction-card > .transaction-content {
+    position: relative;
+    z-index: 1;
 }
 
 .transaction-content {
@@ -180,12 +191,4 @@
         opacity: 1;
         transform: translateY(0);
     }
-}
-
-
-.transactions-container .transaction-card {
-    position: static;
-    top: auto;
-    z-index: auto;
-    background: none;
 }
