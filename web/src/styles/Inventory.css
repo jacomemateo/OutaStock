@@ -180,9 +180,9 @@
     animation: boxFadeIn 0.2s ease-out;
 }
 
-.inventory-container .products-table thead th {
-    position: static;
-    top: auto;
-    z-index: auto;
-    background: none;
+.products-table thead th {
+    position: sticky; /* make header sticky */
+    top: 0;           /* stick to the top of the scroll container */
+    background: var(--darker-black); /* keep background visible */
+    z-index: 10;      /* ensure it’s above table rows */
 }

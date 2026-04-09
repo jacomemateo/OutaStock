@@ -117,10 +117,9 @@
 }
 
 .update-products-container .products-table thead th {
-    position: static;
-    top: auto;
-    z-index: auto;
-    background: none;
+    position: sticky;            /* make header sticky */
+    top: 0;                       /* stick to top of scroll container */
+    z-index: 10;                  /* stay above table rows */
 }
 
 .update-products-container .products-table th:nth-child(1),
