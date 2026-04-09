@@ -9,6 +9,7 @@
     width: 250px;
     background: var(--container-bg);
     padding: 2rem 0;
+    border-radius: var(--container-radius);
     border: none;
     border-right: var(--border-color);  
     display: flex;
