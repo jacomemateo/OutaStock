@@ -3,6 +3,8 @@
     flex-direction: column;
     gap: 1.5rem;
     color: var(--white);
+    width: 100%;
+    min-width: 0;
 }
 
 .profile-card {
