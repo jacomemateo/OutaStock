@@ -1,5 +1,5 @@
 .analytics-container {
-    background: var(--darker-black);
+    background: var(--container-bg);
     border-radius: 12px;
     padding: 2rem;
     /* box-shadow: var(--gold-shadow); */

@@ -1,5 +1,6 @@
 .settings-container {
-    background: var(--darker-black);
+    background: var(--container-bg);
+
     border-radius: 12px;
     padding: 0;
     /* box-shadow: var(--gold-shadow);
@@ -14,8 +15,8 @@
 
 /* Sidebar Navigation */
 .settings-sidebar {
+
     width: 250px;
-    background-color: var(--darker-black);
     padding: 2rem 0;
     border-right: 1px solid var(--lighter-black);
     display: flex;
