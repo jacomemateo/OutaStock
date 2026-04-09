@@ -7,14 +7,14 @@
 
 .sidebar {
     width: 250px;
-    background-color: var(--darker-black);
+    background: var(--container-bg);
     padding: 2rem 0;
-    border: var(--border-color);
-    /* box-shadow: var(--gold-shadow); */
-
-    display: flex; /* ADD THIS */
-    flex-direction: column; /* ADD THIS */
-    height: 100vh; /* ADD THIS (important) */
+    border-radius: var(--container-radius);
+    border: none;
+    border-right: var(--border-color);  
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
 }
 
 .sidebar-header {
@@ -32,10 +32,31 @@
     top: -10px;
 }
 
+.sidebar-nav {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.sidebar-nav-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+.sidebar-nav-list-bottom {
+    padding-bottom: 1rem;
+}
+
 .sidebar-nav ul {
     list-style: none;
     padding: 0;
     margin: 0;
+    display: flex;
+    flex-direction: column;
 }
 
 /* Side bar fade in animation */
@@ -56,11 +77,6 @@
     }
 }
 
-/* header fade-in animation */
-.template-header {
-    animation: headerFadeIn 1s ease-out forwards;
-    opacity: 0;
-}
 
 @keyframes headerFadeIn {
     from {
@@ -83,12 +99,16 @@
     display: flex;
     align-items: center;
     gap: 0.75rem;
+    min-height: 56px;
     padding: 1rem 1.5rem;
     color: #b0b0b0;
     cursor: pointer;
     text-align: left;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
     transition: all 0.3s ease;
-    font-size: 1rem; /* Adjust to match your previous font size */
+    font-size: 0.9rem;
 }
 
 .nav-link-btn svg {
@@ -121,11 +141,6 @@
     padding: 0;
 }
 
-.template-header {
-    padding: 1.95rem;
-    border-bottom: 1px solid #333;
-    background-color: var(--umbc-gold);
-}
 
 .template-header-content {
     align-items: center;
@@ -146,9 +161,10 @@
 }
 
 .content {
-    flex: 1;
-    padding: 2rem;
-    color: #b0b0b0;
+    flex: 1;                  /* 🔥 THIS is the missing piece */
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
 }
 
 /* Sidebar Account Info */

@@ -1,6 +1,8 @@
 .settings-container {
-    background: var(--darker-black);
-    border-radius: 12px;
+    background: var(--container-bg);
+
+    border-radius: var(--container-radius);
+    border: var(--border-color);
     padding: 0;
     /* box-shadow: var(--gold-shadow);
     border: 1px solid var(--lighter-black); */
@@ -14,8 +16,8 @@
 
 /* Sidebar Navigation */
 .settings-sidebar {
+
     width: 250px;
-    background-color: var(--darker-black);
     padding: 2rem 0;
     border-right: 1px solid var(--lighter-black);
     display: flex;
@@ -78,7 +80,6 @@
     color: var(--umbc-gold);
     border-left-color: var(--umbc-gold);
     background-color: rgba(232, 197, 71, 0.1);
-    border-radius: 12px;
 }
 
 /* Active tab styling */
@@ -86,7 +87,6 @@
     color: var(--umbc-gold);
     border-left-color: var(--umbc-gold);
     background-color: rgba(232, 197, 71, 0.1);
-    border-radius: 12px;
 }
 
 /* Main Content Area */

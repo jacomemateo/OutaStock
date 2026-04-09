@@ -1,6 +1,14 @@
+.update-products-layout {
+    display: flex;
+    flex-direction: column;
+    gap: 0em;          /* 👈 EXACT spacing you want */
+    align-items: center; /* keeps everything centered */
+    width: 100%;
+}
+
 .update-products-container {
     background: var(--container-bg);
-    border-radius: 12px;
+    border-radius: var(--container-radius);
     padding: 2rem;
     /* box-shadow: var(--gold-shadow); */
     border: var(--border-color);
@@ -19,6 +27,7 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
+    background: transparent;
 }
 
 .update-products-header h2 {
@@ -47,7 +56,7 @@
 
 .card {
     background: var(--container-bg);
-    border-radius: 12px;
+    border-radius: var(--container-radius);
     padding: 1rem;
     /* box-shadow: var(--gold-shadow); */
     border: var(--border-color);
@@ -107,6 +116,13 @@
     table-layout: fixed;
 }
 
+.update-products-container .products-table thead th {
+    position: static;
+    top: auto;
+    z-index: auto;
+    background: none;
+}
+
 .update-products-container .products-table th:nth-child(1),
 .update-products-container .products-table td:nth-child(1) {
     width: 25%;
@@ -130,4 +146,8 @@
 .update-products-container .products-table th:last-child,
 .update-products-container .products-table td:last-child {
     padding-right: 5rem;
+}
+
+.card-value {
+    color: var(--white);
 }

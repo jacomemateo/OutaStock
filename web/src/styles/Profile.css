@@ -8,7 +8,7 @@
 .profile-card {
     background: var(--container-bg);
     border: var(--border-color);
-    border-radius: 18px;
+    border-radius: var(--container-radius);
     /* box-shadow: var(--gold-shadow); */
     padding: 1.5rem;
     margin-top: 1rem;
@@ -33,7 +33,7 @@
 .profile-field {
     background: var(--container-bg);
     border: var(--border-color);
-    border-radius: 14px;
+    border-radius: var(--container-radius);
     padding: 1rem;
 }
 
