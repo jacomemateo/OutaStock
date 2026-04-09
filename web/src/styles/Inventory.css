@@ -128,9 +128,22 @@
     border-bottom: 1px solid var(--lighter-black);
 }
 
-.products-table tbody tr:hover {
-    background-color: var(--container-bg);
+.products-table tbody tr {
+    transition: all 0.2s ease;
 }
+
+.products-table tbody tr:hover td {
+    background: var(--darker-black);
+}
+
+.products-table tbody tr:hover {
+    transform: translateX(4px);
+}
+
+.products-table tbody tr td {
+    transition: background 0.2s ease;
+}
+
 .edit-btn-cell,
 .delete-btn-cell {
     width: 10px !important;
