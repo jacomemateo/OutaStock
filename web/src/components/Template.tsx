@@ -16,7 +16,6 @@ import Settings from '@components/Settings';
 import DashBoard from '@components/Dashboard';
 import ViewAllTransactions from '@components/ViewAllTransactions';
 
-import '@styles/Template.css';
 import { useNavigate, useLocation, Routes, Route } from 'react-router-dom';
 import { useAuth } from '@contexts/AuthContext';
 
@@ -70,13 +69,10 @@ const Template = () => {
         },
     ];
 
-    // Determine current ID based on the URL path
-    // We remove "/dashboard/" from the location.pathname to match our IDs
     const pathSegments = location.pathname.split('/').filter(Boolean);
-    const currentId = pathSegments[1] || 'dashboard';
-
-    // FIX for the 'undefined' error: Provide a fallback object
-    const activePage = pages.find((p) => p.id === currentId) || pages[0];
+    const currentPath = pathSegments[1] ?? '';
+    const activePage = pages.find((page) => page.path === currentPath) || pages[0];
+    const currentId = activePage.id;
 
     return (
         <div className="template-container">

@@ -7,14 +7,13 @@
 
 .sidebar {
     width: 250px;
-    background-color: var(--darker-black);
+    background: var(--container-bg);
     padding: 2rem 0;
-    border: var(--border-color);
-    /* box-shadow: var(--gold-shadow); */
-
-    display: flex; /* ADD THIS */
-    flex-direction: column; /* ADD THIS */
-    height: 100vh; /* ADD THIS (important) */
+    border: none;
+    border-right: var(--border-color);  
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
 }
 
 .sidebar-header {

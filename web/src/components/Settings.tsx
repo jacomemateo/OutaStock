@@ -33,12 +33,12 @@ const Settings = () => {
         // },
 
         {
-            id: 'theme',
-            label: 'Theme',
+            id: 'appearance',
+            label: 'Appearance',
             section: 'Preferences',
             icon: <BedtimeIcon />,
             component: <ThemeChoice />,
-            path: 'theme',
+            path: 'appearance',
         },
     ];
 

@@ -80,7 +80,6 @@
     color: var(--umbc-gold);
     border-left-color: var(--umbc-gold);
     background-color: rgba(232, 197, 71, 0.1);
-    border-radius: 12px;
 }
 
 /* Active tab styling */
@@ -88,7 +87,6 @@
     color: var(--umbc-gold);
     border-left-color: var(--umbc-gold);
     background-color: rgba(232, 197, 71, 0.1);
-    border-radius: 12px;
 }
 
 /* Main Content Area */

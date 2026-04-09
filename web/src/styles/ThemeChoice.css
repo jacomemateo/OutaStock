@@ -25,7 +25,9 @@
 }
 
 .theme-options-section p {
-    font-family: ;
+    color: #ffffff;
+    margin: 0;
+    font-size: 1rem;
 }
 
 .theme-option {
