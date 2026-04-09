@@ -6,7 +6,7 @@
     border: var(--border-color);
     display: flex;
     flex-direction: column;
-    animation: boxFadeIn 0.6s ease-out;
+    animation: var(--animation-box-fade-quick);
 }
 
 .inventory-header {
@@ -46,7 +46,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: background-color 0.2s;
+    transition: var(--transition-background-color);
     top: 20px;
     left: 20px;
 }
@@ -63,19 +63,8 @@
     scrollbar-color: var(--umbc-gold) var(--darker-black);
 
     opacity: 0;
-    animation: tableFadeIn 0.5s ease-out forwards;
-    animation-delay: 0.15s;
-}
-
-@keyframes tableFadeIn {
-    from {
-        opacity: 0;
-        transform: translateY(10px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
+    animation: var(--animation-table-fade);
+    animation-delay: var(--motion-delay-short);
 }
 
 .products-list::-webkit-scrollbar {
@@ -129,7 +118,7 @@
 }
 
 .products-table tbody tr {
-    transition: all 0.2s ease;
+    transition: var(--transition-all-fast);
 }
 
 .products-table tbody tr:hover td {
@@ -141,7 +130,7 @@
 }
 
 .products-table tbody tr td {
-    transition: background 0.2s ease;
+    transition: var(--transition-background);
 }
 
 .edit-btn-cell,
@@ -155,7 +144,7 @@
     border: none;
     cursor: pointer;
     padding: 0;
-    transition: color 0.2s;
+    transition: var(--transition-color);
     font-size: small;
 }
 
@@ -172,12 +161,8 @@
 
 .product-row {
     opacity: 0; /* start hidden */
-    animation: cardFadeIn 0.5s ease-out forwards;
-    animation-delay: calc(var(--row-index, 0) * 0.1s);
-}
-
-.inventory-container {
-    animation: boxFadeIn 0.2s ease-out;
+    animation: var(--animation-card-fade);
+    animation-delay: calc(var(--row-index, 0) * var(--motion-delay-stagger));
 }
 
 .products-table thead  {

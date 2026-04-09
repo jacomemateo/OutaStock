@@ -10,16 +10,7 @@
     align-items: center;
     justify-content: center;
     z-index: 1000;
-    animation: fadeIn 0.3s ease-out;
-}
-
-@keyframes fadeIn {
-    from {
-        opacity: 0;
-    }
-    to {
-        opacity: 1;
-    }
+    animation: var(--animation-modal-overlay);
 }
 
 .modal-content {
@@ -30,19 +21,8 @@
     max-width: 400px;
     width: 90%;
     box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
-    animation: slideUp 0.3s ease-out;
+    animation: var(--animation-modal-slide);
     color: var(--text-primary);
-}
-
-@keyframes slideUp {
-    from {
-        transform: translateY(20px);
-        opacity: 0;
-    }
-    to {
-        transform: translateY(0);
-        opacity: 1;
-    }
 }
 
 .modal-header {
@@ -73,7 +53,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: color 0.2s;
+    transition: var(--transition-color);
 }
 
 .modal-close:hover {
@@ -94,9 +74,7 @@
     color: var(--white);
     font-size: 0.95rem;
     font-family: inherit;
-    transition:
-        border-color 0.2s,
-        background-color 0.2s;
+    transition: var(--transition-input);
 }
 
 .product-select {
@@ -112,7 +90,7 @@
     font-size: 0.95rem;
     font-family: inherit;
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: var(--transition-all-fast);
     appearance: none;
     padding-right: 2.2rem;
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%23D4A574' d='M1 1l5 5 5-5'/%3E%3C/svg%3E");
@@ -156,7 +134,7 @@
     font-size: 1rem;
     font-weight: 600;
     cursor: pointer;
-    transition: opacity 0.2s;
+    transition: var(--transition-opacity);
     margin-top: 0.5rem;
 }
 
@@ -185,7 +163,7 @@
 .product-select .MuiOutlinedInput-notchedOutline {
     border-color: #3a3a3a;
     /* WILL CHANGER LATER */
-    transition: border-color 0.2s;
+    transition: var(--transition-border-color);
 }
 
 .product-select .MuiInputLabel-root {
@@ -203,7 +181,7 @@
 .product-select .MuiMenuItem-root {
     color: var(--white);
     background-color: var(--darker-black);
-    transition: all 0.2s;
+    transition: var(--transition-all-fast);
 }
 
 .product-select .MuiMenuItem-root:hover {

@@ -22,7 +22,7 @@
     box-shadow: var(--gold-shadow);
 
     border: 1px solid var(--white);
-    animation: boxFadeIn 0.6s ease-out;
+    animation: var(--animation-box-fade);
     display: flex;
     flex-direction: column;
     height: fit-content;

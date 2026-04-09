@@ -3,7 +3,7 @@
     border-radius: var(--container-radius);
     padding: 2rem;
     border: var(--border-color);
-    animation: boxFadeIn 0.6s ease-out;
+    animation: var(--animation-box-fade);
     display: flex;
     flex-direction: column;
 }
@@ -40,11 +40,11 @@
     background: transparent;
     border-radius: var(--container-radius);
     padding: 1.25rem;
-    transition: transform 0.2s ease;
+    transition: var(--transition-transform);
     cursor: pointer;
     overflow: hidden;
-    animation: cardFadeIn 0.5s ease-out forwards;
-    animation-delay: calc(var(--card-index, 0) * 0.1s);
+    animation: var(--animation-card-fade);
+    animation-delay: calc(var(--card-index, 0) * var(--motion-delay-stagger));
     opacity: 0;
 }
 
@@ -54,7 +54,7 @@
     inset: 0;
     background: transparent;
     border-radius: inherit;
-    transition: background 0.2s ease;
+    transition: var(--transition-background);
     pointer-events: none;
     z-index: 0;
 }
@@ -148,7 +148,7 @@
     font-weight: 600;
     font-size: 0.95rem;
     cursor: pointer;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: var(--transition-all-emphasized);
 }
 
 .pagination-btn:hover:not(:disabled) {
@@ -169,26 +169,4 @@
     font-weight: 500;
     min-width: 60px;
     text-align: center;
-}
-
-@keyframes boxFadeIn {
-    from {
-        opacity: 0;
-        transform: translateY(20px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-@keyframes cardFadeIn {
-    from {
-        opacity: 0;
-        transform: translateY(10px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
 }
