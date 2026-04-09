@@ -1,47 +1,59 @@
-.theme-choice-container {
+.appearance-container {
     display: flex;
     flex-direction: column;
     gap: 1.5rem;
     color: var(--white);
-
-    flex: 1;           /* take up all available vertical space */
-    width: 100%;       /* fill horizontal space */
-    max-width: 1200px; /* match .settings-container max-width if desired */
-    margin: 0 auto;    /* center it like profile */
-    padding: 2rem; /* same as profile */
+    width: 100%;
+    min-width: 0;
 }
 
-.theme-heading-section {
-    margin-bottom: 2rem;
-    margin-left: 12px;
-}
-
-.theme-choice-subtitle {
-    color: #888;
-    font-size: 0.9rem;
-    margin: 0.5rem 0 0 0;
-    font-weight: 400;
-}
-
-.theme-options-section {
+.appearance-card,
+.appearance-panel {
     background: var(--container-bg);
-    border-radius: var(--container-radius);
     border: var(--border-color);
-    padding: 1rem;
+    border-radius: var(--container-radius);
+    padding: 1.5rem;
+}
 
+.appearance-card {
+    margin-top: 1rem;
+}
+
+.appearance-card h2 {
+    margin: 0 0 0.5rem;
+    font-size: 1.4rem;
+}
+
+.appearance-card p {
+    color: #c7c7c7;
+    margin: 0;
+}
+
+.appearance-panel {
     display: flex;
     justify-content: space-between;
-    align-items: center;
-
-    max-width: 1200px; /* match settings container */
-    width: 100%;
-    margin: 0 auto;    /* center it */
+    align-items: flex-start;
+    gap: 1.5rem;
 }
 
-.theme-options-section p {
+.appearance-panel-copy {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.appearance-panel-copy h3 {
     color: #ffffff;
     margin: 0;
     font-size: 1rem;
+    font-weight: 700;
+}
+
+.appearance-subtitle {
+    color: #888;
+    font-size: 0.9rem;
+    margin: 0;
+    font-weight: 400;
 }
 
 .theme-option {

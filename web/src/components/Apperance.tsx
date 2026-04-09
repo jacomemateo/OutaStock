@@ -1,18 +1,26 @@
-import '@styles/ThemeChoice.css';
+import '@styles/Apperance.css';
 import DarkModeIcon from '@mui/icons-material/DarkMode';
 import LightModeIcon from '@mui/icons-material/LightMode';
 import { useTheme } from '@contexts/ThemeContext';
 
-const ThemeChoice = () => {
+const Apperance = () => {
     // const [theme, setTheme] = useState<string>('dark');
     const { theme, setTheme } = useTheme();
     return (
-        <div className="theme-choice-container">
-            <div className="theme-heading-section">
-                <p className="theme-choice-subtitle">Customize your appearance</p>
-            </div>
-            <div className="theme-options-section">
-                <p>Current Theme</p>
+        <div className="appearance-container">
+            <section className="appearance-card">
+                <h2>Appearance</h2>
+                <p>
+                    Customize how the dashboard looks.
+                </p>
+            </section>
+            <section className="appearance-panel">
+                <div className="appearance-panel-copy">
+                    <h3>Current Theme</h3>
+                    <p className="appearance-subtitle">
+                        Switch between dark and light mode for your current session.
+                    </p>
+                </div>
                 <div className="theme-option">
                     {theme === 'dark' ? <DarkModeIcon /> : <LightModeIcon />}
                     <select
@@ -23,9 +31,9 @@ const ThemeChoice = () => {
                         <option value="light">Light</option>
                     </select>
                 </div>
-            </div>
+            </section>
         </div>
     );
 };
 
-export default ThemeChoice;
+export default Apperance;

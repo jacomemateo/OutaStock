@@ -31,7 +31,7 @@ select {
     
     --border-color: 1px solid rgba(183, 169, 141, 0.156);
 
-    --container-bg: linear-gradient(145deg, rgba(42, 42, 42, 0.95), rgba(26, 26, 26, 0.92));
+    --container-bg: linear-gradient(145deg, rgb(42, 42, 42), rgb(26, 26, 26));
 
     --text-primary: var(--white);
     --text-secondary: var(--even-lighter-black);

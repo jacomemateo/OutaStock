@@ -8,7 +8,8 @@
 .sidebar {
     width: 250px;
     background: var(--container-bg);
-    padding: 2rem 0;
+    padding-bottom: 1.5rem;
+    padding-top: 1rem;
     border-radius: var(--container-radius);
     border: none;
     border-right: var(--border-color);  
@@ -18,18 +19,28 @@
 }
 
 .sidebar-header {
-    padding: 0rem 2rem;
+    padding: 0 2rem;
     border-bottom: 1px solid #333;
     display: flex;
-    align-items: center;
-    justify-content: center;
+    align-items: center;      /* vertical centering */
+    justify-content: center;   /* horizontal centering */
+    flex: 0 0 auto;            /* prevent growth if needed */
+    cursor: e-resize; /* ← this makes the cursor indicate horizontal resizing */
+
 }
 
 .sidebar-header img {
     width: 220px;
     height: auto;
     position: relative;
-    top: -10px;
+    transition: background-color 0.2s, color 0.2s; /* smooth hover */
+    cursor: inherit; /* ← use header's cursor instead of pointer */
+}
+
+.sidebar-header:hover {
+    background-color: var(--lighter-black);
+    color: white; /* only affects SVG/icons inside img if any */
+    border-left-color: var(--umbc-gold);
 }
 
 .sidebar-nav {
@@ -187,7 +198,7 @@
     padding: 0.75rem 1rem;
     width: 100%;
     transition: all 0.3s ease;
-    cursor: default;
+    cursor: pointer;
     min-width: 0;
 }
 
@@ -243,9 +254,9 @@
 
 /* Logo button styling */
 .logo-button {
-    background-color: #2a2a2a;
+    background-color: transparent;
     border: none;
-    cursor: pointer;
+    cursor: inherit;
     padding: 0.5rem;
     border-radius: 6px;
     transition: all 0.3s ease;
@@ -254,9 +265,6 @@
     justify-content: center;
 }
 
-.logo-button:hover {
-    background-color: #3a3a3a;
-}
 
 .logo-button img {
     width: 100%;
