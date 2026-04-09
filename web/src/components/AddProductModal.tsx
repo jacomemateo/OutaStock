@@ -24,19 +24,20 @@ const AddProductModal = ({ isOpen, onClose, onSave }: AddProoductModalProps) => 
     if (!isOpen) return null;
 
     return (
-        <div className="modal-overlay" onClick={onClose}>
-            <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-                <div className="modal-header">
+        <div className="product-modal-overlay" onClick={onClose}>
+            <div className="product-modal-content" onClick={(e) => e.stopPropagation()}>
+                <div className="product-modal-header">
                     <h2>Add New Product</h2>
-                    <button className="modal-close" onClick={onClose}>
+                    <button className="product-modal-close" onClick={onClose}>
                         ✕
                     </button>
                 </div>
 
-                <form onSubmit={handleSubmit}>
-                    <label>
+                <form className="product-modal-form" onSubmit={handleSubmit}>
+                    <label className="product-modal-field">
                         Product Name:
                         <input
+                            className="product-modal-input"
                             type="text"
                             value={formData.name}
                             onChange={(e) =>
@@ -46,9 +47,10 @@ const AddProductModal = ({ isOpen, onClose, onSave }: AddProoductModalProps) => 
                         />
                     </label>
 
-                    <label>
+                    <label className="product-modal-field">
                         Price:
                         <input
+                            className="product-modal-input"
                             type="text"
                             value={formData.priceCents}
                             placeholder="e.g. 1.50"
@@ -59,7 +61,9 @@ const AddProductModal = ({ isOpen, onClose, onSave }: AddProoductModalProps) => 
                         />
                     </label>
 
-                    <button type="submit">Add Product</button>
+                    <button className="product-modal-submit" type="submit">
+                        Add Product
+                    </button>
                 </form>
             </div>
         </div>

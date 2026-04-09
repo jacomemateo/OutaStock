@@ -120,12 +120,12 @@ const UpdateProducts = () => {
     }, []);
 
     return (
-        <>
+        <div className="update-products-page">
             <div className="metric-cards">
                 <div className="card total-items-card">
                     <h2 className="card-title">
-                        {' '}
-                        <InventoryIcon sx={{ color: 'var(--umbc-gold)' }} /> Total Items
+                        <InventoryIcon className="metric-icon metric-icon-accent" /> Total
+                        Items
                     </h2>
                     <p className="card-subtitle">Total items in stock</p>
                     <p className="card-value">{products.length}</p>
@@ -133,8 +133,8 @@ const UpdateProducts = () => {
 
                 <div className="card low-stock-card">
                     <h2 className="card-title">
-                        {' '}
-                        <BatteryCharging20Icon sx={{ color: 'yellow' }} /> Low Stock Items
+                        <BatteryCharging20Icon className="metric-icon metric-icon-warning" />
+                        Low Stock Items
                     </h2>
                     <p className="card-subtitle">Number of items that are running low</p>
                     <p className="card-value">{lowStockCount}</p>
@@ -142,9 +142,8 @@ const UpdateProducts = () => {
 
                 <div className="card out-of-stock-card">
                     <h2 className="card-title">
-                        {' '}
-                        <HourglassDisabledIcon sx={{ color: 'grey' }} /> Out of Stock
-                        Items
+                        <HourglassDisabledIcon className="metric-icon metric-icon-muted" />
+                        Out of Stock Items
                     </h2>
                     <p className="card-subtitle">Number of items that are out of stock</p>
                     <p className="card-value">30</p>
@@ -152,8 +151,8 @@ const UpdateProducts = () => {
 
                 <div className="card expired-card">
                     <h2 className="card-title">
-                        {' '}
-                        <RunningWithErrorsIcon sx={{ color: 'red' }} /> Expired Items
+                        <RunningWithErrorsIcon className="metric-icon metric-icon-danger" />
+                        Expired Items
                     </h2>
                     <p className="card-subtitle">Number of items that are expired</p>
                     <p className="card-value">30</p>
@@ -168,13 +167,15 @@ const UpdateProducts = () => {
                             View and modify all products
                         </p>
                     </div>
-                    <div className="add-product-btn">
-                        <AddIcon
-                            onClick={() =>
-                                setIsAddProductModalOpen(!isAddProductModalOpen)
-                            }
-                        />
-                    </div>
+                    <button
+                        className="add-product-btn"
+                        type="button"
+                        onClick={() =>
+                            setIsAddProductModalOpen(!isAddProductModalOpen)
+                        }
+                    >
+                        <AddIcon className="add-product-icon" />
+                    </button>
                     {isAddProductModalOpen && (
                         <AddProductModal
                             isOpen={isAddProductModalOpen}
@@ -196,20 +197,17 @@ const UpdateProducts = () => {
                         </thead>
 
                         <tbody>
-                            {products.map((product, index) => (
+                            {products.map((product) => (
                                 <tr
                                     key={product.id}
                                     className="product-row"
-                                    style={
-                                        { '--row-index': index } as React.CSSProperties
-                                    }
                                 >
                                     <td>{product.name}</td>
                                     <td>Waiting</td>
                                     <td>${(product.priceCents / 100).toFixed(2)}</td>
                                     <td>
                                         <button className="edit-btn-row">
-                                            <EditIcon fontSize="small" />
+                                            <EditIcon className="row-action-icon" />
                                         </button>
                                         <button
                                             className="delete-btn-row"
@@ -218,7 +216,7 @@ const UpdateProducts = () => {
                                                 setSlotToDelete(product.id);
                                             }}
                                         >
-                                            <DeleteIcon fontSize="small" />
+                                            <DeleteIcon className="row-action-icon" />
                                         </button>
                                     </td>
                                 </tr>
@@ -236,7 +234,7 @@ const UpdateProducts = () => {
                     />
                 )}
             </div>
-        </>
+        </div>
     );
 };
 

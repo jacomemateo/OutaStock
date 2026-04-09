@@ -85,7 +85,7 @@ const Settings = () => {
                 </nav>
             </aside>
 
-            <main>
+            <main className="settings-main">
                 <header className="settings-heading-section">
                     <h1 className="settings-heading">{activePage.label}</h1>
                 </header>

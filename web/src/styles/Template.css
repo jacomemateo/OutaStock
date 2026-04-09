@@ -1,225 +1,188 @@
+@import './Global.css';
+
 .template-container {
-    width: 100vw;
-    height: 100vh;
     display: flex;
-    background-color: var(--darker-black);
+    inline-size: var(--size-full);
+    block-size: var(--size-screen-height);
+    background: var(--page-bg);
+    overflow: hidden;
 }
 
 .sidebar {
-    width: 250px;
-    background-color: var(--darker-black);
-    padding: 2rem 0;
-    border: var(--border-color);
-    /* box-shadow: var(--gold-shadow); */
-
-    display: flex; /* ADD THIS */
-    flex-direction: column; /* ADD THIS */
-    height: 100vh; /* ADD THIS (important) */
+    display: flex;
+    flex: 0 0 var(--layout-sidebar-width);
+    flex-direction: column;
+    min-block-size: var(--size-zero);
+    background: var(--sidebar-bg);
+    border-inline-end: var(--border-width-thin) solid var(--divider-color);
+    box-shadow: var(--shadow-card);
+    animation: ds-slide-in-left var(--motion-duration-slow) var(--motion-easing-entrance);
 }
 
 .sidebar-header {
-    padding: 0rem 2rem;
-    border-bottom: 1px solid #333;
     display: flex;
     align-items: center;
     justify-content: center;
+    padding-inline: var(--space-inline-2xl);
+    padding-block-start: var(--space-stack-2xl);
+    padding-block-end: var(--space-stack-xl);
+    border-block-end: var(--border-width-thin) solid var(--divider-color);
 }
 
 .sidebar-header img {
-    width: 220px;
-    height: auto;
-    position: relative;
-    top: -10px;
+    inline-size: var(--layout-sidebar-logo-width);
+    block-size: auto;
+    transform: translateY(calc(var(--motion-distance-sm) * -1));
+}
+
+.sidebar-nav {
+    flex: 1 1 auto;
+    overflow-y: auto;
+    padding-block: var(--space-stack-xl);
 }
 
 .sidebar-nav ul {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-stack-2xs);
     list-style: none;
-    padding: 0;
-    margin: 0;
 }
 
-/* Side bar fade in animation */
 .sidebar-nav li {
-    animation: navItemFadeUp 1s ease-out forwards;
-    animation-delay: calc(var(--item-index, 0) * 1s);
-    opacity: 0;
+    animation: ds-fade-in var(--motion-duration-slow) var(--motion-easing-entrance);
 }
 
-@keyframes navItemFadeUp {
-    from {
-        opacity: 0;
-        transform: translateY(-30px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-/* header fade-in animation */
-.template-header {
-    animation: headerFadeIn 1s ease-out forwards;
-    opacity: 0;
-}
-
-@keyframes headerFadeIn {
-    from {
-        opacity: 0;
-        transform: translateX(-30px);
-    }
-    to {
-        opacity: 1;
-        transform: translateX(0);
-    }
-}
-
-/* REPLACEMENT: We target the button and reset its styles 
-*/
 .nav-link-btn {
-    width: 100%; /* Make button fill the sidebar width */
-    background: none;
-    border: none;
-    border-left: 3px solid transparent;
     display: flex;
     align-items: center;
-    gap: 0.75rem;
-    padding: 1rem 1.5rem;
-    color: #b0b0b0;
+    gap: var(--space-inline-md);
+    inline-size: var(--size-full);
+    padding: var(--space-stack-md) var(--space-inline-xl);
+    border: none;
+    border-inline-start: var(--border-width-strong) solid transparent;
+    background: transparent;
+    color: var(--text-secondary);
     cursor: pointer;
+    font-size: var(--text-size-body);
+    font-weight: var(--font-weight-semibold);
     text-align: left;
-    transition: all 0.3s ease;
-    font-size: 1rem; /* Adjust to match your previous font size */
+    transition: var(--transition-base);
 }
 
 .nav-link-btn svg {
-    width: 24px;
-    height: 24px;
     flex-shrink: 0;
+    inline-size: var(--icon-size-lg);
+    block-size: var(--icon-size-lg);
+    font-size: var(--icon-size-lg);
 }
 
-/* Hover effects */
-.nav-link-btn:hover {
-    background-color: var(--lighter-black);
-    color: white;
-    border-left-color: var(--umbc-gold);
-}
-
-/* NEW: This handles the "Stay highlighted" logic 
-   using the active class we put on the <li>
-*/
+.nav-link-btn:hover,
 .sidebar-nav li.active .nav-link-btn {
-    background-color: var(--lighter-black);
-    color: white;
-    border-left-color: var(--umbc-gold);
+    background: var(--surface-selected);
+    border-inline-start-color: var(--accent-primary);
+    color: var(--text-primary);
 }
 
 .main-content {
-    flex: 1;
     display: flex;
+    flex: 1 1 auto;
     flex-direction: column;
-    margin: 0;
-    padding: 0;
+    min-inline-size: var(--size-zero);
+    min-block-size: var(--size-zero);
+    background: var(--app-shell-bg);
 }
 
 .template-header {
-    padding: 1.95rem;
-    border-bottom: 1px solid #333;
-    background-color: var(--umbc-gold);
+    background: var(--header-bg);
+    box-shadow: var(--shadow-card);
+    padding: var(--space-stack-2xl);
+    animation: ds-fade-in var(--motion-duration-slow) var(--motion-easing-entrance);
 }
 
 .template-header-content {
-    align-items: center;
     display: flex;
-    gap: 1rem;
+    align-items: center;
     justify-content: space-between;
+    gap: var(--space-inline-lg);
 }
 
 .template-header h1 {
-    color: white;
-    margin: 0;
-    font-size: 2rem;
+    color: var(--text-on-accent);
+    font-family: var(--font-family-heading);
+    font-size: var(--text-size-display);
+    font-weight: var(--font-weight-bold);
+    letter-spacing: var(--tracking-tight);
 }
 
 .template-subtitle {
-    color: rgba(255, 255, 255, 0.88);
-    margin: 0.4rem 0 0;
+    margin-block-start: var(--space-stack-xs);
+    color: var(--text-on-accent);
+    font-size: var(--text-size-body-sm);
+    opacity: var(--opacity-soft);
 }
 
 .content {
-    flex: 1;
-    padding: 2rem;
-    color: #b0b0b0;
+    flex: 1 1 auto;
+    min-block-size: var(--size-zero);
+    overflow: auto;
+    padding: var(--space-stack-2xl);
+    color: var(--text-secondary);
 }
 
-/* Sidebar Account Info */
 .template-user-section {
-    margin-top: auto; /* push to bottom of sidebar */
-    padding: 1rem 1.5rem;
     display: flex;
-    justify-content: flex-start;
     align-items: center;
-    border-top: 1px solid var(--lighter-black);
-    /* margin-top: auto; */
-}
-
-.template-user-chip {
-    background-color: var(--darker-black); /* match sidebar bg */
-    display: flex;
-
-    flex-direction: column;
-    gap: 0.4rem;
-    padding: 0.75rem 1rem;
-    width: 100%;
-    transition: all 0.3s ease;
-    cursor: default;
-    min-width: 0;
+    gap: var(--space-inline-md);
+    margin-block-start: auto;
+    padding: var(--space-stack-md) var(--space-inline-xl) var(--space-stack-2xl);
+    border-block-start: var(--border-width-thin) solid var(--divider-color);
+    transition: var(--transition-base);
 }
 
 .template-user-section:hover {
-    background-color: var(--lighter-black);
-    color: white;
-    border-left-color: var(--umbc-gold);
+    background: var(--surface-hover);
+}
+
+.template-user-chip {
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    gap: var(--space-stack-2xs);
+    min-inline-size: var(--size-zero);
+}
+
+.template-user-chip.clickable {
+    cursor: pointer;
 }
 
 .template-user-name,
 .template-user-email {
-    white-space: nowrap; /* prevent wrapping */
-    overflow: hidden; /* hide overflow */
-    text-overflow: ellipsis; /* show ... when too long */
-    color: #b0b0b0; /* same as nav text */
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .template-user-name {
-    font-size: 1rem; /* Adjust to match your previous font size */
-
-    font-weight: 700;
-    color: #b0b0b0; /* same text color as nav */
+    color: var(--text-primary);
+    font-size: var(--text-size-body);
+    font-weight: var(--font-weight-semibold);
 }
 
 .template-user-email {
-    font-size: 0.85rem;
-    opacity: 0.85;
-    color: #b0b0b0;
-}
-
-/* Optional: add icon like nav buttons */
-.template-user-chip svg {
-    width: 24px;
-    height: 24px;
-    margin-right: 0.5rem;
-    flex-shrink: 0;
+    color: var(--text-muted);
+    font-size: var(--text-size-label);
 }
 
 .user-icon {
-    width: 2rem;
-    height: 2rem;
-    border-radius: 1000000px;
-    background: linear-gradient(135deg, var(--umbc-gold) 0%, #d4a574 100%);
-    display: flex;
+    display: inline-flex;
     align-items: center;
     justify-content: center;
-    font-size: 1rem;
-    font-weight: 500;
-    color: white;
+    inline-size: var(--size-avatar);
+    block-size: var(--size-avatar);
+    border-radius: var(--radius-pill);
+    background: var(--avatar-bg);
+    color: var(--text-on-accent);
+    font-size: var(--text-size-body);
+    font-weight: var(--font-weight-bold);
     flex-shrink: 0;
 }

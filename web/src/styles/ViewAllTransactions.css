@@ -1,33 +1,35 @@
+@import './Global.css';
+
 .view-all-transactions-container {
-    background: var(--container-bg);
-    border-radius: 12px;
-    padding: 2rem;
-    /* box-shadow: var(--gold-shadow); */
-    border: var(--border-color);
-    animation: boxFadeIn 0.6s ease-out;
     display: flex;
-    height: 80vh;
-    max-width: 1300px;
-    margin: auto;
     flex-direction: column;
+    gap: var(--space-stack-xl);
+    max-inline-size: var(--layout-content-max-width);
+    min-block-size: var(--layout-panel-height);
+    margin-inline: auto;
+    background: var(--card-bg);
+    border: var(--border-width-thin) solid var(--border-color);
+    border-radius: var(--radius-panel);
+    box-shadow: var(--shadow-card);
+    padding: var(--space-stack-2xl);
+    animation: ds-rise-in var(--motion-duration-slow) var(--motion-easing-entrance);
 }
 
 .view-all-transactions-header {
-    margin-bottom: 1.5rem;
-    border-bottom: 1px solid var(--lighter-black);
-    padding-bottom: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-stack-xs);
+    padding-block-end: var(--space-stack-md);
+    border-block-end: var(--border-width-thin) solid var(--divider-color);
 }
 
 .view-all-transactions-header h2 {
-    font-size: 1.5rem;
-    font-weight: 700;
-    color: var(--white);
-    margin: 0 0 0.25rem 0;
+    color: var(--text-primary);
+    font-size: var(--text-size-title-md);
+    font-weight: var(--font-weight-bold);
 }
 
 .view-all-transactions-subtitle {
-    font-size: 0.9rem;
-    color: #888;
-    margin: 0;
-    font-weight: 500;
+    color: var(--text-muted);
+    font-size: var(--text-size-body-sm);
 }

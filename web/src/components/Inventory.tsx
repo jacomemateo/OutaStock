@@ -238,7 +238,7 @@ const Inventory = () => {
                     </thead>
 
                     <tbody>
-                        {products.map((product, index) => {
+                        {products.map((product) => {
                             /*
                             If no productId exists the slot is empty
                             */
@@ -248,9 +248,6 @@ const Inventory = () => {
                                 <tr
                                     key={product.slotId}
                                     className="product-row"
-                                    style={
-                                        { '--row-index': index } as React.CSSProperties
-                                    }
                                 >
                                     <td>{product.slotLabel}</td>
 
@@ -269,7 +266,7 @@ const Inventory = () => {
                                                         setEditingSlotID(product.slotId)
                                                     }
                                                 >
-                                                    <EditIcon sx={{ fontSize: 20 }} />
+                                                    <EditIcon className="row-action-icon" />
                                                 </button>
 
                                                 <button
@@ -279,7 +276,7 @@ const Inventory = () => {
                                                         setConfirmationOpen(true);
                                                     }}
                                                 >
-                                                    <DeleteIcon sx={{ fontSize: 20 }} />
+                                                    <DeleteIcon className="row-action-icon" />
                                                 </button>
                                             </div>
                                         </td>

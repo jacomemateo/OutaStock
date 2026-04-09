@@ -1,45 +1,59 @@
+@import './Global.css';
+
 .dashboard-container {
-    padding: 2rem;
-    min-height: 90vh;
+    display: flex;
+    flex-direction: column;
+    inline-size: var(--size-full);
+    block-size: var(--size-full);
+    min-block-size: var(--size-zero);
+    overflow: hidden;
 }
 
 .dashboard-grid {
     display: grid;
-    grid-template-columns: 1.25fr 2fr;
-    gap: 4rem;
-    margin: 0 auto;
+    flex: 1 1 auto;
+    grid-template-columns: repeat(
+        auto-fit,
+        minmax(var(--layout-dashboard-column-min), 1fr)
+    );
+    min-block-size: var(--size-zero);
+    gap: var(--space-inline-2xl);
+    align-items: stretch;
+    max-inline-size: var(--layout-content-max-width);
+    margin-inline: auto;
+    inline-size: var(--size-full);
+}
+
+.dashboard-grid > * {
+    min-block-size: var(--size-zero);
 }
 
 .dashboard-box {
-    background: var(--white);
-    border-radius: 16px;
-    padding: 2rem;
-    /* box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1); */
-    box-shadow: var(--gold-shadow);
-
-    border: 1px solid var(--white);
-    animation: boxFadeIn 0.6s ease-out;
     display: flex;
     flex-direction: column;
-    height: fit-content;
+    gap: var(--space-stack-xl);
+    background: var(--card-bg);
+    border: var(--border-width-thin) solid var(--border-color);
+    border-radius: var(--radius-panel);
+    box-shadow: var(--shadow-card);
+    padding: var(--space-stack-2xl);
 }
 
 .box-header {
-    margin-bottom: 1.5rem;
-    border-bottom: 2px solid var(--white);
-    padding-bottom: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-stack-xs);
+    padding-block-end: var(--space-stack-md);
+    border-block-end: var(--border-width-thin) solid var(--divider-color);
 }
 
 .box-header h2 {
-    font-size: 1.6rem;
-    font-weight: 700;
-    color: var(--darker-black);
-    margin: 0 0 0.25rem 0;
+    color: var(--text-primary);
+    font-size: var(--text-size-title-md);
+    font-weight: var(--font-weight-bold);
 }
 
 .box-subtitle {
-    font-size: 0.9rem;
-    color: #888;
-    margin: 0;
-    font-weight: 500;
+    color: var(--text-muted);
+    font-size: var(--text-size-body-sm);
 }

@@ -67,11 +67,10 @@ const RecentTransactions = () => {
             </div>
 
             <div className={`transaction-list ${isLoading ? 'loading-opacity' : ''}`}>
-                {transactions.map((transaction, index) => (
+                {transactions.map((transaction) => (
                     <div
                         key={transaction.id}
                         className="transaction-card"
-                        style={{ '--card-index': index } as React.CSSProperties}
                     >
                         <div className="transaction-content">
                             <div className="transaction-left">

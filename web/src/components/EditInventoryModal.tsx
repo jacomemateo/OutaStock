@@ -103,17 +103,17 @@ const EditInventoryModal = ({
     if (!isOpen) return null;
 
     return (
-        <div className="modal-overlay" onClick={onClose}>
-            <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-                <div className="modal-header">
+        <div className="inventory-modal-overlay" onClick={onClose}>
+            <div className="inventory-modal-content" onClick={(e) => e.stopPropagation()}>
+                <div className="inventory-modal-header">
                     <h2>Editing Slot {slotLabel}</h2>
-                    <button className="modal-close" onClick={onClose}>
+                    <button className="inventory-modal-close" onClick={onClose}>
                         ✕
                     </button>
                 </div>
 
-                <form onSubmit={handleSubmit}>
-                    <FormControl fullWidth className="product-select" sx={{ mb: 2 }}>
+                <form className="inventory-modal-form" onSubmit={handleSubmit}>
+                    <FormControl fullWidth className="inventory-modal-select-field">
                         <label id="product-select-label">Product</label>
 
                         {/*
@@ -125,7 +125,7 @@ const EditInventoryModal = ({
                         This ensures the backend receives the correct product ID.
                         */}
                         <select
-                            className="product-select"
+                            className="inventory-modal-select"
                             value={formData.productId}
                             onChange={(e) =>
                                 setFormData({
@@ -148,6 +148,7 @@ const EditInventoryModal = ({
                     Quantity input
                     */}
                     <input
+                        className="inventory-modal-input"
                         type="number"
                         placeholder="Quantity"
                         value={formData.quantity}
@@ -159,7 +160,9 @@ const EditInventoryModal = ({
                         }
                     />
 
-                    <button type="submit">Save Changes</button>
+                    <button className="inventory-modal-submit" type="submit">
+                        Save Changes
+                    </button>
                 </form>
             </div>
         </div>

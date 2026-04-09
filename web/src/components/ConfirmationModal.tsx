@@ -27,7 +27,7 @@ const ConfirmationModal = ({
                 <div className="confirmation-modal-header">
                     <div className="warning-icon-container">
                         <WarningIcon
-                            sx={{ fontSize: 40, color: '#ffcc00', marginRight: '0.5rem' }}
+                            className="warning-icon"
                         />
                         <h2>{title}</h2>
                     </div>

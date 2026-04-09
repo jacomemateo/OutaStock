@@ -15,7 +15,6 @@ import Settings from '@components/Settings';
 import DashBoard from '@components/Dashboard';
 import ViewAllTransactions from '@components/ViewAllTransactions';
 
-import '@styles/Template.css';
 import { useNavigate, useLocation, Routes, Route } from 'react-router-dom';
 import { useAuth } from '@contexts/AuthContext';
 
