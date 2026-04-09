@@ -13,6 +13,8 @@ import { useAlert } from '@contexts/SnackBarAlertContext';
 import { fetchInventory, getInventoryCount, createProduct } from '@/services/api';
 import ConfirmationModal from '@components/ConfirmationModal';
 import { deleteProduct } from '@/services/api';
+import EditProductModal from './EditProductModal';
+import {updateProductPrice} from '@/services/api';
 interface Product {
     id: string;
     name: string;
@@ -34,9 +36,11 @@ const UpdateProducts = () => {
     const { showAlert } = useAlert();
     const [products, setProducts] = useState<Product[]>([]);
     const [isAddProductModalOpen, setIsAddProductModalOpen] = useState(false);
+    const [isEditProductModalOpen, setIsEditProductModalOpen] = useState(false);
     const [lowStockCount, setLowStockCount] = useState(0);
     const [confirmationOpen, setConfirmationOpen] = useState<boolean>(false);
     const [slotToDelete, setSlotToDelete] = useState<string | null>(null);
+    const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
 
     // Not working
     // const getLowStockCount = async () => {
@@ -113,6 +117,17 @@ const UpdateProducts = () => {
         setSlotToDelete(null);
     };
 
+     const handleSaveEditedProduct = async (productId: string, priceCents: number) => {
+        try {
+            await updateProductPrice(productId, priceCents);
+            await loadProducts(); // Reload fresh data from backend
+            showAlert('Product price updated successfully!', 'success');
+        } catch (error) {
+            console.error('Error updating product:', error);
+            showAlert('Failed to update product.', 'error');
+        }
+    };
+
     useEffect(() => {
         // getLowStockCount();
         loadProducts();
@@ -176,11 +191,21 @@ const UpdateProducts = () => {
                             }
                         />
                     </div>
+
                     {isAddProductModalOpen && (
                         <AddProductModal
                             isOpen={isAddProductModalOpen}
                             onClose={() => setIsAddProductModalOpen(false)}
                             onSave={handleSaveNewProduct}
+                        />
+                    )}
+
+                    {isEditProductModalOpen && selectedProduct && (
+                        <EditProductModal
+                            isOpen={isEditProductModalOpen}
+                            onClose={() => setIsEditProductModalOpen(false)}
+                            onSave={handleSaveEditedProduct}
+                            product={selectedProduct}
                         />
                     )}
                 </div>
@@ -209,7 +234,7 @@ const UpdateProducts = () => {
                                     <td>Waiting</td>
                                     <td>${(product.priceCents / 100).toFixed(2)}</td>
                                     <td>
-                                        <button className="edit-btn-row">
+                                        <button className="edit-btn-row" onClick={() => { setIsEditProductModalOpen(true); setSelectedProduct(product); }}>
                                             <EditIcon fontSize="small" />
                                         </button>
                                         <button

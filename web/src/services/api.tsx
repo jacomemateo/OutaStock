@@ -159,3 +159,18 @@ export const deleteProduct = async (productID: string) => {
         throw error;
     }
 };
+
+export const updateProductPrice = async (productID: string, priceCents: number) => {
+    try {
+        const response = await authFetch(`${API_BASE_URL}/products/${productID}`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ priceCents }),
+        });
+        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+        return await response.json();
+    } catch (error) {
+        console.error(`Error updating product price:`, error);
+        throw error;
+    }
+};
