@@ -172,13 +172,12 @@ const Template = () => {
                         </ul>
                     ) : null}
                 </nav>
-                <div className="template-user-section">
+                <div className="template-user-section clickable" onClick={() => navigate('/dashboard/settings/profile')}>
                     {isSidebarExpanded && (
                         <>
                             <div className="user-icon">{user?.name?.charAt(0)}</div>
                             <div
-                                className="template-user-chip clickable"
-                                onClick={() => navigate('/dashboard/settings/profile')}
+                                className="template-user-chip"
                             >
                                 <span className="template-user-name">
                                     {user?.name ?? 'Authenticated User'}
@@ -193,8 +192,7 @@ const Template = () => {
                     )}
                     {!isSidebarExpanded && (
                         <div
-                            className="user-icon clickable"
-                            onClick={() => navigate('/dashboard/settings/profile')}
+                            className="user-icon"
                             data-tooltip-id="user-tooltip"
                             data-tooltip-content={user?.name ?? 'Profile'}
                             data-tooltip-place="right"

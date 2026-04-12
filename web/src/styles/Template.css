@@ -186,7 +186,7 @@
     align-items: center;
     border-top: var(--border-color);
     border-left: 3px solid transparent;
-    /* margin-top: auto; */
+    cursor: pointer;
 }
 
 .template-user-chip {
