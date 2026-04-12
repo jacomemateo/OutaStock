@@ -2,7 +2,7 @@
     width: 100vw;
     height: 100vh;
     display: flex;
-    background-color: var(--darker-black);
+    background-color: var(--background-color);
 }
 
 .sidebar {

@@ -11,7 +11,6 @@
     background: var(--container-bg);
     border: var(--border-color);
     border-radius: var(--container-radius);
-    /* box-shadow: var(--gold-shadow); */
     padding: 1.5rem;
     margin-top: 1rem;
 }
@@ -74,6 +73,5 @@
 }
 
 .profile-button:hover {
-    box-shadow: var(--gold-shadow);
     transform: translateY(-1px);
 }

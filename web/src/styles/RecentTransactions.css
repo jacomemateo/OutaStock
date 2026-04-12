@@ -155,7 +155,6 @@
     background: var(--umbc-gold);
     color: var(--text-on-accent);
     border-color: var(--umbc-gold);
-    box-shadow: var(--gold-shadow);
 }
 
 .pagination-btn:disabled {
