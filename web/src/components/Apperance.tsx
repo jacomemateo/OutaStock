@@ -10,9 +10,7 @@ const Apperance = () => {
         <div className="appearance-container">
             <section className="appearance-card">
                 <h2>Appearance</h2>
-                <p>
-                    Customize how the dashboard looks.
-                </p>
+                <p>Customize how the dashboard looks.</p>
             </section>
             <section className="appearance-panel">
                 <div className="appearance-panel-copy">

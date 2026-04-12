@@ -22,7 +22,7 @@ const EditProductModal = ({
     product,
 }: EditProductModalProps) => {
     const [price, setPrice] = useState(
-        product ? (product.priceCents / 100).toFixed(2) : ''
+        product ? (product.priceCents / 100).toFixed(2) : '',
     );
 
     const handleSubmit = (e: React.FormEvent) => {
@@ -57,14 +57,14 @@ const EditProductModal = ({
                     </FormControl> */}
                     <label>
                         New Price:
-                    <input            
-                        type="number"
-                        placeholder="New Price"
-                        value={price}
-                        onChange={(e) => setPrice(e.target.value)}
-                        step="0.01"
-                        min="0"
-                    />
+                        <input
+                            type="number"
+                            placeholder="New Price"
+                            value={price}
+                            onChange={(e) => setPrice(e.target.value)}
+                            step="0.01"
+                            min="0"
+                        />
                     </label>
                     <button type="submit">Save Changes</button>
                 </form>

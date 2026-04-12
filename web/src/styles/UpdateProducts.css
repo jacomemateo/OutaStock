@@ -17,6 +17,7 @@
     max-width: 1300px;
     margin: auto;
     flex-direction: column;
+    box-shadow: var(--shadow-soft);
 }
 
 .update-products-header {
@@ -56,6 +57,8 @@
 .card {
     background: var(--container-bg);
     border-radius: var(--container-radius);
+    box-shadow: var(--shadow-soft);
+
     padding: 1rem;
     border: var(--border-color);
     animation: boxFadeIn 0.6s ease-out;

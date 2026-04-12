@@ -1,5 +1,6 @@
 import '@styles/Template.css';
-import logo from '@assets/logo-white.png';
+import logoDark from '@assets/logo-white.png';
+import logoLight from '@assets/logo-black.png';
 import smallLogo from '@assets/tab-logo.png';
 import SystemUpdateIcon from '@mui/icons-material/SystemUpdate';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
@@ -99,10 +100,28 @@ const Template = () => {
                         onClick={() => setIsSidebarExpanded(!isSidebarExpanded)}
                         aria-label="Toggle sidebar"
                     >
-                        <img
-                            src={isSidebarExpanded ? logo : smallLogo}
-                            alt="Company Logo"
-                        />
+                        <div className="logo-wrapper">
+                            {isSidebarExpanded ? (
+                                <>
+                                    <img
+                                        className="logo logo-dark"
+                                        src={logoDark}
+                                        alt="Company Logo"
+                                    />
+                                    <img
+                                        className="logo logo-light"
+                                        src={logoLight}
+                                        alt="Company Logo"
+                                    />
+                                </>
+                            ) : (
+                                <img
+                                    className="logo logo-small"
+                                    src={smallLogo}
+                                    alt="Company Logo"
+                                />
+                            )}
+                        </div>
                     </button>
                 </div>
                 <nav className="sidebar-nav">

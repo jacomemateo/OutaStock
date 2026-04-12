@@ -1,5 +1,6 @@
 .settings-container {
     background: var(--container-bg);
+    box-shadow: var(--shadow-soft);
 
     border-radius: var(--container-radius);
     border: var(--border-color);

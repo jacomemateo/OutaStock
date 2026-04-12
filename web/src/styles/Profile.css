@@ -8,6 +8,7 @@
 }
 
 .profile-card {
+    box-shadow: var(--shadow-soft);
     background: var(--container-bg);
     border: var(--border-color);
     border-radius: var(--container-radius);
@@ -32,6 +33,8 @@
 }
 
 .profile-field {
+    box-shadow: var(--shadow-soft);
+
     background: var(--container-bg);
     border: var(--border-color);
     border-radius: var(--container-radius);

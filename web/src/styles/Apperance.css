@@ -13,6 +13,7 @@
     border: var(--border-color);
     border-radius: var(--container-radius);
     padding: 1.5rem;
+    box-shadow: var(--shadow-soft);
 }
 
 .appearance-card {

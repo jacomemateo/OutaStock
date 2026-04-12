@@ -46,7 +46,7 @@ const AlertProvider = ({ children }: AlertProviderProps) => {
                 autoHideDuration={4000}
                 onClose={handleClose}
                 anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
-                >
+            >
                 <MuiAlert
                     elevation={6}
                     variant="filled"
