@@ -1,5 +1,5 @@
 import '@styles/Template.css';
-import logo from '@assets/transparent-gold-logo.png';
+import logo from '@assets/logo-white.png';
 import smallLogo from '@assets/tab-logo.png';
 import SystemUpdateIcon from '@mui/icons-material/SystemUpdate';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';

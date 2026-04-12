@@ -1,6 +1,6 @@
 import { useLocation, useNavigate } from 'react-router-dom';
 import '@styles/LoadingScreen.css';
-import logo from '@assets/transparent-default-logo.png';
+import logo from '@assets/logo-black.png';
 import { useAuth } from '@contexts/AuthContext';
 
 interface LoadingScreenProps {
