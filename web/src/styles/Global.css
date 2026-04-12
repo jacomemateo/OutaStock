@@ -97,7 +97,7 @@ select {
     --umbc-gold: #f9ad1e;
     --black-grey: #444; /* for text and subtle borders */
     --even-lighter-black: #999; /* secondary text */
-    --lighter-black: rgba(0, 0, 0, 0.03); /* subtle dividers */
+    --lighter-black: rgba(19, 11, 11, 0.082); /* subtle dividers */
     --darker-black: #ebebebb8; /* for hover overlay / subtle contrast */
     --black: #000000;
     --white: #ffffff;
