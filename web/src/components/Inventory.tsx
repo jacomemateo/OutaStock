@@ -1,5 +1,4 @@
 import '@styles/Inventory.css';
-import '@styles/Buttons.css';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { useState, useEffect } from 'react';
@@ -228,7 +227,7 @@ const Inventory = () => {
             </div>
 
             <div className="products-list">
-                <table className="products-table">
+                <table className="table">
                     <thead>
                         <tr>
                             <th>Location</th>

@@ -224,7 +224,7 @@ const UpdateProducts = () => {
                     </div>
 
                     <div className="products-list">
-                        <table className="products-table">
+                        <table className="table">
                             <thead>
                                 <tr>
                                     <th>Product</th>

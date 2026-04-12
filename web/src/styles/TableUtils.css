@@ -1,0 +1,76 @@
+.table {
+    width: 100%;
+    border-collapse: collapse;
+    color: var(--text-primary);
+}
+
+.table thead {
+    border-bottom: 1px solid var(--lighter-black);
+}
+
+.table th {
+    padding: 1rem;
+    text-align: left;
+    font-weight: var(--weight-semibold);
+    color: var(--text-accent);
+}
+
+.table td {
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid var(--lighter-black);
+}
+
+.table tbody tr {
+    transition: all 0.2s ease;
+}
+
+.table tbody tr:hover td {
+    background: var(--darker-black);
+}
+
+.table tbody tr:hover {
+    transform: translateX(4px);
+}
+
+.table tbody tr td {
+    transition: background 0.2s ease;
+}
+
+.table thead {
+    position: sticky; /* make header sticky */
+    top: 0; /* stick to the top of the scroll container */
+    background: var(--container-bg); /* keep background visible */
+    z-index: 10; /* ensure it’s above table rows */
+}
+.table {
+    table-layout: fixed;
+}
+
+.products-list::-webkit-scrollbar-track {
+    background: var(--darker-black);
+}
+
+.products-list::-webkit-scrollbar-thumb {
+    background: var(--umbc-gold);
+    border-radius: 4px;
+}
+
+.products-list::-webkit-scrollbar-thumb:hover {
+    background: var(--light-gold);
+}
+
+.products-list::-webkit-scrollbar {
+    width: 8px;
+}
+
+.products-list {
+    max-height: 60vh;
+    overflow-y: auto;
+    border: 1px solid var(--lighter-black);
+    border-radius: 8px;
+    scrollbar-color: var(--umbc-gold) var(--darker-black);
+
+    opacity: 0;
+    animation: tableFadeIn 0.5s ease-out forwards;
+    animation-delay: 0.15s;
+}

@@ -88,34 +88,30 @@
     gap: 2rem;
 }
 
-.update-products-container .products-table {
-    table-layout: fixed;
-}
-
-.update-products-container .products-table thead th {
+.update-products-container thead th {
     position: sticky; /* make header sticky */
     top: 0; /* stick to top of scroll container */
     z-index: 10; /* stay above table rows */
 }
 
-.update-products-container .products-table th:nth-child(1),
-.update-products-container .products-table td:nth-child(1) {
+.update-products-container th:nth-child(1),
+.update-products-container td:nth-child(1) {
     width: 25%;
 }
 
-.update-products-container .products-table th:nth-child(2),
-.update-products-container .products-table td:nth-child(2) {
+.update-products-container th:nth-child(2),
+.update-products-container td:nth-child(2) {
     width: 25%;
 }
 
-.update-products-container .products-table th:nth-child(3),
-.update-products-container .products-table td:nth-child(3) {
+.update-products-container th:nth-child(3),
+.update-products-container td:nth-child(3) {
     width: 25%;
 }
 
 
-.update-products-container .products-table th:last-child,
-.update-products-container .products-table td:last-child {
+.update-products-container th:last-child,
+.update-products-container td:last-child {
     padding-right: 5rem;
 }
 

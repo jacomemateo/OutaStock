@@ -57,27 +57,13 @@
     }
 }
 
-.products-list::-webkit-scrollbar {
-    width: 8px;
-}
 
 .no-product {
     color: var(--text-error);
     font-weight: var(--weight-bold);
 }
 
-.products-list::-webkit-scrollbar-track {
-    background: var(--darker-black);
-}
 
-.products-list::-webkit-scrollbar-thumb {
-    background: var(--umbc-gold);
-    border-radius: 4px;
-}
-
-.products-list::-webkit-scrollbar-thumb:hover {
-    background: var(--light-gold);
-}
 
 .empty-state {
     text-align: center;
@@ -85,43 +71,6 @@
     padding: 2rem;
 }
 
-.products-table {
-    width: 100%;
-    border-collapse: collapse;
-    color: var(--text-primary);
-}
-
-.products-table thead {
-    border-bottom: 1px solid var(--lighter-black);
-}
-
-.products-table th {
-    padding: 1rem;
-    text-align: left;
-    font-weight: var(--weight-semibold);
-    color: var(--text-accent);
-}
-
-.products-table td {
-    padding: 0.75rem 1rem;
-    border-bottom: 1px solid var(--lighter-black);
-}
-
-.products-table tbody tr {
-    transition: all 0.2s ease;
-}
-
-.products-table tbody tr:hover td {
-    background: var(--darker-black);
-}
-
-.products-table tbody tr:hover {
-    transform: translateX(4px);
-}
-
-.products-table tbody tr td {
-    transition: background 0.2s ease;
-}
 
 .edit-btn-cell,
 .delete-btn-cell {
@@ -157,11 +106,4 @@
 
 .inventory-container {
     animation: boxFadeIn 0.2s ease-out;
-}
-
-.products-table thead {
-    position: sticky; /* make header sticky */
-    top: 0; /* stick to the top of the scroll container */
-    background: var(--container-bg); /* keep background visible */
-    z-index: 10; /* ensure it’s above table rows */
 }
