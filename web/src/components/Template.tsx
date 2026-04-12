@@ -172,13 +172,14 @@ const Template = () => {
                         </ul>
                     ) : null}
                 </nav>
-                <div className="template-user-section clickable" onClick={() => navigate('/dashboard/settings/profile')}>
+                <div
+                    className="template-user-section clickable"
+                    onClick={() => navigate('/dashboard/settings/profile')}
+                >
                     {isSidebarExpanded && (
                         <>
                             <div className="user-icon">{user?.name?.charAt(0)}</div>
-                            <div
-                                className="template-user-chip"
-                            >
+                            <div className="template-user-chip">
                                 <span className="template-user-name">
                                     {user?.name ?? 'Authenticated User'}
                                 </span>

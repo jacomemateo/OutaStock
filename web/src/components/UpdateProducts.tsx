@@ -41,6 +41,7 @@ const UpdateProducts = () => {
     const [confirmationOpen, setConfirmationOpen] = useState<boolean>(false);
     const [slotToDelete, setSlotToDelete] = useState<string | null>(null);
     const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+    const [isEditMode, setIsEditMode] = useState<boolean>(false);
 
     // Not working
     // const getLowStockCount = async () => {
@@ -186,12 +187,22 @@ const UpdateProducts = () => {
                                 View and modify all products
                             </p>
                         </div>
-                        <div className="add-product-btn">
-                            <AddIcon
+                        <div className="update-products-actions">
+                            <button
+                                className="edit-btn"
+                                onClick={() => setIsEditMode(!isEditMode)}
+                            >
+                                <EditIcon />
+                            </button>
+
+                            <button
+                                className="add-btn"
                                 onClick={() =>
                                     setIsAddProductModalOpen(!isAddProductModalOpen)
                                 }
-                            />
+                            >
+                                <AddIcon />
+                            </button>
                         </div>
 
                         {isAddProductModalOpen && (
@@ -219,7 +230,7 @@ const UpdateProducts = () => {
                                     <th>Product</th>
                                     <th>Cost</th>
                                     <th>Price</th>
-                                    <th>Actions</th>
+                                    {isEditMode && <th>Actions</th>}
                                 </tr>
                             </thead>
 
@@ -237,26 +248,33 @@ const UpdateProducts = () => {
                                         <td>{product.name}</td>
                                         <td>Waiting</td>
                                         <td>${(product.priceCents / 100).toFixed(2)}</td>
-                                        <td>
-                                            <button
-                                                className="edit-btn-row"
-                                                onClick={() => {
-                                                    setIsEditProductModalOpen(true);
-                                                    setSelectedProduct(product);
-                                                }}
-                                            >
-                                                <EditIcon fontSize="small" />
-                                            </button>
-                                            <button
-                                                className="delete-btn-row"
-                                                onClick={() => {
-                                                    setConfirmationOpen(true);
-                                                    setSlotToDelete(product.id);
-                                                }}
-                                            >
-                                                <DeleteIcon fontSize="small" />
-                                            </button>
-                                        </td>
+                                        {isEditMode && (
+                                            <td className="edit-btn-cell">
+                                                <div className="action-btns">
+                                                    <button
+                                                        className="edit-btn-row"
+                                                        onClick={() => {
+                                                            setIsEditProductModalOpen(
+                                                                true,
+                                                            );
+                                                            setSelectedProduct(product);
+                                                        }}
+                                                    >
+                                                        <EditIcon fontSize="small" />
+                                                    </button>
+
+                                                    <button
+                                                        className="delete-btn-row"
+                                                        onClick={() => {
+                                                            setConfirmationOpen(true);
+                                                            setSlotToDelete(product.id);
+                                                        }}
+                                                    >
+                                                        <DeleteIcon fontSize="small" />
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        )}
                                     </tr>
                                 ))}
                             </tbody>

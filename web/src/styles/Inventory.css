@@ -34,27 +34,6 @@
     margin-bottom: 32px;
 }
 
-.add-btn {
-    background-color: var(--umbc-gold);
-    color: var(--text-inverse);
-    border: none;
-    border-radius: 6px;
-    width: 36px;
-    height: 36px;
-    font-size: var(--text-4xl);
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: background-color 0.2s;
-    top: 20px;
-    left: 20px;
-}
-
-.add-btn:hover {
-    opacity: 0.7;
-}
-
 .products-list {
     max-height: 60vh;
     overflow-y: auto;

@@ -1,4 +1,5 @@
 import '@styles/Inventory.css';
+import '@styles/Buttons.css';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { useState, useEffect } from 'react';
@@ -221,7 +222,7 @@ const Inventory = () => {
                     </p>
                 </div>
 
-                <button className="add-btn" onClick={() => setIsEditMode(!isEditMode)}>
+                <button className="edit-btn" onClick={() => setIsEditMode(!isEditMode)}>
                     <EditIcon />
                 </button>
             </div>
