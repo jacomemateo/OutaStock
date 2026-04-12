@@ -20,7 +20,7 @@
 
 .sidebar-header {
     padding: 0 2rem;
-    border-bottom: 1px solid #333;
+    border-bottom: var(--border-color);
     display: flex;
     align-items: center;      /* vertical centering */
     justify-content: center;   /* horizontal centering */
@@ -185,7 +185,7 @@
     display: flex;
     justify-content: flex-start;
     align-items: center;
-    border-top: 1px solid var(--lighter-black);
+    border-top: var(--border-color);
     border-left: 3px solid transparent;
     /* margin-top: auto; */
 }
