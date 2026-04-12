@@ -34,18 +34,6 @@
     margin-bottom: 32px;
 }
 
-.products-list {
-    max-height: 60vh;
-    overflow-y: auto;
-    border: 1px solid var(--lighter-black);
-    border-radius: 8px;
-    scrollbar-color: var(--umbc-gold) var(--darker-black);
-
-    opacity: 0;
-    animation: tableFadeIn 0.5s ease-out forwards;
-    animation-delay: 0.15s;
-}
-
 @keyframes tableFadeIn {
     from {
         opacity: 0;
@@ -72,31 +60,7 @@
 }
 
 
-.edit-btn-cell,
-.delete-btn-cell {
-    width: 10px !important;
-}
-.edit-btn-row,
-.delete-btn-row {
-    background-color: transparent;
-    color: var(--text-secondary);
-    border: none;
-    cursor: pointer;
-    padding: 0;
-    transition: color 0.2s;
-    font-size: var(--text-small);
-}
 
-.edit-btn-row:hover {
-    color: var(--text-accent);
-}
-.delete-btn-row:hover {
-    color: var(--text-error);
-}
-
-.edit-btn-row {
-    margin-right: 8px;
-}
 
 .product-row {
     opacity: 0; /* start hidden */

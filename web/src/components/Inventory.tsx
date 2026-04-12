@@ -226,7 +226,7 @@ const Inventory = () => {
                 </button>
             </div>
 
-            <div className="products-list">
+            <div className="table-list">
                 <table className="table">
                     <thead>
                         <tr>
