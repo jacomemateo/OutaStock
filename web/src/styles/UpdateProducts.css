@@ -94,27 +94,6 @@
     z-index: 10; /* stay above table rows */
 }
 
-.update-products-container th:nth-child(1),
-.update-products-container td:nth-child(1) {
-    width: 25%;
-}
-
-.update-products-container th:nth-child(2),
-.update-products-container td:nth-child(2) {
-    width: 25%;
-}
-
-.update-products-container th:nth-child(3),
-.update-products-container td:nth-child(3) {
-    width: 25%;
-}
-
-
-.update-products-container th:last-child,
-.update-products-container td:last-child {
-    padding-right: 5rem;
-}
-
 .card-value {
     color: var(--text-primary);
 }

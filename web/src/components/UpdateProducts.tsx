@@ -227,10 +227,10 @@ const UpdateProducts = () => {
                         <table className="table">
                             <thead>
                                 <tr>
-                                    <th>Product</th>
-                                    <th>Cost</th>
-                                    <th>Price</th>
-                                    {isEditMode && <th>Actions</th>}
+                                    <th className="col-product">Product</th>
+                                    <th className="col-cost">Cost</th>
+                                    <th className="col-price">Price</th>
+                                    {isEditMode && <th className="col-actions">Actions</th>}
                                 </tr>
                             </thead>
 
