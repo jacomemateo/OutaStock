@@ -55,17 +55,17 @@
 }
 
 .modal-header h2 {
-    font-size: 1.5rem;
-    font-weight: 700;
-    color: var(--white);
+    font-size: var(--text-4xl);
+    font-weight: var(--weight-bold);
+    color: var(--text-primary);
     margin: 0;
 }
 
 .modal-close {
     background: none;
     border: none;
-    color: #888;
-    font-size: 1.5rem;
+    color: var(--text-secondary);
+    font-size: var(--text-4xl);
     cursor: pointer;
     padding: 0;
     width: 32px;
@@ -77,7 +77,7 @@
 }
 
 .modal-close:hover {
-    color: var(--white);
+    color: var(--text-primary);
 }
 
 .modal-content form {
@@ -91,8 +91,8 @@
     background-color: var(--lighter-black);
     border: 1px solid var(--darker-black);
     border-radius: 6px;
-    color: var(--white);
-    font-size: 0.95rem;
+    color: var(--text-primary);
+    font-size: var(--text-md);
     font-family: inherit;
     transition:
         border-color 0.2s,
@@ -108,8 +108,8 @@
     background-color: var(--darker-black);
     border: 2px solid var(--umbc-gold);
     border-radius: 6px;
-    color: var(--white);
-    font-size: 0.95rem;
+    color: var(--text-primary);
+    font-size: var(--text-md);
     font-family: inherit;
     cursor: pointer;
     transition: all 0.2s ease;
@@ -133,7 +133,7 @@
 
 .product-select option {
     background-color: var(--darker-black);
-    color: var(--white);
+    color: var(--text-primary);
     padding: 0.5rem;
 }
 
@@ -144,17 +144,17 @@
 }
 
 .modal-content input::placeholder {
-    color: #666;
+    color: var(--text-muted);
 }
 
 .modal-content button[type='submit'] {
     padding: 0.75rem;
     background-color: var(--umbc-gold);
-    color: var(--darker-black);
+    color: var(--text-on-accent);
     border: none;
     border-radius: 6px;
-    font-size: 1rem;
-    font-weight: 600;
+    font-size: var(--text-base);
+    font-weight: var(--weight-semibold);
     cursor: pointer;
     transition: opacity 0.2s;
     margin-top: 0.5rem;
@@ -170,7 +170,7 @@
 
 /* Product Select Dropdown Styling */
 .product-select .MuiOutlinedInput-root {
-    color: var(--white);
+    color: var(--text-primary);
     background-color: var(--lighter-black);
 }
 
@@ -189,11 +189,11 @@
 }
 
 .product-select .MuiInputLabel-root {
-    color: var(--umbc-gold) !important;
+    color: var(--text-accent) !important;
 }
 
 .product-select .MuiSvgIcon-root {
-    color: var(--umbc-gold);
+    color: var(--text-accent);
 }
 
 .product-select .MuiPaper-root {
@@ -201,20 +201,20 @@
 }
 
 .product-select .MuiMenuItem-root {
-    color: var(--white);
+    color: var(--text-primary);
     background-color: var(--darker-black);
     transition: all 0.2s;
 }
 
 .product-select .MuiMenuItem-root:hover {
     background-color: var(--lighter-black);
-    color: var(--umbc-gold);
+    color: var(--text-accent);
 }
 
 .product-select .MuiMenuItem-root.Mui-selected {
     background-color: var(--umbc-gold) !important;
-    color: var(--black) 0;
-    font-weight: 600;
+    color: var(--text-on-accent);
+    font-weight: var(--weight-semibold);
 }
 
 .product-select .MuiMenuItem-root.Mui-selected:hover {

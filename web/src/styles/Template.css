@@ -12,7 +12,7 @@
     padding-top: 1rem;
     border-radius: var(--container-radius);
     border: none;
-    border-right: var(--border-color);  
+    border-right: var(--border-color);
     display: flex;
     flex-direction: column;
     height: 100vh;
@@ -22,24 +22,25 @@
     padding: 0 2rem;
     border-bottom: var(--border-color);
     display: flex;
-    align-items: center;      /* vertical centering */
-    justify-content: center;   /* horizontal centering */
-    flex: 0 0 auto;            /* prevent growth if needed */
+    align-items: center; /* vertical centering */
+    justify-content: center; /* horizontal centering */
+    flex: 0 0 auto; /* prevent growth if needed */
     cursor: e-resize; /* ← this makes the cursor indicate horizontal resizing */
-
 }
 
 .sidebar-header img {
     width: 220px;
     height: auto;
     position: relative;
-    transition: background-color 0.2s, color 0.2s; /* smooth hover */
+    transition:
+        background-color 0.2s,
+        color 0.2s; /* smooth hover */
     cursor: inherit; /* ← use header's cursor instead of pointer */
 }
 
 .sidebar-header:hover {
     background-color: var(--lighter-black);
-    color: white; /* only affects SVG/icons inside img if any */
+    color: var(--text-primary); /* only affects SVG/icons inside img if any */
     border-left-color: var(--umbc-gold);
 }
 
@@ -88,7 +89,6 @@
     }
 }
 
-
 @keyframes headerFadeIn {
     from {
         opacity: 0;
@@ -112,14 +112,14 @@
     gap: 0.75rem;
     min-height: 56px;
     padding: 1rem 1.5rem;
-    color: #b0b0b0;
+    color: var(--text-nav);
     cursor: pointer;
     text-align: left;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
     transition: all 0.3s ease;
-    font-size: 0.9rem;
+    font-size: var(--text-sm);
 }
 
 .nav-link-btn svg {
@@ -131,7 +131,7 @@
 /* Hover effects */
 .nav-link-btn:hover {
     background-color: var(--lighter-black);
-    color: white;
+    color: var(--text-primary);
     border-left-color: var(--umbc-gold);
 }
 
@@ -140,7 +140,7 @@
 */
 .sidebar-nav li.active .nav-link-btn {
     background-color: var(--lighter-black);
-    color: white;
+    color: var(--text-primary);
     border-left-color: var(--umbc-gold);
 }
 
@@ -152,7 +152,6 @@
     padding: 0;
 }
 
-
 .template-header-content {
     align-items: center;
     display: flex;
@@ -161,18 +160,18 @@
 }
 
 .template-header h1 {
-    color: white;
+    color: var(--text-primary);
     margin: 0;
-    font-size: 2rem;
+    font-size: var(--text-7xl);
 }
 
 .template-subtitle {
-    color: rgba(255, 255, 255, 0.88);
+    color: var(--text-primary-soft);
     margin: 0.4rem 0 0;
 }
 
 .content {
-    flex: 1;                  /* 🔥 THIS is the missing piece */
+    flex: 1; /* 🔥 THIS is the missing piece */
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -204,7 +203,7 @@
 
 .template-user-section:hover {
     background-color: var(--lighter-black);
-    color: white;
+    color: var(--text-primary);
     border-left-color: var(--umbc-gold);
     transition: all 0.3s ease;
 }
@@ -214,20 +213,20 @@
     white-space: nowrap; /* prevent wrapping */
     overflow: hidden; /* hide overflow */
     text-overflow: ellipsis; /* show ... when too long */
-    color: #b0b0b0; /* same as nav text */
+    color: var(--text-nav); /* same as nav text */
 }
 
 .template-user-name {
-    font-size: 1rem; /* Adjust to match your previous font size */
+    font-size: var(--text-base); /* Adjust to match your previous font size */
 
-    font-weight: 700;
-    color: #b0b0b0; /* same text color as nav */
+    font-weight: var(--weight-bold);
+    color: var(--text-nav); /* same text color as nav */
 }
 
 .template-user-email {
-    font-size: 0.85rem;
+    font-size: var(--text-xs);
     opacity: 0.85;
-    color: #b0b0b0;
+    color: var(--text-nav);
 }
 
 /* Optional: add icon like nav buttons */
@@ -246,9 +245,9 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 1rem;
-    font-weight: 500;
-    color: white;
+    font-size: var(--text-base);
+    font-weight: var(--weight-medium);
+    color: var(--text-inverse);
     flex-shrink: 0;
 }
 
@@ -264,7 +263,6 @@
     align-items: center;
     justify-content: center;
 }
-
 
 .logo-button img {
     width: 100%;

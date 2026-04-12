@@ -17,17 +17,17 @@
 }
 
 .inventory-header h2 {
-    font-size: 1.5rem;
-    font-weight: 700;
-    color: var(--white);
+    font-size: var(--text-4xl);
+    font-weight: var(--weight-bold);
+    color: var(--text-primary);
     margin: 0 0 0.3rem 0;
 }
 
 .inventory-subtitle {
-    font-size: 0.9rem;
-    color: #888;
+    font-size: var(--text-sm);
+    color: var(--text-secondary);
     margin-top: 0rem;
-    font-weight: 500;
+    font-weight: var(--weight-medium);
 }
 
 .inventory-header {
@@ -36,12 +36,12 @@
 
 .add-btn {
     background-color: var(--umbc-gold);
-    color: white;
+    color: var(--text-inverse);
     border: none;
     border-radius: 6px;
     width: 36px;
     height: 36px;
-    font-size: 24px;
+    font-size: var(--text-4xl);
     cursor: pointer;
     display: flex;
     align-items: center;
@@ -83,8 +83,8 @@
 }
 
 .no-product {
-    color: var(--error-red);
-    font-weight: bold;
+    color: var(--text-error);
+    font-weight: var(--weight-bold);
 }
 
 .products-list::-webkit-scrollbar-track {
@@ -102,14 +102,14 @@
 
 .empty-state {
     text-align: center;
-    color: var(--even-lighter-black);
+    color: var(--text-secondary);
     padding: 2rem;
 }
 
 .products-table {
     width: 100%;
     border-collapse: collapse;
-    color: var(--white);
+    color: var(--text-primary);
 }
 
 .products-table thead {
@@ -119,8 +119,8 @@
 .products-table th {
     padding: 1rem;
     text-align: left;
-    font-weight: 600;
-    color: var(--umbc-gold);
+    font-weight: var(--weight-semibold);
+    color: var(--text-accent);
 }
 
 .products-table td {
@@ -151,19 +151,19 @@
 .edit-btn-row,
 .delete-btn-row {
     background-color: transparent;
-    color: var(--container-bg);
+    color: var(--text-secondary);
     border: none;
     cursor: pointer;
     padding: 0;
     transition: color 0.2s;
-    font-size: small;
+    font-size: var(--text-small);
 }
 
 .edit-btn-row:hover {
-    color: var(--umbc-gold);
+    color: var(--text-accent);
 }
-.delete-btn-row:hover{
-    color: var(--error-red);
+.delete-btn-row:hover {
+    color: var(--text-error);
 }
 
 .edit-btn-row {
@@ -180,9 +180,9 @@
     animation: boxFadeIn 0.2s ease-out;
 }
 
-.products-table thead  {
+.products-table thead {
     position: sticky; /* make header sticky */
-    top: 0;           /* stick to the top of the scroll container */
+    top: 0; /* stick to the top of the scroll container */
     background: var(--container-bg); /* keep background visible */
-    z-index: 10;      /* ensure it’s above table rows */
+    z-index: 10; /* ensure it’s above table rows */
 }

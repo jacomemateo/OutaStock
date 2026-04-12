@@ -1,7 +1,7 @@
 .update-products-layout {
     display: flex;
     flex-direction: column;
-    gap: 0em;          /* 👈 EXACT spacing you want */
+    gap: 0em; /* 👈 EXACT spacing you want */
     align-items: center; /* keeps everything centered */
     width: 100%;
 }
@@ -31,17 +31,17 @@
 }
 
 .update-products-header h2 {
-    font-size: 1.5rem;
-    font-weight: 700;
-    color: var(--white);
+    font-size: var(--text-4xl);
+    font-weight: var(--weight-bold);
+    color: var(--text-primary);
     margin: 0 0 0.25rem 0;
 }
 
 .update-products-subtitle {
-    font-size: 0.9rem;
-    color: #888;
+    font-size: var(--text-sm);
+    color: var(--text-secondary);
     margin: 0;
-    font-weight: 500;
+    font-weight: var(--weight-medium);
 }
 
 .metric-cards {
@@ -71,9 +71,9 @@
 }
 
 .card-title {
-    font-size: 16px;
-    font-weight: 700;
-    color: var(--white);
+    font-size: var(--text-base);
+    font-weight: var(--weight-bold);
+    color: var(--text-primary);
     margin: 0 0 1rem 0;
     display: flex;
     align-items: center;
@@ -81,10 +81,10 @@
 }
 
 .card-subtitle {
-    font-size: 0.9rem;
-    color: var(--even-lighter-black);
+    font-size: var(--text-sm);
+    color: var(--text-secondary);
     margin: 0 0 1rem 0;
-    font-weight: 500;
+    font-weight: var(--weight-medium);
 }
 
 .all-products-stock {
@@ -93,12 +93,12 @@
 
 .add-product-btn {
     background-color: var(--umbc-gold);
-    color: white;
+    color: var(--text-inverse);
     border: none;
     border-radius: 6px;
     width: 36px;
     height: 36px;
-    font-size: 24px;
+    font-size: var(--text-4xl);
     cursor: pointer;
     display: flex;
     align-items: center;
@@ -117,9 +117,9 @@
 }
 
 .update-products-container .products-table thead th {
-    position: sticky;            /* make header sticky */
-    top: 0;                       /* stick to top of scroll container */
-    z-index: 10;                  /* stay above table rows */
+    position: sticky; /* make header sticky */
+    top: 0; /* stick to top of scroll container */
+    z-index: 10; /* stay above table rows */
 }
 
 .update-products-container .products-table th:nth-child(1),
@@ -148,5 +148,21 @@
 }
 
 .card-value {
-    color: var(--white);
+    color: var(--text-primary);
+}
+
+.metric-icon-accent {
+    color: var(--text-accent);
+}
+
+.metric-icon-warning {
+    color: var(--text-warning-bright);
+}
+
+.metric-icon-neutral {
+    color: var(--text-neutral);
+}
+
+.metric-icon-danger {
+    color: var(--text-danger);
 }

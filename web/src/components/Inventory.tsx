@@ -269,7 +269,7 @@ const Inventory = () => {
                                                         setEditingSlotID(product.slotId)
                                                     }
                                                 >
-                                                    <EditIcon sx={{ fontSize: 20 }} />
+                                                    <EditIcon fontSize="small" />
                                                 </button>
 
                                                 <button
@@ -279,7 +279,7 @@ const Inventory = () => {
                                                         setConfirmationOpen(true);
                                                     }}
                                                 >
-                                                    <DeleteIcon sx={{ fontSize: 20 }} />
+                                                    <DeleteIcon fontSize="small" />
                                                 </button>
                                             </div>
                                         </td>

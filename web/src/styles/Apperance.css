@@ -2,7 +2,7 @@
     display: flex;
     flex-direction: column;
     gap: 1.5rem;
-    color: var(--white);
+    color: var(--text-primary);
     width: 100%;
     min-width: 0;
 }
@@ -21,11 +21,11 @@
 
 .appearance-card h2 {
     margin: 0 0 0.5rem;
-    font-size: 1.4rem;
+    font-size: var(--text-3xl);
 }
 
 .appearance-card p {
-    color: #c7c7c7;
+    color: var(--text-supporting);
     margin: 0;
 }
 
@@ -43,17 +43,17 @@
 }
 
 .appearance-panel-copy h3 {
-    color: #ffffff;
+    color: var(--text-primary);
     margin: 0;
-    font-size: 1rem;
-    font-weight: 700;
+    font-size: var(--text-base);
+    font-weight: var(--weight-bold);
 }
 
 .appearance-subtitle {
-    color: #888;
-    font-size: 0.9rem;
+    color: var(--text-secondary);
+    font-size: var(--text-sm);
     margin: 0;
-    font-weight: 400;
+    font-weight: var(--weight-regular);
 }
 
 .theme-option {
@@ -73,20 +73,19 @@
 
 .theme-option:focus-within {
     box-shadow: 0 0 8px var(--umbc-gold);
-
 }
 
 .theme-option svg {
-    color: var(--umbc-gold);
-    font-size: 1.5rem;
+    color: var(--text-accent);
+    font-size: var(--text-4xl);
     flex-shrink: 0;
 }
 
 .theme-option select {
     border: none;
     background-color: transparent;
-    color: var(--white);
-    font-size: 0.95rem;
+    color: var(--text-primary);
+    font-size: var(--text-md);
     cursor: pointer;
     appearance: none;
     padding: 0;
@@ -94,9 +93,8 @@
     min-width: 100px;
 }
 
-
 .theme-option option {
     background-color: var(--darker-black);
-    color: var(--white);
+    color: var(--text-primary);
     padding: 0.5rem;
 }
