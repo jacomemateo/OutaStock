@@ -15,7 +15,7 @@ const RecentTransactions = () => {
     const [currentPage, setCurrentPage] = useState(1);
     const [isLoading, setIsLoading] = useState(false);
 
-    const itemsPerPage = 6;
+    const itemsPerPage = 5;
 
     // CHANGE 1: Set your desired page limit here.
     // If the database has 100 items (20 pages), this will cap it at 5 pages.
