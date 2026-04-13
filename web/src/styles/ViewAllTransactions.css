@@ -9,11 +9,11 @@
     display: flex;
     height: 80vh;
     flex-direction: column;
+    overflow: hidden;
 
     max-width: 1300px;
-
-    margin: 0 auto;
-    width: calc(100% - 8em);
+    margin: auto;
+    width: 100%;
 }
 
 .view-all-transactions-header {
@@ -34,4 +34,136 @@
     color: var(--text-secondary);
     margin: 0;
     font-weight: var(--weight-medium);
+}
+
+.transactions-list {
+    flex: 1;
+    overflow-y: auto;
+    border: 1px solid var(--lighter-black);
+    border-radius: 6px;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 1.5rem;
+}
+
+.transactions-list.loading-opacity {
+    opacity: 0.6;
+    pointer-events: none;
+}
+
+.transactions-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.95rem;
+}
+
+.transactions-table thead {
+    position: sticky;
+    top: 0;
+    background: var(--lighter-black);
+    z-index: 10;
+}
+
+.transactions-table th {
+    padding: 1rem;
+    text-align: left;
+    font-weight: 600;
+    color: var(--umbc-gold);
+    /* border-bottom: 2px solid var(--umbc-gold); */
+}
+
+.transactions-table tbody tr {
+    border-bottom: 1px solid var(--lighter-black);
+    transition: all 0.3s ease;
+    animation: slideIn 0.5s ease-out forwards;
+    animation-delay: calc(var(--row-index, 0) * 0.05s);
+    opacity: 0;
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.transactions-table tbody tr:hover {
+    background: var(--lighter-black);
+}
+
+.transactions-table td {
+    padding: 1rem;
+    color: var(--text-secondary);
+}
+
+.transactions-table td:first-child {
+    color: var(--text-primary);
+    font-weight: 500;
+}
+
+.price-cell {
+    color: var(--umbc-gold) !important;
+    font-weight: 600;
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.no-transactions {
+    text-align: center;
+    color: var(--text-secondary);
+    padding: 2rem;
+    font-size: 0.95rem;
+}
+
+.pagination {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--lighter-black);
+}
+
+.pagination-btn {
+    background: var(--lighter-black);
+    border: 1px solid var(--lighter-black);
+    color: var(--text-primary);
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+.pagination-btn:hover:not(:disabled) {
+    background: var(--umbc-gold);
+    color: var(--darker-black);
+    border-color: var(--umbc-gold);
+}
+
+.pagination-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.pagination-info {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    min-width: 120px;
+    text-align: center;
 }
