@@ -29,7 +29,6 @@
     --tracking-label: 0.08em;
     --tracking-wide: 0.5px;
     --tracking-wider: 1px;
-
 }
 
 html {
@@ -54,7 +53,7 @@ select {
     --umbc-gold: #f9ad1e;
     --black-grey: rgb(72, 72, 72);
     --even-lighter-black: #888;
-    --lighter-black: rgba(255, 0, 0, 0.03);
+    --lighter-black: rgba(109, 101, 101, 0.15);
     --darker-black: #1a1a1a;
     --black: #000000;
     --white: #ffffff;

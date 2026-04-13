@@ -52,7 +52,7 @@
     max-height: 55vh;
     overflow-y: auto;
     border: var(--table-width-thick);
-    border-radius:var(--container-radius);
+    border-radius: var(--container-radius);
     scrollbar-color: var(--umbc-gold) var(--darker-black);
 
     opacity: 0;

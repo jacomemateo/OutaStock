@@ -45,22 +45,16 @@
     }
 }
 
-
 .no-product {
     color: var(--text-error);
     font-weight: var(--weight-bold);
 }
-
-
 
 .empty-state {
     text-align: center;
     color: var(--text-secondary);
     padding: 2rem;
 }
-
-
-
 
 .product-row {
     opacity: 0; /* start hidden */

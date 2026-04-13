@@ -25,9 +25,7 @@ const EditProductModal = ({
         product ? (product.priceCents / 100).toFixed(2) : '',
     );
 
-    const [cost, setCost] = useState(
-        product ? (product.costCents / 100).toFixed(2) : '',
-    );
+    const [cost, setCost] = useState(product ? (product.costCents / 100).toFixed(2) : '');
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();

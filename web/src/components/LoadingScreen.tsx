@@ -28,8 +28,7 @@ const LoadingScreen = ({
         signOut,
         status,
         user,
-    } =
-        useAuth();
+    } = useAuth();
 
     if (mode === 'processing' || status === 'loading') {
         return (
@@ -51,8 +50,8 @@ const LoadingScreen = ({
         ? `Signed in as ${user?.name ?? user?.email ?? user?.preferred_username ?? 'OutaStock User'}`
         : isConfigured
           ? config?.issuer
-                ? `Enter your ZITADEL credentials to sign in locally through ${config.issuer}.`
-                : 'Enter your ZITADEL credentials to sign in locally.'
+              ? `Enter your ZITADEL credentials to sign in locally through ${config.issuer}.`
+              : 'Enter your ZITADEL credentials to sign in locally.'
           : 'Headless auth is not configured for the frontend yet.';
 
     const handlePrimaryAction = () => {
@@ -87,10 +86,7 @@ const LoadingScreen = ({
                 </div>
                 {isAuthenticated ? (
                     <div className="dashboard-btn">
-                        <button
-                            className="view-inventory"
-                            onClick={handlePrimaryAction}
-                        >
+                        <button className="view-inventory" onClick={handlePrimaryAction}>
                             {primaryActionLabel}
                         </button>
                         <button

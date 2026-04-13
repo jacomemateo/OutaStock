@@ -81,7 +81,11 @@ const UpdateProducts = () => {
         }
     };
 
-    const handleSaveNewProduct = async (name: string, costCents: number, priceCents: number) => {
+    const handleSaveNewProduct = async (
+        name: string,
+        costCents: number,
+        priceCents: number,
+    ) => {
         if (
             products.some((product) => product.name.toLowerCase() === name.toLowerCase())
         ) {
@@ -120,23 +124,23 @@ const UpdateProducts = () => {
     };
 
     const handleSaveEditedProduct = async (
-    productId: string,
-    costCents: number,
-    priceCents: number
-) => {
-    try {
-        await updateProductPrice(productId, priceCents);
+        productId: string,
+        costCents: number,
+        priceCents: number,
+    ) => {
+        try {
+            await updateProductPrice(productId, priceCents);
 
-        // 🔥 ADD THIS (you need backend endpoint or reuse PATCH)
-        await updateProductCost(productId, costCents);
+            // 🔥 ADD THIS (you need backend endpoint or reuse PATCH)
+            await updateProductCost(productId, costCents);
 
-        await loadProducts();
-        showAlert('Product updated successfully!', 'success');
-    } catch (error) {
-        console.error('Error updating product:', error);
-        showAlert('Failed to update product.', 'error');
-    }
-};
+            await loadProducts();
+            showAlert('Product updated successfully!', 'success');
+        } catch (error) {
+            console.error('Error updating product:', error);
+            showAlert('Failed to update product.', 'error');
+        }
+    };
 
     useEffect(() => {
         // getLowStockCount();
@@ -239,7 +243,9 @@ const UpdateProducts = () => {
                                     <th className="col-product">Product</th>
                                     <th className="col-cost">Cost</th>
                                     <th className="col-price">Price</th>
-                                    {isEditMode && <th className="col-actions">Actions</th>}
+                                    {isEditMode && (
+                                        <th className="col-actions">Actions</th>
+                                    )}
                                 </tr>
                             </thead>
 

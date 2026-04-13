@@ -16,7 +16,11 @@ const AddProductModal = ({ isOpen, onClose, onSave }: AddProoductModalProps) => 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         const { name, priceCents } = formData;
-        onSave(name, Math.round(parseFloat(priceCents) * 100), Math.round(parseFloat(priceCents) * 100));
+        onSave(
+            name,
+            Math.round(parseFloat(priceCents) * 100),
+            Math.round(parseFloat(priceCents) * 100),
+        );
         setFormData({ name: '', priceCents: '' }); // Reset form
         onClose(); // Close modal after saving
     };

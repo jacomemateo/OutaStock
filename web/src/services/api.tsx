@@ -126,7 +126,11 @@ export const updateSlotProductAndQuantity = async (
     }
 };
 
-export const createProduct = async (name: string, costCents: number, priceCents: number) => {
+export const createProduct = async (
+    name: string,
+    costCents: number,
+    priceCents: number,
+) => {
     try {
         const response = await authFetch(`${API_BASE_URL}/products/new`, {
             method: 'POST',
