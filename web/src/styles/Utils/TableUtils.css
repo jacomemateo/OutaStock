@@ -49,8 +49,10 @@
 }
 
 .table-list {
-    max-height: 55vh;
-    overflow-y: auto;
+    flex: 1;              /* take remaining space inside page-card */
+    min-height: 0;        /* CRITICAL: allows it to shrink */
+    overflow-y: auto;     /* scroll when content exceeds */
+    
     border: var(--table-width-thick);
     border-radius: var(--container-radius);
     scrollbar-color: var(--umbc-gold) var(--darker-black);

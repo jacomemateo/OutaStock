@@ -1,4 +1,9 @@
+// Styles
 import '@styles/UpdateProducts/UpdateProducts.css';
+import '@styles/Utils/Buttons.css';
+import '@styles/Utils/TableUtils.css';
+import '@styles/Utils/PageLayout.css';
+// Icons
 import InventoryIcon from '@mui/icons-material/Inventory';
 import HourglassDisabledIcon from '@mui/icons-material/HourglassDisabled';
 import RunningWithErrorsIcon from '@mui/icons-material/RunningWithErrors';
@@ -6,15 +11,19 @@ import BatteryCharging20Icon from '@mui/icons-material/BatteryCharging20';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import AddIcon from '@mui/icons-material/Add';
+// React
 import { useEffect, useState } from 'react';
+// Api functions
 import { fetchProducts, getProductCount } from '@/services/api';
-import AddProductModal from '@/components/Modals/AddProductModal';
 import { useAlert } from '@contexts/SnackBarAlertContext';
 import { fetchInventory, getInventoryCount, createProduct } from '@/services/api';
-import ConfirmationModal from '@/components/Modals/ConfirmationModal';
 import { deleteProduct } from '@/services/api';
-import EditProductModal from '@/components/Modals/EditProductModal';
 import { updateProductPrice, updateProductCost } from '@/services/api';
+// Modals
+import EditProductModal from '@/components/Modals/EditProductModal';
+import ConfirmationModal from '@/components/Modals/ConfirmationModal';
+import AddProductModal from '@/components/Modals/AddProductModal';
+
 interface Product {
     id: string;
     name: string;
@@ -22,16 +31,6 @@ interface Product {
     priceCents: number;
     dateCreated: string;
 }
-
-// interface InventoryItem{
-//     slotId: number;
-//     slotLabel: string;
-//     quantity: number;
-//     productName: string;
-//     priceCents: number;
-//     productId: string;
-//     dateAdded: string;
-// }
 
 const UpdateProducts = () => {
     const { showAlert } = useAlert();
@@ -71,6 +70,7 @@ const UpdateProducts = () => {
             console.error('Failed to load inventory', error);
         }
     };
+
     const loadProducts = async () => {
         try {
             const data = await fetchProducts(await getProductCount(), 0);
@@ -131,7 +131,6 @@ const UpdateProducts = () => {
         try {
             await updateProductPrice(productId, priceCents);
 
-            // 🔥 ADD THIS (you need backend endpoint or reuse PATCH)
             await updateProductCost(productId, costCents);
 
             await loadProducts();
@@ -151,161 +150,159 @@ const UpdateProducts = () => {
     return (
         <>
             <div className="grid-container">
-                <div className="update-products-grid"></div>
-                <div className="metric-cards">
-                    <div className="metric-card total-items-card">
-                        <h2 className="metric-card-title">
-                            <InventoryIcon className="metric-icon-accent" /> Total Items
-                        </h2>
-                        <p className="metric-card-subtitle">Total items in stock</p>
-                        <p className="metric-card-value">{products.length}</p>
-                    </div>
+                <div className="update-products-grid">
+                    <div className="metric-grid">
+                        <div className="metric-card total-items-card">
+                            <h2 className="metric-card-title">
+                                <InventoryIcon className="metric-icon-accent" /> Total Items
+                            </h2>
+                            <p className="metric-card-subtitle">Total items in stock</p>
+                            <p className="metric-card-value">{products.length}</p>
+                        </div>
 
-                    <div className="metric-card low-stock-card">
-                        <h2 className="metric-card-title">
-                            <BatteryCharging20Icon className="metric-icon-warning" /> Low
-                            Stock Items
-                        </h2>
-                        <p className="metric-card-subtitle">
-                            Number of items that are running low
-                        </p>
-                        <p className="metric-card-value">{lowStockCount}</p>
-                    </div>
-
-                    <div className="metric-card out-of-stock-card">
-                        <h2 className="metric-card-title">
-                            <HourglassDisabledIcon className="metric-icon-neutral" /> Out
-                            of Stock Items
-                        </h2>
-                        <p className="metric-card-subtitle">
-                            Number of items that are out of stock
-                        </p>
-                        <p className="metric-card-value">30</p>
-                    </div>
-
-                    <div className="metric-card expired-card">
-                        <h2 className="metric-card-title">
-                            <RunningWithErrorsIcon className="metric-icon-danger" />{' '}
-                            Expired Items
-                        </h2>
-                        <p className="metric-card-subtitle">Number of items that are expired</p>
-                        <p className="metric-card-value">30</p>
-                    </div>
-                </div>
-
-                <div className="page-card">
-                    <div className="card-header">
-                        <div>
-                            <h2>Products Overview</h2>
-                            <p className="card-subtitle">
-                                View and modify all products
+                        <div className="metric-card low-stock-card">
+                            <h2 className="metric-card-title">
+                                <BatteryCharging20Icon className="metric-icon-warning" /> Low
+                                Stock Items
+                            </h2>
+                            <p className="metric-card-subtitle">
+                                Number of items that are running low
                             </p>
-                        </div>
-                        <div className="update-products-actions">
-                            <button
-                                className="edit-btn"
-                                onClick={() => setIsEditMode(!isEditMode)}
-                            >
-                                <EditIcon />
-                            </button>
-
-                            <button
-                                className="add-btn"
-                                onClick={() =>
-                                    setIsAddProductModalOpen(!isAddProductModalOpen)
-                                }
-                            >
-                                <AddIcon />
-                            </button>
+                            <p className="metric-card-value">{lowStockCount}</p>
                         </div>
 
-                        {isAddProductModalOpen && (
-                            <AddProductModal
-                                isOpen={isAddProductModalOpen}
-                                onClose={() => setIsAddProductModalOpen(false)}
-                                onSave={handleSaveNewProduct}
-                            />
-                        )}
+                        <div className="metric-card out-of-stock-card">
+                            <h2 className="metric-card-title">
+                                <HourglassDisabledIcon className="metric-icon-neutral" /> Out
+                                of Stock Items
+                            </h2>
+                            <p className="metric-card-subtitle">
+                                Number of items that are out of stock
+                            </p>
+                            <p className="metric-card-value">30</p>
+                        </div>
 
-                        {isEditProductModalOpen && selectedProduct && (
-                            <EditProductModal
-                                isOpen={isEditProductModalOpen}
-                                onClose={() => setIsEditProductModalOpen(false)}
-                                onSave={handleSaveEditedProduct}
-                                product={selectedProduct}
-                            />
-                        )}
+                        <div className="metric-card expired-card">
+                            <h2 className="metric-card-title">
+                                <RunningWithErrorsIcon className="metric-icon-danger" />{' '}
+                                Expired Items
+                            </h2>
+                            <p className="metric-card-subtitle">
+                                Number of items that are expired
+                            </p>
+                            <p className="metric-card-value">30</p>
+                        </div>
                     </div>
 
-                    <div className="table-list">
-                        <table className="table">
-                            <thead>
-                                <tr>
-                                    <th className="col-product">Product</th>
-                                    <th className="col-cost">Cost</th>
-                                    <th className="col-price">Price</th>
-                                    {isEditMode && (
-                                        <th className="col-actions">Actions</th>
-                                    )}
-                                </tr>
-                            </thead>
+                    <div className="page-card">
+                        <div className="card-header">
+                            <div>
+                                <h2>Products Overview</h2>
+                                <p className="card-subtitle">View and modify all products</p>
+                            </div>
+                            <div className="update-products-actions">
+                                <button
+                                    className="edit-btn"
+                                    onClick={() => setIsEditMode(!isEditMode)}
+                                >
+                                    <EditIcon />
+                                </button>
 
-                            <tbody>
-                                {products.map((product, index) => (
-                                    <tr
-                                        key={product.id}
-                                        className="product-row"
-                                        style={
-                                            {
-                                                '--row-index': index,
-                                            } as React.CSSProperties
-                                        }
-                                    >
-                                        <td>{product.name}</td>
-                                        <td>${(product.costCents / 100).toFixed(2)}</td>
-                                        <td>${(product.priceCents / 100).toFixed(2)}</td>
-                                        {isEditMode && (
-                                            <td className="edit-btn-cell">
-                                                <div className="action-btns">
-                                                    <button
-                                                        className="edit-btn-row"
-                                                        onClick={() => {
-                                                            setIsEditProductModalOpen(
-                                                                true,
-                                                            );
-                                                            setSelectedProduct(product);
-                                                        }}
-                                                    >
-                                                        <EditIcon fontSize="small" />
-                                                    </button>
+                                <button
+                                    className="add-btn"
+                                    onClick={() =>
+                                        setIsAddProductModalOpen(!isAddProductModalOpen)
+                                    }
+                                >
+                                    <AddIcon />
+                                </button>
+                            </div>
+                        </div>
 
-                                                    <button
-                                                        className="delete-btn-row"
-                                                        onClick={() => {
-                                                            setConfirmationOpen(true);
-                                                            setSlotToDelete(product.id);
-                                                        }}
-                                                    >
-                                                        <DeleteIcon fontSize="small" />
-                                                    </button>
-                                                </div>
-                                            </td>
-                                        )}
+                        <div className="table-list">
+                            <table className="table">
+                                <thead>
+                                    <tr>
+                                        <th className="col-product">Product</th>
+                                        <th className="col-cost">Cost</th>
+                                        <th className="col-price">Price</th>
+                                        {isEditMode && <th className="col-actions">Actions</th>}
                                     </tr>
-                                ))}
-                            </tbody>
-                        </table>
+                                </thead>
+
+                                <tbody>
+                                    {products.map((product, index) => (
+                                        <tr
+                                            key={product.id}
+                                            className="product-row"
+                                            style={
+                                                {
+                                                    '--row-index': index,
+                                                } as React.CSSProperties
+                                            }
+                                        >
+                                            <td>{product.name}</td>
+                                            <td>${(product.costCents / 100).toFixed(2)}</td>
+                                            <td>${(product.priceCents / 100).toFixed(2)}</td>
+                                            {isEditMode && (
+                                                <td className="edit-btn-cell">
+                                                    <div className="action-btns">
+                                                        <button
+                                                            className="edit-btn-row"
+                                                            onClick={() => {
+                                                                setIsEditProductModalOpen(true);
+                                                                setSelectedProduct(product);
+                                                            }}
+                                                        >
+                                                            <EditIcon fontSize="small" />
+                                                        </button>
+
+                                                        <button
+                                                            className="delete-btn-row"
+                                                            onClick={() => {
+                                                                setConfirmationOpen(true);
+                                                                setSlotToDelete(product.id);
+                                                            }}
+                                                        >
+                                                            <DeleteIcon fontSize="small" />
+                                                        </button>
+                                                    </div>
+                                                </td>
+                                            )}
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
-                    {confirmationOpen && (
-                        <ConfirmationModal
-                            isOpen={confirmationOpen}
-                            onClose={() => setConfirmationOpen(false)}
-                            onConfirm={getUserDecision}
-                            title="Are you sure?"
-                            message="This action cannot be undone. Please confirm if you want to proceed."
-                        />
-                    )}
                 </div>
+
+                {isAddProductModalOpen && (
+                    <AddProductModal
+                        isOpen={isAddProductModalOpen}
+                        onClose={() => setIsAddProductModalOpen(false)}
+                        onSave={handleSaveNewProduct}
+                    />
+                )}
+
+                {isEditProductModalOpen && selectedProduct && (
+                    <EditProductModal
+                        isOpen={isEditProductModalOpen}
+                        onClose={() => setIsEditProductModalOpen(false)}
+                        onSave={handleSaveEditedProduct}
+                        product={selectedProduct}
+                    />
+                )}
+
+                {confirmationOpen && (
+                    <ConfirmationModal
+                        isOpen={confirmationOpen}
+                        onClose={() => setConfirmationOpen(false)}
+                        onConfirm={getUserDecision}
+                        title="Are you sure?"
+                        message="This action cannot be undone. Please confirm if you want to proceed."
+                    />
+                )}
             </div>
         </>
     );

@@ -6,6 +6,17 @@
     width: 100%;
 }
 
+.update-products-grid {
+    display: grid;
+    grid-template-rows: auto 1fr;
+    gap: 2rem;
+
+    flex: 1;
+    min-height: 0;
+}
+
+
+
 .metric-cards {
     display: flex;
     flex-direction: row;

@@ -17,7 +17,7 @@ import UpdateProducts from '@components/UpdateProducts/UpdateProducts';
 import Analytics from '@/components/Analytics/Analytics';
 import Alerts from '@/components/Alerts/Alerts';
 import Settings from '@/components/Settings/Settings';
-import DashBoard from '@/components/Home/Dashboard';
+import DashBoard from '@/components/Home/Home';
 import ViewAllTransactions from '@/components/Transactions/ViewAllTransactions';
 
 import { useNavigate, useLocation, Routes, Route } from 'react-router-dom';

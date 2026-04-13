@@ -62,8 +62,9 @@
 /* ─── Shared metric grid ────────────────────────────────────────── */
 .metric-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
     gap: 1.25rem;
+    width: 100%;
 }
 
 .metric-card {
@@ -116,4 +117,9 @@
 .grid-container {
     padding-left: 4rem;
     padding-right: 4rem;
+
+    flex: 1;          /* fill remaining height */
+    min-height: 0;    /* CRITICAL */
+    display: flex;
+    flex-direction: column;
 }
