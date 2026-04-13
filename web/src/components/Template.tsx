@@ -205,7 +205,6 @@ const Template = () => {
             </aside>
 
             <main className="main-content">
-                <div className="content">
                     {/* The Routes block now decides what to show based on the URL */}
                     <Routes>
                         {pages.map((page) => (
@@ -216,7 +215,6 @@ const Template = () => {
                             />
                         ))}
                     </Routes>
-                </div>
             </main>
             <Tooltip id="nav-tooltip" />
             <Tooltip id="user-tooltip" />

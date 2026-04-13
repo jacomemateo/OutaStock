@@ -151,7 +151,9 @@
     flex-direction: column;
     margin: 0;
     padding: 0;
+    justify-content: center;
 }
+
 
 .template-header-content {
     align-items: center;
@@ -169,13 +171,6 @@
 .template-subtitle {
     color: var(--text-primary-soft);
     margin: 0.4rem 0 0;
-}
-
-.content {
-    flex: 1; /* 🔥 THIS is the missing piece */
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
 }
 
 /* Sidebar Account Info */
