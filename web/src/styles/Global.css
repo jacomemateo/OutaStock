@@ -29,6 +29,7 @@
     --tracking-label: 0.08em;
     --tracking-wide: 0.5px;
     --tracking-wider: 1px;
+    --shadow-strong: 0 18px 38px rgba(0, 0, 0, 0.16);
 }
 
 html {

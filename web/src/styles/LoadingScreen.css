@@ -21,9 +21,9 @@
 
 .loading-state-card {
     background: rgba(255, 255, 255, 0.14);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    border-radius: 20px;
-    box-shadow: 0 18px 38px rgba(0, 0, 0, 0.16);
+    border: var(--border-color);
+    border-radius: var(--container-radius);
+    box-shadow: var(--shadow-strong);
     margin-top: 1.5rem;
     max-width: 620px;
     padding: 1.4rem 1.6rem;
@@ -98,8 +98,8 @@
 
 .login-field input {
     width: 100%;
-    border: 1px solid rgba(35, 50, 76, 0.2);
-    border-radius: 12px;
+    border: var(--border-color);
+    border-radius: var(--container-radius);
     background: rgba(255, 255, 255, 0.88);
     color: var(--text-loading-title);
     font-size: var(--text-base);
@@ -112,9 +112,7 @@
 
 .login-field input:focus {
     outline: none;
-    border-color: rgba(191, 160, 61, 0.9);
-    box-shadow: 0 0 0 3px rgba(191, 160, 61, 0.18);
-    transform: translateY(-1px);
+    box-shadow: var(--shadow-strong);
 }
 
 .login-field input:disabled {
@@ -129,19 +127,19 @@
 .view-inventory {
     padding: 0.75rem 2.5rem;
     font-size: var(--text-xl);
-    border-radius: 8px;
+    border-radius: var(--container-radius);
     border: none;
     background: var(--umbc-gold);
     color: var(--text-loading-contrast);
     font-weight: var(--weight-semibold);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    box-shadow: var(--shadow-soft);
     cursor: pointer;
     transition: all 0.2s;
 }
 
 .view-inventory:hover {
     transform: translateY(-3px);
-    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+    box-shadow: var(--shadow-soft);
 }
 
 .view-inventory:disabled {
@@ -153,7 +151,7 @@
 .secondary-action {
     background: rgba(35, 50, 76, 0.9);
     border: none;
-    border-radius: 8px;
+    border-radius: var(--container-radius);
     color: var(--text-loading-contrast);
     cursor: pointer;
     font-size: var(--text-base);
