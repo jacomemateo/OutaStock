@@ -1,0 +1,104 @@
+.table {
+    width: 100%;
+    border-collapse: collapse;
+    color: var(--text-primary);
+}
+
+.table thead {
+    border-bottom: 1px solid var(--lighter-black);
+}
+
+.table th {
+    padding: 1rem;
+    text-align: left;
+    font-weight: var(--weight-semibold);
+    color: var(--text-accent);
+}
+
+.table td {
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid var(--lighter-black);
+}
+
+.table tbody tr {
+    transition: all 0.2s ease;
+}
+
+.table tbody tr:hover td {
+    background: var(--darker-black);
+}
+
+.table tbody tr:hover {
+    transform: translateX(4px);
+}
+
+.table tbody tr td {
+    transition: background 0.2s ease;
+}
+
+.table thead {
+    position: sticky; /* make header sticky */
+    top: 0; /* stick to the top of the scroll container */
+    background: var(--container-bg); /* keep background visible */
+    z-index: 10; /* ensure it’s above table rows */
+}
+
+.table {
+    table-layout: fixed;
+}
+
+.table-list {
+    max-height: 55vh;
+    overflow-y: auto;
+    border: 1px solid var(--lighter-black);
+    border-radius: 8px;
+    scrollbar-color: var(--umbc-gold) var(--darker-black);
+
+    opacity: 0;
+    animation: tableFadeIn 0.5s ease-out forwards;
+    animation-delay: 0.15s;
+}
+
+.table-list::-webkit-scrollbar-track {
+    background: var(--darker-black);
+}
+
+.table-list::-webkit-scrollbar-thumb {
+    background: var(--umbc-gold);
+    border-radius: 4px;
+}
+
+.table-list::-webkit-scrollbar-thumb:hover {
+    background: var(--light-gold);
+}
+
+.table-list::-webkit-scrollbar {
+    width: 8px;
+}
+
+.edit-btn-cell,
+.delete-btn-cell {
+    width: 10px !important;
+}
+.edit-btn-row,
+.delete-btn-row {
+    background-color: transparent;
+    color: var(--text-secondary);
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    transition: color 0.2s;
+    font-size: var(--text-small);
+}
+
+.edit-btn-row:hover {
+    color: var(--text-accent);
+}
+
+.edit-btn-row {
+    margin-right: 8px;
+}
+
+.delete-btn-row:hover {
+    color: var(--text-error);
+}

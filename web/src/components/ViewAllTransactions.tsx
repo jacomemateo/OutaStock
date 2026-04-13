@@ -29,7 +29,7 @@ const ViewAllTransactions = () => {
     }, []);
     
     return (
-        <div className="view-all-transactions-container">
+        <div className="default-container view-all-transactions-container">
             <div className="view-all-transactions-header">
                 <h2>Transactions</h2>
                 <p className="view-all-transactions-subtitle">

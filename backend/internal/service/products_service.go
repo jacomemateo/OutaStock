@@ -51,6 +51,7 @@ func (s *ProductsService) GetAllProducts(ctx context.Context, pageOffset int, nu
 			productResponses = append(productResponses, dto.ProductResponse{
 				ID:          uuidString,
 				Name:        row.Name,
+				CostCents: int(row.CostCents),
 				PriceCents:  int(row.PriceCents),
 				DateCreated: &row.DateCreated.Time,
 			})
@@ -63,6 +64,7 @@ func (s *ProductsService) GetAllProducts(ctx context.Context, pageOffset int, nu
 func (s *ProductsService) CreateProduct(ctx context.Context, prod dto.CreateProductRequest) error {
 	product := repository.CreateProductParams{
 		Name:       prod.Name,
+		CostCents: int32(prod.CostCents),
 		PriceCents: int32(prod.PriceCents),
 	}
 
@@ -76,7 +78,7 @@ func (s *ProductsService) CreateProduct(ctx context.Context, prod dto.CreateProd
 
 func (s *ProductsService) UpdateProduct(ctx context.Context, prodUUID uuid.UUID, req dto.UpdateProductRequest) error {
 	// if nothing to update, do nothing
-	if req.Name == nil && req.PriceCents == nil {
+	if req.Name == nil && req.PriceCents == nil && req.CostCents == nil {
 		log.Debug().Msg("Getting here shouldn't be possible b.c. of validation....?")
 		return nil
 	}
@@ -87,40 +89,31 @@ func (s *ProductsService) UpdateProduct(ctx context.Context, prodUUID uuid.UUID,
 	}
 
 	// both provided -> use the existing combined query
-	if req.Name != nil && req.PriceCents != nil {
-		args := repository.UpdateProductParams{
-			PriceCents: int32(*req.PriceCents), // sqlc generated int32
+	if req.Name != nil  {
+		args := repository.UpdateProductNameParams{
 			Name:       *req.Name,              // sqlc generated string
 			ProductID:  uuidPgtype,
 		}
-		if err := s.database.Queries.UpdateProduct(ctx, args); err != nil {
-			log.Warn().Msgf("error updating product: %v", err)
-			return err
-		}
-		return nil
-	}
-
-	if req.Name != nil {
-		log.Debug().Msg("updating name")
-		args := repository.UpdateProductNameParams{
-			Name:      *req.Name,
-			ProductID: uuidPgtype,
-		}
-
 		if err := s.database.Queries.UpdateProductName(ctx, args); err != nil {
 			log.Warn().Msgf("error updating product name: %v", err)
 			return err
 		}
-	}
-	if req.PriceCents != nil {
-		log.Debug().Msg("updating price")
+	} else if req.PriceCents != nil {
 		args := repository.UpdateProductPriceParams{
-			PriceCents: int32(*req.PriceCents),
+			PriceCents: int32(*req.PriceCents), // sqlc generated int32
 			ProductID:  uuidPgtype,
 		}
-
 		if err := s.database.Queries.UpdateProductPrice(ctx, args); err != nil {
 			log.Warn().Msgf("error updating product price: %v", err)
+			return err
+		}
+	} else if req.CostCents != nil {
+		args := repository.UpdateProductCostParams{
+			CostCents: int32(*req.CostCents), // sqlc generated int32
+			ProductID:  uuidPgtype,
+		}
+		if err := s.database.Queries.UpdateProductCost(ctx, args); err != nil {
+			log.Warn().Msgf("error updating product cost: %v", err)
 			return err
 		}
 	}

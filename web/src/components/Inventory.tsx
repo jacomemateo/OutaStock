@@ -221,13 +221,13 @@ const Inventory = () => {
                     </p>
                 </div>
 
-                <button className="add-btn" onClick={() => setIsEditMode(!isEditMode)}>
+                <button className="edit-btn" onClick={() => setIsEditMode(!isEditMode)}>
                     <EditIcon />
                 </button>
             </div>
 
-            <div className="products-list">
-                <table className="products-table">
+            <div className="table-list">
+                <table className="table">
                     <thead>
                         <tr>
                             <th>Location</th>
@@ -269,7 +269,7 @@ const Inventory = () => {
                                                         setEditingSlotID(product.slotId)
                                                     }
                                                 >
-                                                    <EditIcon sx={{ fontSize: 20 }} />
+                                                    <EditIcon fontSize="small" />
                                                 </button>
 
                                                 <button
@@ -279,7 +279,7 @@ const Inventory = () => {
                                                         setConfirmationOpen(true);
                                                     }}
                                                 >
-                                                    <DeleteIcon sx={{ fontSize: 20 }} />
+                                                    <DeleteIcon fontSize="small" />
                                                 </button>
                                             </div>
                                         </td>

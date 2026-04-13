@@ -50,16 +50,16 @@
 }
 
 .confirmation-modal-header h2 {
-    color: var(--white);
-    font-size: 1.3rem;
-    font-weight: 700;
+    color: var(--text-primary);
+    font-size: var(--text-2xl);
+    font-weight: var(--weight-bold);
     margin: 0;
 }
 
 .confirmation-modal-message {
-    color: #cccccc;
-    font-size: 0.95rem;
-    line-height: 1.5;
+    color: var(--text-subtle);
+    font-size: var(--text-md);
+    line-height: var(--line-height-relaxed);
     margin: 1rem 0;
 }
 
@@ -74,15 +74,15 @@
     padding: 0.75rem;
     border: none;
     border-radius: 6px;
-    font-weight: 600;
-    font-size: 0.95rem;
+    font-weight: var(--weight-semibold);
+    font-size: var(--text-md);
     cursor: pointer;
     transition: all 0.2s;
 }
 
 .confirmation-modal-cancel {
     background-color: var(--lighter-black);
-    color: var(--white);
+    color: var(--text-primary);
 }
 
 .confirmation-modal-cancel:hover {
@@ -95,7 +95,7 @@
 
 .confirmation-modal-confirm {
     background-color: var(--umbc-gold);
-    color: #000000;
+    color: var(--text-on-accent);
 }
 
 .confirmation-modal-confirm:hover {
@@ -111,4 +111,10 @@
     display: flex;
     align-items: center;
     gap: 0.5rem; /* optional, for spacing between icon and text */
+}
+
+.warning-icon {
+    color: var(--text-warning);
+    font-size: var(--text-8xl) !important;
+    margin-right: 0.5rem;
 }

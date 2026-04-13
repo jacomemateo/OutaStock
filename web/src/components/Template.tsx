@@ -1,5 +1,6 @@
 import '@styles/Template.css';
-import logo from '@assets/transparent-gold-logo.png';
+import logoDark from '@assets/logo-white.png';
+import logoLight from '@assets/logo-black.png';
 import smallLogo from '@assets/tab-logo.png';
 import SystemUpdateIcon from '@mui/icons-material/SystemUpdate';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
@@ -99,10 +100,28 @@ const Template = () => {
                         onClick={() => setIsSidebarExpanded(!isSidebarExpanded)}
                         aria-label="Toggle sidebar"
                     >
-                        <img
-                            src={isSidebarExpanded ? logo : smallLogo}
-                            alt="Company Logo"
-                        />
+                        <div className="logo-wrapper">
+                            {isSidebarExpanded ? (
+                                <>
+                                    <img
+                                        className="logo logo-dark"
+                                        src={logoDark}
+                                        alt="Company Logo"
+                                    />
+                                    <img
+                                        className="logo logo-light"
+                                        src={logoLight}
+                                        alt="Company Logo"
+                                    />
+                                </>
+                            ) : (
+                                <img
+                                    className="logo logo-small"
+                                    src={smallLogo}
+                                    alt="Company Logo"
+                                />
+                            )}
+                        </div>
                     </button>
                 </div>
                 <nav className="sidebar-nav">
@@ -153,14 +172,14 @@ const Template = () => {
                         </ul>
                     ) : null}
                 </nav>
-                <div className="template-user-section">
+                <div
+                    className="template-user-section clickable"
+                    onClick={() => navigate('/dashboard/settings/profile')}
+                >
                     {isSidebarExpanded && (
                         <>
                             <div className="user-icon">{user?.name?.charAt(0)}</div>
-                            <div
-                                className="template-user-chip clickable"
-                                onClick={() => navigate('/dashboard/settings/profile')}
-                            >
+                            <div className="template-user-chip">
                                 <span className="template-user-name">
                                     {user?.name ?? 'Authenticated User'}
                                 </span>
@@ -174,8 +193,7 @@ const Template = () => {
                     )}
                     {!isSidebarExpanded && (
                         <div
-                            className="user-icon clickable"
-                            onClick={() => navigate('/dashboard/settings/profile')}
+                            className="user-icon"
                             data-tooltip-id="user-tooltip"
                             data-tooltip-content={user?.name ?? 'Profile'}
                             data-tooltip-place="right"

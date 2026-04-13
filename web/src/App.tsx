@@ -1,5 +1,7 @@
 import '@/App.css';
 import '@styles/Global.css';
+import '@styles/Buttons.css';
+import '@styles/TableUtils.css';
 import { Navigate, Route, Routes } from 'react-router-dom';
 import AuthCallback from '@components/AuthCallback';
 import LoadingScreen from '@components/LoadingScreen';

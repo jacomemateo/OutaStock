@@ -1,7 +1,7 @@
 .update-products-layout {
     display: flex;
     flex-direction: column;
-    gap: 0em;          /* 👈 EXACT spacing you want */
+    gap: 0em; /* 👈 EXACT spacing you want */
     align-items: center; /* keeps everything centered */
     width: 100%;
 }
@@ -10,7 +10,6 @@
     background: var(--container-bg);
     border-radius: var(--container-radius);
     padding: 2rem;
-    /* box-shadow: var(--gold-shadow); */
     border: var(--border-color);
     animation: boxFadeIn 0.6s ease-out;
     display: flex;
@@ -18,6 +17,7 @@
     max-width: 1300px;
     margin: auto;
     flex-direction: column;
+    box-shadow: var(--shadow-soft);
 }
 
 .update-products-header {
@@ -31,17 +31,17 @@
 }
 
 .update-products-header h2 {
-    font-size: 1.5rem;
-    font-weight: 700;
-    color: var(--white);
+    font-size: var(--text-4xl);
+    font-weight: var(--weight-bold);
+    color: var(--text-primary);
     margin: 0 0 0.25rem 0;
 }
 
 .update-products-subtitle {
-    font-size: 0.9rem;
-    color: #888;
+    font-size: var(--text-sm);
+    color: var(--text-secondary);
     margin: 0;
-    font-weight: 500;
+    font-weight: var(--weight-medium);
 }
 
 .metric-cards {
@@ -57,23 +57,20 @@
 .card {
     background: var(--container-bg);
     border-radius: var(--container-radius);
+    box-shadow: var(--shadow-soft);
+
     padding: 1rem;
-    /* box-shadow: var(--gold-shadow); */
     border: var(--border-color);
     animation: boxFadeIn 0.6s ease-out;
     display: flex;
-    /* height: 80vh; */
-    /* max-width: 1300px; */
-    /* margin: auto; */
-    /* margin: 0 1rem; */
     flex-direction: column;
     padding-right: 4rem;
 }
 
 .card-title {
-    font-size: 16px;
-    font-weight: 700;
-    color: var(--white);
+    font-size: var(--text-base);
+    font-weight: var(--weight-bold);
+    color: var(--text-primary);
     margin: 0 0 1rem 0;
     display: flex;
     align-items: center;
@@ -81,72 +78,38 @@
 }
 
 .card-subtitle {
-    font-size: 0.9rem;
-    color: var(--even-lighter-black);
+    font-size: var(--text-sm);
+    color: var(--text-secondary);
     margin: 0 0 1rem 0;
-    font-weight: 500;
+    font-weight: var(--weight-medium);
 }
 
 .all-products-stock {
     gap: 2rem;
 }
 
-.add-product-btn {
-    background-color: var(--umbc-gold);
-    color: white;
-    border: none;
-    border-radius: 6px;
-    width: 36px;
-    height: 36px;
-    font-size: 24px;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: background-color 0.2s;
-    top: 20px;
-    left: 20px;
-}
-
-.add-product-btn:hover {
-    opacity: 0.7;
-}
-
-.update-products-container .products-table {
-    table-layout: fixed;
-}
-
-.update-products-container .products-table thead th {
-    position: sticky;            /* make header sticky */
-    top: 0;                       /* stick to top of scroll container */
-    z-index: 10;                  /* stay above table rows */
-}
-
-.update-products-container .products-table th:nth-child(1),
-.update-products-container .products-table td:nth-child(1) {
-    width: 25%;
-}
-
-.update-products-container .products-table th:nth-child(2),
-.update-products-container .products-table td:nth-child(2) {
-    width: 25%;
-}
-
-.update-products-container .products-table th:nth-child(3),
-.update-products-container .products-table td:nth-child(3) {
-    width: 25%;
-}
-
-/* .update-products-container .products-table th:nth-child(4),
-.update-products-container .products-table td:nth-child(4) {
-    width: 25%;
-} */
-
-.update-products-container .products-table th:last-child,
-.update-products-container .products-table td:last-child {
-    padding-right: 5rem;
+.update-products-container thead th {
+    position: sticky; /* make header sticky */
+    top: 0; /* stick to top of scroll container */
+    z-index: 10; /* stay above table rows */
 }
 
 .card-value {
-    color: var(--white);
+    color: var(--text-primary);
+}
+
+.metric-icon-accent {
+    color: var(--text-accent);
+}
+
+.metric-icon-warning {
+    color: var(--text-warning-bright);
+}
+
+.metric-icon-neutral {
+    color: var(--text-neutral);
+}
+
+.metric-icon-danger {
+    color: var(--text-danger);
 }
