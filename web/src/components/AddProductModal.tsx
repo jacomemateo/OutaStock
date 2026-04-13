@@ -4,7 +4,7 @@ import '@styles/AddProductModal.css';
 interface AddProoductModalProps {
     isOpen: boolean;
     onClose: () => void;
-    onSave: (name: string, priceCents: number) => void;
+    onSave: (name: string, costCents: number, priceCents: number) => void;
 }
 
 const AddProductModal = ({ isOpen, onClose, onSave }: AddProoductModalProps) => {
@@ -16,7 +16,7 @@ const AddProductModal = ({ isOpen, onClose, onSave }: AddProoductModalProps) => 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         const { name, priceCents } = formData;
-        onSave(name, Math.round(parseFloat(priceCents) * 100));
+        onSave(name, Math.round(parseFloat(priceCents) * 100), Math.round(parseFloat(priceCents) * 100));
         setFormData({ name: '', priceCents: '' }); // Reset form
         onClose(); // Close modal after saving
     };

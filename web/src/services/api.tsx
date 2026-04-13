@@ -126,12 +126,12 @@ export const updateSlotProductAndQuantity = async (
     }
 };
 
-export const createProduct = async (name: string, priceCents: number) => {
+export const createProduct = async (name: string, costCents: number, priceCents: number) => {
     try {
         const response = await authFetch(`${API_BASE_URL}/products/new`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ name, priceCents }),
+            body: JSON.stringify({ name, costCents, priceCents }),
         });
         if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
         return await response.json();
@@ -171,6 +171,22 @@ export const updateProductPrice = async (productID: string, priceCents: number) 
         return await response.json();
     } catch (error) {
         console.error(`Error updating product price:`, error);
+        throw error;
+    }
+};
+
+export const updateProductCost = async (productID: string, costCents: number) => {
+    try {
+        const response = await authFetch(`${API_BASE_URL}/products/${productID}`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ costCents }),
+        });
+
+        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+        return await response.json();
+    } catch (error) {
+        console.error(`Error updating product cost:`, error);
         throw error;
     }
 };

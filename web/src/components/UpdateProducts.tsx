@@ -14,10 +14,11 @@ import { fetchInventory, getInventoryCount, createProduct } from '@/services/api
 import ConfirmationModal from '@components/ConfirmationModal';
 import { deleteProduct } from '@/services/api';
 import EditProductModal from './EditProductModal';
-import { updateProductPrice } from '@/services/api';
+import { updateProductPrice, updateProductCost } from '@/services/api';
 interface Product {
     id: string;
     name: string;
+    costCents: number;
     priceCents: number;
     dateCreated: string;
 }
@@ -80,7 +81,7 @@ const UpdateProducts = () => {
         }
     };
 
-    const handleSaveNewProduct = async (name: string, priceCents: number) => {
+    const handleSaveNewProduct = async (name: string, costCents: number, priceCents: number) => {
         if (
             products.some((product) => product.name.toLowerCase() === name.toLowerCase())
         ) {
@@ -90,7 +91,7 @@ const UpdateProducts = () => {
         try {
             // const newProduct = await createProduct(name, priceCents);
             // setProducts((prevProducts) => [...prevProducts, newProduct]);
-            await createProduct(name, priceCents);
+            await createProduct(name, costCents, priceCents);
             await loadProducts(); // Reload fresh data from backend
             showAlert(`${name} added successfully!`, 'success');
         } catch (error) {
@@ -118,16 +119,24 @@ const UpdateProducts = () => {
         setSlotToDelete(null);
     };
 
-    const handleSaveEditedProduct = async (productId: string, priceCents: number) => {
-        try {
-            await updateProductPrice(productId, priceCents);
-            await loadProducts(); // Reload fresh data from backend
-            showAlert('Product price updated successfully!', 'success');
-        } catch (error) {
-            console.error('Error updating product:', error);
-            showAlert('Failed to update product.', 'error');
-        }
-    };
+    const handleSaveEditedProduct = async (
+    productId: string,
+    costCents: number,
+    priceCents: number
+) => {
+    try {
+        await updateProductPrice(productId, priceCents);
+
+        // 🔥 ADD THIS (you need backend endpoint or reuse PATCH)
+        await updateProductCost(productId, costCents);
+
+        await loadProducts();
+        showAlert('Product updated successfully!', 'success');
+    } catch (error) {
+        console.error('Error updating product:', error);
+        showAlert('Failed to update product.', 'error');
+    }
+};
 
     useEffect(() => {
         // getLowStockCount();
@@ -246,7 +255,7 @@ const UpdateProducts = () => {
                                         }
                                     >
                                         <td>{product.name}</td>
-                                        <td>Waiting</td>
+                                        <td>${(product.costCents / 100).toFixed(2)}</td>
                                         <td>${(product.priceCents / 100).toFixed(2)}</td>
                                         {isEditMode && (
                                             <td className="edit-btn-cell">

@@ -19,6 +19,7 @@ type Inventory struct {
 type ProductInfo struct {
 	ProductID    pgtype.UUID
 	Name         string
+	CostCents    int32
 	PriceCents   int32
 	DateCreated  pgtype.Timestamptz
 	DateModified pgtype.Timestamptz

@@ -1,17 +1,17 @@
 import { useState } from 'react';
-import { FormControl } from '@mui/material';
 
 interface Product {
     id: string;
     name: string;
     priceCents: number;
+    costCents: number;
     dateCreated: string;
 }
 
 interface EditProductModalProps {
     isOpen: boolean;
     onClose: () => void;
-    onSave: (productId: string, priceCents: number) => void;
+    onSave: (productId: string, costCents: number, priceCents: number) => void;
     product?: Product;
 }
 
@@ -25,17 +25,27 @@ const EditProductModal = ({
         product ? (product.priceCents / 100).toFixed(2) : '',
     );
 
+    const [cost, setCost] = useState(
+        product ? (product.costCents / 100).toFixed(2) : '',
+    );
+
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
 
-        // Validation
         if (!price || parseFloat(price) <= 0) {
             alert('Please enter a valid price');
             return;
         }
 
+        if (!cost || parseFloat(cost) < 0) {
+            alert('Please enter a valid cost');
+            return;
+        }
+
         const priceCents = Math.round(parseFloat(price) * 100);
-        onSave(product!.id, priceCents);
+        const costCents = Math.round(parseFloat(cost) * 100);
+
+        onSave(product!.id, costCents, priceCents);
         onClose();
     };
 
@@ -52,20 +62,28 @@ const EditProductModal = ({
                 </div>
 
                 <form onSubmit={handleSubmit}>
-                    {/* <FormControl fullWidth sx={{ mb: 2 }}>
-                        <label>Current Price: ${(product?.priceCents || 0) / 100}</label>
-                    </FormControl> */}
                     <label>
-                        New Price:
+                        Cost:
                         <input
                             type="number"
-                            placeholder="New Price"
+                            value={cost}
+                            onChange={(e) => setCost(e.target.value)}
+                            step="0.01"
+                            min="0"
+                        />
+                    </label>
+
+                    <label>
+                        Price:
+                        <input
+                            type="number"
                             value={price}
                             onChange={(e) => setPrice(e.target.value)}
                             step="0.01"
                             min="0"
                         />
                     </label>
+
                     <button type="submit">Save Changes</button>
                 </form>
             </div>

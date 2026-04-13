@@ -1,8 +1,8 @@
 -- code: language=postgres
 
 -- name: CreateProduct :exec
-INSERT INTO product_info (name, price_cents)
-VALUES ( @name, @price_cents );
+INSERT INTO product_info (name, cost_cents, price_cents)
+VALUES ( @name, @cost_cents, @price_cents );
 
 -- name: UpdateProductName :exec
 UPDATE product_info
@@ -14,11 +14,9 @@ UPDATE product_info
 SET price_cents = @price_cents
 WHERE product_id = @product_id;
 
--- name: UpdateProduct :exec
+-- name: UpdateProductCost :exec
 UPDATE product_info
-SET
-    price_cents = @price_cents,
-    name = @name
+SET cost_cents = @cost_cents
 WHERE product_id = @product_id;
 
 -- name: DeleteProduct :exec
