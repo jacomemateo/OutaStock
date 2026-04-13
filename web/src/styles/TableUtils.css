@@ -48,7 +48,7 @@
 }
 
 .table-list {
-    max-height: 60vh;
+    max-height: 65vh;
     overflow-y: auto;
     border: 1px solid var(--lighter-black);
     border-radius: 8px;
