@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useLayoutEffect } from 'react';
 import { fetchTransactions, getTransactionCount } from '@/services/api';
 import '@styles/Home/RecentTransactions.css';
 
@@ -15,22 +15,86 @@ const RecentTransactions = () => {
     const [currentPage, setCurrentPage] = useState(1);
     const [isLoading, setIsLoading] = useState(false);
 
-    const itemsPerPage = 5;
+    const [itemsPerPage, setItemsPerPage] = useState(0);
 
-    // CHANGE 1: Set your desired page limit here.
-    // If the database has 100 items (20 pages), this will cap it at 5 pages.
+    const containerRef = useRef<HTMLDivElement>(null);
+    const probeRef = useRef<HTMLDivElement>(null);
+
     const MAX_PAGES = 5;
+    const gap = 16;
 
+    // -----------------------------
+    // FIX 1: ResizeObserver (still useful)
+    // -----------------------------
+    useLayoutEffect(() => {
+        if (!containerRef.current) return;
+
+        const calculateSpace = () => {
+            const containerHeight = containerRef.current?.clientHeight || 0;
+
+            const firstCard =
+                containerRef.current?.querySelector('.transaction-card') as HTMLElement;
+
+            const itemHeight =
+                firstCard?.offsetHeight || probeRef.current?.offsetHeight || 70;
+
+            if (containerHeight > 0 && itemHeight > 0) {
+                const fitCount = Math.floor(
+                    (containerHeight - gap) / (itemHeight + gap)
+                );
+
+                setItemsPerPage(Math.max(1, fitCount));
+            }
+        };
+
+        const observer = new ResizeObserver(() => {
+            calculateSpace();
+        });
+
+        observer.observe(containerRef.current);
+        calculateSpace();
+
+        return () => observer.disconnect();
+    }, []);
+
+    // -----------------------------
+    // FIX 2: IMPORTANT — recalc AFTER transactions render
+    // -----------------------------
+    useLayoutEffect(() => {
+        if (!containerRef.current) return;
+
+        requestAnimationFrame(() => {
+            const containerHeight = containerRef.current?.clientHeight || 0;
+
+            const firstCard =
+                containerRef.current?.querySelector('.transaction-card') as HTMLElement;
+
+            const itemHeight =
+                firstCard?.offsetHeight || probeRef.current?.offsetHeight || 70;
+
+            if (containerHeight > 0 && itemHeight > 0) {
+                const fitCount = Math.floor(
+                    (containerHeight - gap) / (itemHeight + gap)
+                );
+
+                setItemsPerPage(Math.max(1, fitCount));
+            }
+        });
+    }, [transactions.length]);
+
+    // -----------------------------
+    // DATA LOADING
+    // -----------------------------
     const loadData = async () => {
+        if (itemsPerPage === 0) return;
+
         setIsLoading(true);
         try {
             const countData = await getTransactionCount();
-
-            // CHANGE 2: Fix the type mismatch.
-            // Your backend returns a raw number (e.g. 54), not an object { count: 54 }.
-            // We check if it's an object or a number to be safe.
             const rawCount =
-                typeof countData === 'number' ? countData : (countData as any).count;
+                typeof countData === 'number'
+                    ? countData
+                    : (countData as any).count;
 
             if (rawCount !== undefined) {
                 setTotalItems(rawCount);
@@ -46,21 +110,36 @@ const RecentTransactions = () => {
     };
 
     useEffect(() => {
+        if (itemsPerPage === 0) return;
+
         loadData();
         const interval = setInterval(loadData, 10000);
+
         return () => clearInterval(interval);
-    }, [currentPage]);
+    }, [currentPage, itemsPerPage]);
 
-    // Calculate total pages based on database count
-    const actualTotalPages = Math.ceil(totalItems / itemsPerPage);
+    // -----------------------------
+    // PAGINATION
+    // -----------------------------
+    const actualTotalPages =
+        itemsPerPage > 0 ? Math.ceil(totalItems / itemsPerPage) : 1;
 
-    // CHANGE 3: Apply the limit.
-    // Display the smaller of (Actual Pages) or (Max Allowed Pages).
-    // If actual is 0, default to 1.
     const totalPages = Math.min(actualTotalPages, MAX_PAGES) || 1;
 
+    useEffect(() => {
+        if (currentPage > totalPages) {
+            setCurrentPage(totalPages);
+        }
+    }, [totalPages, currentPage]);
+
+    // -----------------------------
+    // RENDER
+    // -----------------------------
     return (
-        <div className="page-card">
+        <div
+            className="page-card"
+            style={{ display: 'flex', flexDirection: 'column', height: '100%' }}
+        >
             <div className="card-header">
                 <div>
                     <h2>Recent Transactions</h2>
@@ -68,7 +147,30 @@ const RecentTransactions = () => {
                 </div>
             </div>
 
-            <div className={`transaction-list ${isLoading ? 'loading-opacity' : ''}`}>
+            <div
+                ref={containerRef}
+                className={`transaction-list ${isLoading ? 'loading-opacity' : ''}`}
+                style={{ flex: 1, overflow: 'hidden', position: 'relative' }}
+            >
+                {/* Probe */}
+                {transactions.length === 0 && (
+                    <div
+                        ref={probeRef}
+                        className="transaction-card"
+                        style={{
+                            visibility: 'hidden',
+                            position: 'absolute',
+                            width: '100%',
+                        }}
+                    >
+                        <div className="transaction-content">
+                            <div className="transaction-info">
+                                <h3 className="product-name">Probe</h3>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
                 {transactions.map((transaction, index) => (
                     <div
                         key={transaction.id}
@@ -85,13 +187,19 @@ const RecentTransactions = () => {
                                         {transaction.productName}
                                     </h3>
                                     <p className="transaction-date">
-                                        {new Date(transaction.dateSold).toLocaleString()}
+                                        {new Date(
+                                            transaction.dateSold
+                                        ).toLocaleString()}
                                     </p>
                                 </div>
                             </div>
+
                             <div className="transaction-right">
                                 <span className="transaction-price">
-                                    ${(transaction.priceAtSaleCents / 100).toFixed(2)}
+                                    $
+                                    {(transaction.priceAtSaleCents / 100).toFixed(
+                                        2
+                                    )}
                                 </span>
                             </div>
                         </div>
@@ -109,14 +217,12 @@ const RecentTransactions = () => {
                 </button>
 
                 <span className="pagination-info">
-                    {/* This now correctly shows "Page 1 of 5" based on the limit */}
                     Page {currentPage} of {totalPages}
                 </span>
 
                 <button
                     className="pagination-btn"
                     onClick={() => setCurrentPage((p) => p + 1)}
-                    // This now correctly stops at the calculated totalPages
                     disabled={currentPage === totalPages || isLoading}
                 >
                     Next

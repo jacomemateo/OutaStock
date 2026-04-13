@@ -2,7 +2,13 @@
     display: flex;
     flex-direction: column;
     gap: 1rem;
-    margin-bottom: 1.5rem;
+    flex: 1;
+    min-height: 0;
+    margin-bottom: 0;
+
+    /* ✅ ADD THIS */
+    padding-bottom: 1rem;
+    box-sizing: border-box;
 }
 
 .transaction-card {
@@ -10,6 +16,8 @@
     background: transparent;
     border-radius: var(--container-radius);
     padding: 1.25rem;
+    flex-shrink: 0;   /* CRITICAL: Prevents cards from shrinking to fit the container */
+    
     transition: transform 0.2s ease;
     cursor: pointer;
     overflow: hidden;
@@ -105,7 +113,8 @@
     justify-content: center;
     align-items: center;
     gap: 1.5rem;
-    padding-top: 1rem;
+    padding-top: 1.5rem; /* Increased to compensate for the removed margin-bottom */
+    margin-top: auto;    /* Pushes pagination to the very bottom of the card */
     border-top: 1px solid var(--lighter-black);
 }
 
