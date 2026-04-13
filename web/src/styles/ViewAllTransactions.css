@@ -16,6 +16,56 @@
     width: 100%;
 }
 
+.sorted-by {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    padding: 1rem;
+    /* background: var(--lighter-black); */
+    /* border-radius: var(--container-radius); */
+    /* border: 1px solid var(--lighter-black); */
+    max-width: 1300px;
+    margin-left: auto;
+    margin-right: auto;
+    width: 100%;
+    margin-top: 25px;
+}
+
+.sorted-by span {
+    color: var(--text-primary);
+    font-weight: 500;
+    font-size: 0.95rem;
+}
+
+.sorted-by-select {
+    background: var(--container-bg);
+    border: 1px solid var(--lighter-black);
+    color: var(--text-primary);
+    padding: 0.5rem 0.75rem;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+.sorted-by-select:hover:not(:disabled) {
+    border-color: var(--umbc-gold);
+    background: var(--lighter-black);
+}
+
+.sorted-by-select:focus {
+    outline: none;
+    border-color: var(--umbc-gold);
+    box-shadow: 0 0 0 2px rgba(212, 165, 53, 0.1);
+}
+
+.sorted-by-select:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
 .view-all-transactions-header {
     margin-bottom: 1.5rem;
     border-bottom: 1px solid var(--lighter-black);
@@ -70,6 +120,8 @@
     text-align: left;
     font-weight: 600;
     color: var(--umbc-gold);
+    background: var(--container-bg);
+
     /* border-bottom: 2px solid var(--umbc-gold); */
 }
 

@@ -15,8 +15,9 @@ const ViewAllTransactions = () => {
     const [totalItems, setTotalItems] = useState(0);
     const [currentPage, setCurrentPage] = useState(1);
     const [isLoading, setIsLoading] = useState(false);
+    const [sortBy, setSortBy] = useState('Date');
 
-    const itemsPerPage = 15;
+    const itemsPerPage = 20;
 
     const loadTransactions = async () => {
         setIsLoading(true);
@@ -42,21 +43,50 @@ const ViewAllTransactions = () => {
         loadTransactions();
     }, [currentPage]);
 
+    const sortTransactions = (data: Transaction[]): Transaction[] => {
+        const sorted = [...data];
+        switch (sortBy) {
+            case 'Product':
+                return sorted.sort((a, b) => a.productName.localeCompare(b.productName));
+            case 'Date':
+                return sorted.sort(
+                    (a, b) =>
+                        new Date(b.dateSold).getTime() - new Date(a.dateSold).getTime(),
+                );
+            case 'Time':
+                return sorted.sort((a, b) => {
+                    const timeA = new Date(a.dateSold).getTime();
+                    const timeB = new Date(b.dateSold).getTime();
+                    return timeB - timeA;
+                });
+            case 'Price':
+                return sorted.sort((a, b) => b.priceAtSaleCents - a.priceAtSaleCents);
+            default:
+                return sorted;
+        }
+    };
+
+    const sortedTransactions = sortTransactions(transactions);
+
     const totalPages = Math.ceil(totalItems / itemsPerPage) || 1;
 
     return (
         <>
             <div className="sorted-by">
                 <span>Sorted by:</span>
-                <select className="sorted-by-select" disabled>
+                <select
+                    className="sorted-by-select"
+                    value={sortBy}
+                    onChange={(e) => setSortBy(e.target.value)}
+                >
                     {sortedByOptions.map((option) => (
-                        <option key={option} value={option.toLowerCase()}>
+                        <option key={option} value={option}>
                             {option}
                         </option>
                     ))}
                 </select>
             </div>
-            
+
             <div className="view-all-transactions-container">
                 <div className="view-all-transactions-header">
                     <h2>Transactions</h2>
@@ -68,7 +98,7 @@ const ViewAllTransactions = () => {
                 <div
                     className={`transactions-list ${isLoading ? 'loading-opacity' : ''}`}
                 >
-                    {transactions.length > 0 ? (
+                    {sortedTransactions.length > 0 ? (
                         <table className="transactions-table">
                             <thead>
                                 <tr>
@@ -79,7 +109,7 @@ const ViewAllTransactions = () => {
                                 </tr>
                             </thead>
                             <tbody>
-                                {transactions.map((transaction, index) => {
+                                {sortedTransactions.map((transaction, index) => {
                                     const dateObj = new Date(transaction.dateSold);
                                     const date = dateObj.toLocaleDateString();
                                     const time = dateObj.toLocaleTimeString();
