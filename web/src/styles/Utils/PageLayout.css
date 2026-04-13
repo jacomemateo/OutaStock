@@ -129,8 +129,8 @@
 .grid-container {
     padding-left: 4rem;
     padding-right: 4rem;
-    padding-top: 3rem;
-    padding-bottom: 3rem;
+    padding-top: 4rem;
+    padding-bottom: 4rem;
 
     flex: 1; /* fill remaining height */
     min-height: 0; /* CRITICAL */
