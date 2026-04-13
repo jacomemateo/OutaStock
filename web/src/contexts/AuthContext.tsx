@@ -6,6 +6,8 @@ import {
     getStoredSession,
     isAuthConfigured,
     isSessionExpired,
+    loginHeadless,
+    setStoredSession,
     startLogin,
     startLogout,
     type AuthSession,
@@ -20,7 +22,9 @@ interface AuthContextValue {
     isAuthenticated: boolean;
     isConfigured: boolean;
     session: AuthSession | null;
+    setSessionManually: (session: AuthSession | null) => void;
     signIn: (returnTo?: string) => Promise<void>;
+    signInHeadless: (username: string, password: string) => Promise<AuthSession>;
     signOut: () => Promise<void>;
     status: AuthStatus;
     user: AuthSession['user'] | null;
@@ -53,6 +57,19 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         setSession(storedSession);
         setStatus(storedSession ? 'authenticated' : 'anonymous');
     }, []);
+
+    const setSessionManually = (nextSession: AuthSession | null) => {
+        if (!nextSession) {
+            clearStoredSession();
+            setSession(null);
+            setStatus('anonymous');
+            return;
+        }
+
+        setStoredSession(nextSession);
+        setSession(nextSession);
+        setStatus('authenticated');
+    };
 
     useEffect(() => {
         if (!session) {
@@ -88,13 +105,29 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
         try {
             const result = await completeLogin(callbackUrl);
-            setSession(result.session);
-            setStatus('authenticated');
+            setSessionManually(result.session);
             return result.returnTo;
         } catch (caughtError) {
-            clearStoredSession();
-            setSession(null);
-            setStatus('anonymous');
+            setSessionManually(null);
+            setError(
+                caughtError instanceof Error
+                    ? caughtError.message
+                    : 'Sign-in failed unexpectedly.',
+            );
+            throw caughtError;
+        }
+    };
+
+    const signInHeadless = async (username: string, password: string) => {
+        setError(null);
+        setStatus('loading');
+
+        try {
+            const nextSession = await loginHeadless(username, password);
+            setSessionManually(nextSession);
+            return nextSession;
+        } catch (caughtError) {
+            setSessionManually(null);
             setError(
                 caughtError instanceof Error
                     ? caughtError.message
@@ -107,9 +140,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const signOut = async () => {
         setError(null);
         const currentSession = getStoredSession();
-        clearStoredSession();
-        setSession(null);
-        setStatus('anonymous');
+        setSessionManually(null);
         await startLogout(currentSession);
     };
 
@@ -122,7 +153,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
                 isAuthenticated: Boolean(session),
                 isConfigured: isAuthConfigured(),
                 session,
+                setSessionManually,
                 signIn,
+                signInHeadless,
                 signOut,
                 status,
                 user: session?.user ?? null,

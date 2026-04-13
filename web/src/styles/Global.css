@@ -29,6 +29,7 @@
     --tracking-label: 0.08em;
     --tracking-wide: 0.5px;
     --tracking-wider: 1px;
+
 }
 
 html {
@@ -53,7 +54,7 @@ select {
     --umbc-gold: #f9ad1e;
     --black-grey: rgb(72, 72, 72);
     --even-lighter-black: #888;
-    --lighter-black: rgba(255, 255, 255, 0.03);
+    --lighter-black: rgba(255, 0, 0, 0.03);
     --darker-black: #1a1a1a;
     --black: #000000;
     --white: #ffffff;
@@ -83,6 +84,7 @@ select {
     --text-loading-contrast: #ffffff;
 
     --error-color: var(--error-red);
+    --table-width: 3px solid var(--lighter-black);
 }
 
 :root[data-theme='light'] {
@@ -97,7 +99,7 @@ select {
     --umbc-gold: #f9ad1e;
     --black-grey: #444; /* for text and subtle borders */
     --even-lighter-black: #999; /* secondary text */
-    --lighter-black: rgba(19, 11, 11, 0.082); /* subtle dividers */
+    --lighter-black: rgba(162, 162, 162, 0.184); /* subtle dividers */
     --darker-black: #ebebebb8; /* for hover overlay / subtle contrast */
     --black: #000000;
     --white: #ffffff;
@@ -127,6 +129,9 @@ select {
     --text-loading-contrast: #ffffff;
 
     --error-color: var(--error-red);
+
+    --table-width-thick: 2px solid var(--lighter-black);
+    --table-width-thin: 1.5px solid var(--lighter-black);
 }
 
 .logo-wrapper {

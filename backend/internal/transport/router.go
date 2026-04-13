@@ -16,13 +16,14 @@ import (
 )
 
 type Router struct {
-	handlers []handlers.Handler
-	echo     *echo.Echo
-	database *service.Database // Just store the Database, not the raw pool
-	config   *config.Config
+	authHandler *handlers.AuthHandler
+	handlers    []handlers.Handler
+	echo        *echo.Echo
+	database    *service.Database // Just store the Database, not the raw pool
+	config      *config.Config
 }
 
-func NewRouter(database *service.Database, config *config.Config) *Router {
+func NewRouter(database *service.Database, config *config.Config) (*Router, error) {
 	r := Router{}
 	r.database = database
 	r.config = config
@@ -71,6 +72,15 @@ func NewRouter(database *service.Database, config *config.Config) *Router {
 	inventoryService := service.NewInventoryService(database)
 	productsService := service.NewProductsService(database)
 
+	if config.AuthEnabled {
+		authService, err := service.NewHeadlessAuthService(config)
+		if err != nil {
+			return nil, err
+		}
+
+		r.authHandler = handlers.NewAuthHandler(authService)
+	}
+
 	// Build handler list
 	r.handlers = []handlers.Handler{
 		handlers.NewTransactionsHandler(transactionsService),
@@ -78,7 +88,7 @@ func NewRouter(database *service.Database, config *config.Config) *Router {
 		handlers.NewProductsHandler(productsService),
 	}
 
-	return &r
+	return &r, nil
 }
 
 func (r *Router) Start(ctx context.Context, address string) error {
@@ -117,6 +127,10 @@ func (r *Router) addRoutes() {
 			"time":   time.Now().String(),
 		})
 	})
+
+	if r.authHandler != nil {
+		r.authHandler.RegisterRoutes(api)
+	}
 
 	protectedAPI := api.Group("")
 

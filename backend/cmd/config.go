@@ -8,15 +8,20 @@ import (
 )
 
 type Config struct {
-	DatabaseURL      string
-	Port             string
-	LogLevel         string
-	AuthEnabled      bool
-	ZitadelIssuer    string
-	IntrospectionURL string
-	APIClientID      string
-	APIClientSecret  string
-	ZitadelProjectID string
+	DatabaseURL                     string
+	Port                            string
+	LogLevel                        string
+	AuthEnabled                     bool
+	ZitadelAPIURL                   string
+	ZitadelIssuer                   string
+	IntrospectionURL                string
+	APIClientID                     string
+	APIClientSecret                 string
+	ZitadelOIDCClientID             string
+	ZitadelOIDCScope                string
+	ZitadelProjectID                string
+	ZitadelServiceUserMachineKeyB64 string
+	ZitadelServiceUserToken         string
 }
 
 func Load() (*Config, error) {
@@ -52,6 +57,8 @@ func Load() (*Config, error) {
 			return nil, err
 		}
 
+		cfg.ZitadelAPIURL = GetEnvOrDefault("ZITADEL_API_URL", cfg.ZitadelIssuer)
+
 		cfg.IntrospectionURL, err = GetEnv("ZITADEL_INTROSPECTION_URL")
 		if err != nil {
 			return nil, err
@@ -67,7 +74,24 @@ func Load() (*Config, error) {
 			return nil, err
 		}
 
+		cfg.ZitadelOIDCClientID, err = GetEnv("ZITADEL_OIDC_CLIENT_ID")
+		if err != nil {
+			return nil, err
+		}
+
 		cfg.ZitadelProjectID = GetEnvOrDefault("ZITADEL_PROJECT_ID", "")
+		defaultScope := "openid profile email"
+		if cfg.ZitadelProjectID != "" {
+			defaultScope += " urn:zitadel:iam:org:project:id:" + cfg.ZitadelProjectID + ":aud"
+		}
+
+		cfg.ZitadelOIDCScope = GetEnvOrDefault("ZITADEL_OIDC_SCOPE", defaultScope)
+		cfg.ZitadelServiceUserMachineKeyB64 = GetEnvOrDefault("ZITADEL_SERVICE_USER_MACHINE_KEY_BASE64", "")
+		cfg.ZitadelServiceUserToken = GetEnvOrDefault("ZITADEL_SERVICE_USER_TOKEN", "")
+
+		if cfg.ZitadelServiceUserMachineKeyB64 == "" && cfg.ZitadelServiceUserToken == "" {
+			return nil, fmt.Errorf("failed to get environment variable: ZITADEL_SERVICE_USER_MACHINE_KEY_BASE64 or ZITADEL_SERVICE_USER_TOKEN")
+		}
 	}
 
 	return cfg, nil

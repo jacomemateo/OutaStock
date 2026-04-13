@@ -71,6 +71,61 @@
     animation: fadeIn 0.8s ease-in 1.2s forwards;
 }
 
+.login-form {
+    width: min(420px, calc(100vw - 3rem));
+    margin-top: 2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    opacity: 0;
+    animation: fadeIn 0.8s ease-in 1s forwards;
+}
+
+.login-field {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.45rem;
+    color: var(--text-loading-body);
+    font-weight: var(--weight-semibold);
+}
+
+.login-field span {
+    font-size: var(--text-sm);
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+.login-field input {
+    width: 100%;
+    border: 1px solid rgba(35, 50, 76, 0.2);
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.88);
+    color: var(--text-loading-title);
+    font-size: var(--text-base);
+    padding: 0.9rem 1rem;
+    transition:
+        border-color 0.2s ease,
+        box-shadow 0.2s ease,
+        transform 0.2s ease;
+}
+
+.login-field input:focus {
+    outline: none;
+    border-color: rgba(191, 160, 61, 0.9);
+    box-shadow: 0 0 0 3px rgba(191, 160, 61, 0.18);
+    transform: translateY(-1px);
+}
+
+.login-field input:disabled {
+    cursor: not-allowed;
+    opacity: 0.7;
+}
+
+.login-actions {
+    margin-top: 0.5rem;
+}
+
 .view-inventory {
     padding: 0.75rem 2.5rem;
     font-size: var(--text-xl);
@@ -136,5 +191,31 @@
     }
     to {
         transform: rotate(360deg);
+    }
+}
+
+@media (max-width: 768px) {
+    .loading-content img {
+        width: min(340px, calc(100vw - 2rem));
+    }
+
+    .loading-state-card {
+        margin-top: 1rem;
+        padding: 1.2rem;
+        width: min(620px, calc(100vw - 2rem));
+    }
+
+    .loading-state-card h1 {
+        font-size: var(--text-4xl);
+    }
+
+    .dashboard-btn {
+        margin-top: 2rem;
+        width: min(420px, calc(100vw - 3rem));
+    }
+
+    .view-inventory,
+    .secondary-action {
+        width: 100%;
     }
 }

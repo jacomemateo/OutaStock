@@ -13,11 +13,12 @@
     text-align: left;
     font-weight: var(--weight-semibold);
     color: var(--text-accent);
+    border-bottom: var(--table-width-thick);
 }
 
 .table td {
     padding: 0.75rem 1rem;
-    border-bottom: 1px solid var(--lighter-black);
+    border-bottom: var(--table-width-thin);
 }
 
 .table tbody tr {
@@ -50,8 +51,8 @@
 .table-list {
     max-height: 55vh;
     overflow-y: auto;
-    border: 1px solid var(--lighter-black);
-    border-radius: 8px;
+    border: var(--table-width-thick);
+    border-radius:var(--container-radius);
     scrollbar-color: var(--umbc-gold) var(--darker-black);
 
     opacity: 0;

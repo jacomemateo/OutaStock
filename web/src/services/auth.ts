@@ -52,6 +52,23 @@ interface TokenResponse {
     token_type: string;
 }
 
+interface HeadlessLoginResponse {
+    accessToken: string;
+    expiresIn: number;
+    idToken?: string;
+    scope?: string;
+    tokenType: string;
+    user?: AuthUser;
+}
+
+interface SessionTokenPayload {
+    accessToken: string;
+    expiresIn: number;
+    idToken?: string;
+    scope?: string;
+    tokenType: string;
+}
+
 let oidcMetadataPromise: Promise<OidcMetadata> | null = null;
 
 function cleanRuntimeValue(value?: string): string | undefined {
@@ -68,6 +85,18 @@ function cleanRuntimeValue(value?: string): string | undefined {
 
 function getWindowOrigin() {
     return typeof window === 'undefined' ? 'http://localhost' : window.location.origin;
+}
+
+function getApiBaseUrl() {
+    const runtimeValue = cleanRuntimeValue(window.env?.API_BASE_URL);
+    const viteValue = cleanRuntimeValue(import.meta.env.VITE_API_URL);
+    const apiBaseUrl = runtimeValue ?? viteValue;
+
+    if (!apiBaseUrl) {
+        throw new Error('The frontend API base URL is not configured.');
+    }
+
+    return apiBaseUrl.replace(/\/+$/, '');
 }
 
 function isLoopbackHostname(hostname: string) {
@@ -187,7 +216,7 @@ function getPendingLogin() {
     return parseJsonStorage<PendingLogin>(AUTH_PENDING_LOGIN_STORAGE_KEY);
 }
 
-function storeSession(session: AuthSession) {
+export function setStoredSession(session: AuthSession) {
     window.localStorage.setItem(AUTH_SESSION_STORAGE_KEY, JSON.stringify(session));
 }
 
@@ -300,7 +329,11 @@ export function getAuthConfig(): AuthConfig | null {
 }
 
 export function isAuthConfigured() {
-    return getAuthConfig() !== null;
+    try {
+        return Boolean(getApiBaseUrl());
+    } catch {
+        return false;
+    }
 }
 
 async function getOidcMetadata() {
@@ -406,6 +439,23 @@ async function fetchUserInfo(accessToken: string) {
     return (await response.json()) as AuthUser;
 }
 
+function createAuthSession(
+    tokenPayload: SessionTokenPayload,
+    userInfo: AuthUser | null,
+    fallbackScope: string,
+) {
+    const user = normalizeUserProfile(userInfo, tokenPayload.idToken);
+
+    return {
+        accessToken: tokenPayload.accessToken,
+        expiresAt: Date.now() + tokenPayload.expiresIn * 1000,
+        idToken: tokenPayload.idToken,
+        scope: tokenPayload.scope ?? fallbackScope,
+        tokenType: tokenPayload.tokenType,
+        user,
+    } satisfies AuthSession;
+}
+
 export async function completeLogin(callbackUrl = window.location.href) {
     const config = getAuthConfig();
 
@@ -440,24 +490,69 @@ export async function completeLogin(callbackUrl = window.location.href) {
 
     const tokenResponse = await exchangeCodeForTokens(code, pendingLogin, config);
     const userInfo = await fetchUserInfo(tokenResponse.access_token);
-    const user = normalizeUserProfile(userInfo, tokenResponse.id_token);
+    const session = createAuthSession(
+        {
+            accessToken: tokenResponse.access_token,
+            expiresIn: tokenResponse.expires_in,
+            idToken: tokenResponse.id_token,
+            scope: tokenResponse.scope,
+            tokenType: tokenResponse.token_type,
+        },
+        userInfo,
+        config.scope,
+    );
 
-    const session: AuthSession = {
-        accessToken: tokenResponse.access_token,
-        expiresAt: Date.now() + tokenResponse.expires_in * 1000,
-        idToken: tokenResponse.id_token,
-        scope: tokenResponse.scope ?? config.scope,
-        tokenType: tokenResponse.token_type,
-        user,
-    };
-
-    storeSession(session);
+    setStoredSession(session);
     removePendingLogin();
 
     return {
         returnTo: pendingLogin.returnTo || '/dashboard',
         session,
     };
+}
+
+async function parseLoginError(response: Response) {
+    try {
+        const data = (await response.json()) as { message?: string };
+        return data.message ?? `Headless login failed with status ${response.status}.`;
+    } catch {
+        return `Headless login failed with status ${response.status}.`;
+    }
+}
+
+export async function loginHeadless(username: string, password: string) {
+    const config = getAuthConfig();
+    const fallbackScope = config?.scope ?? 'openid profile email';
+    const response = await fetch(`${getApiBaseUrl()}/auth/login`, {
+        body: JSON.stringify({
+            password,
+            username,
+        }),
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        method: 'POST',
+    });
+
+    if (!response.ok) {
+        throw new Error(await parseLoginError(response));
+    }
+
+    const loginResponse = (await response.json()) as HeadlessLoginResponse;
+    const session = createAuthSession(
+        {
+            accessToken: loginResponse.accessToken,
+            expiresIn: loginResponse.expiresIn,
+            idToken: loginResponse.idToken,
+            scope: loginResponse.scope,
+            tokenType: loginResponse.tokenType,
+        },
+        loginResponse.user ?? null,
+        fallbackScope,
+    );
+
+    setStoredSession(session);
+    return session;
 }
 
 export async function startLogout(session: AuthSession | null) {
