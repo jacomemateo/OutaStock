@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import '@styles/AddProductModal.css';
+import '@styles/Modals/AddProductModal.css';
 
 interface AddProoductModalProps {
     isOpen: boolean;

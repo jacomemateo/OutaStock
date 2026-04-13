@@ -1,4 +1,4 @@
-import '@styles/Profile.css';
+import '@styles/Settings/Profile.css';
 import { useAuth } from '@contexts/AuthContext';
 
 const Profile = () => {

@@ -1,4 +1,4 @@
-import '@styles/UpdateProducts.css';
+import '@styles/UpdateProducts/UpdateProducts.css';
 import InventoryIcon from '@mui/icons-material/Inventory';
 import HourglassDisabledIcon from '@mui/icons-material/HourglassDisabled';
 import RunningWithErrorsIcon from '@mui/icons-material/RunningWithErrors';
@@ -8,12 +8,12 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import AddIcon from '@mui/icons-material/Add';
 import { useEffect, useState } from 'react';
 import { fetchProducts, getProductCount } from '@/services/api';
-import AddProductModal from '@components/AddProductModal';
+import AddProductModal from '@/components/Modals/AddProductModal';
 import { useAlert } from '@contexts/SnackBarAlertContext';
 import { fetchInventory, getInventoryCount, createProduct } from '@/services/api';
-import ConfirmationModal from '@components/ConfirmationModal';
+import ConfirmationModal from '@/components/Modals/ConfirmationModal';
 import { deleteProduct } from '@/services/api';
-import EditProductModal from './EditProductModal';
+import EditProductModal from '@/components/Modals/EditProductModal';
 import { updateProductPrice, updateProductCost } from '@/services/api';
 interface Product {
     id: string;
@@ -150,53 +150,54 @@ const UpdateProducts = () => {
 
     return (
         <>
-            <div className="update-products-layout">
+            <div className="grid-container">
+                <div className="update-products-grid"></div>
                 <div className="metric-cards">
-                    <div className="card total-items-card">
-                        <h2 className="card-title">
+                    <div className="metric-card total-items-card">
+                        <h2 className="metric-card-title">
                             <InventoryIcon className="metric-icon-accent" /> Total Items
                         </h2>
-                        <p className="card-subtitle">Total items in stock</p>
-                        <p className="card-value">{products.length}</p>
+                        <p className="metric-card-subtitle">Total items in stock</p>
+                        <p className="metric-card-value">{products.length}</p>
                     </div>
 
-                    <div className="card low-stock-card">
-                        <h2 className="card-title">
+                    <div className="metric-card low-stock-card">
+                        <h2 className="metric-card-title">
                             <BatteryCharging20Icon className="metric-icon-warning" /> Low
                             Stock Items
                         </h2>
-                        <p className="card-subtitle">
+                        <p className="metric-card-subtitle">
                             Number of items that are running low
                         </p>
-                        <p className="card-value">{lowStockCount}</p>
+                        <p className="metric-card-value">{lowStockCount}</p>
                     </div>
 
-                    <div className="card out-of-stock-card">
-                        <h2 className="card-title">
+                    <div className="metric-card out-of-stock-card">
+                        <h2 className="metric-card-title">
                             <HourglassDisabledIcon className="metric-icon-neutral" /> Out
                             of Stock Items
                         </h2>
-                        <p className="card-subtitle">
+                        <p className="metric-card-subtitle">
                             Number of items that are out of stock
                         </p>
-                        <p className="card-value">30</p>
+                        <p className="metric-card-value">30</p>
                     </div>
 
-                    <div className="card expired-card">
-                        <h2 className="card-title">
+                    <div className="metric-card expired-card">
+                        <h2 className="metric-card-title">
                             <RunningWithErrorsIcon className="metric-icon-danger" />{' '}
                             Expired Items
                         </h2>
-                        <p className="card-subtitle">Number of items that are expired</p>
-                        <p className="card-value">30</p>
+                        <p className="metric-card-subtitle">Number of items that are expired</p>
+                        <p className="metric-card-value">30</p>
                     </div>
                 </div>
 
-                <div className="update-products-container">
-                    <div className="update-products-header">
+                <div className="page-card">
+                    <div className="card-header">
                         <div>
                             <h2>Products Overview</h2>
-                            <p className="update-products-subtitle">
+                            <p className="card-subtitle">
                                 View and modify all products
                             </p>
                         </div>

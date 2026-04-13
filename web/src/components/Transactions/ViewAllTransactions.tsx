@@ -1,4 +1,4 @@
-import '@styles/ViewAllTransactions.css';
+import '@styles/Transactions/ViewAllTransactions.css';
 
 const ViewAllTransactions = () => {
     return (

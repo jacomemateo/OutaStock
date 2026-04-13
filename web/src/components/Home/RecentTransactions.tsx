@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { fetchTransactions, getTransactionCount } from '@/services/api';
-import '@styles/RecentTransactions.css';
+import '@styles/Home/RecentTransactions.css';
 
 type Transaction = {
     id: string;
@@ -60,10 +60,14 @@ const RecentTransactions = () => {
     const totalPages = Math.min(actualTotalPages, MAX_PAGES) || 1;
 
     return (
-        <div className="transactions-container">
-            <div className="transactions-header">
+        <div className="page-card">
+            <div className="card-header">
+                <div>
                 <h2>Recent Transactions</h2>
-                <p className="transactions-subtitle">Latest sales activity</p>
+                <p className="card-subtitle">
+                    Latest sales activity
+                </p>
+                </div>
             </div>
 
             <div className={`transaction-list ${isLoading ? 'loading-opacity' : ''}`}>

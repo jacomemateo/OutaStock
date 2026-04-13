@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import '@styles/EditInventoryModal.css';
+import '@styles/Modals/EditInventoryModal.css';
 import { FormControl } from '@mui/material';
 
 /*

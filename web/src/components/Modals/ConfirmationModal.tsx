@@ -1,4 +1,4 @@
-import '@styles/ConfirmationModal.css';
+import '@styles/Modals/ConfirmationModal.css';
 import WarningIcon from '@mui/icons-material/Warning';
 
 interface ConfirmationModalProps {

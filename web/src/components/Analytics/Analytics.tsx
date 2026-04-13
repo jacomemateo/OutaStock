@@ -1,4 +1,4 @@
-import '@styles/Analytics.css';
+import '@styles/Analytics/Analytics.css';
 
 const Analytics = () => {
     return (

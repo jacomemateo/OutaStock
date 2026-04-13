@@ -1,0 +1,43 @@
+.update-products-layout {
+    display: flex;
+    flex-direction: column;
+    gap: 0em; /* 👈 EXACT spacing you want */
+    align-items: center; /* keeps everything centered */
+    width: 100%;
+}
+
+.metric-cards {
+    display: flex;
+    flex-direction: row;
+    gap: 2rem;
+    margin-bottom: 2rem;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+
+.all-products-stock {
+    gap: 2rem;
+}
+
+.update-products-container thead th {
+    position: sticky; /* make header sticky */
+    top: 0; /* stick to top of scroll container */
+    z-index: 10; /* stay above table rows */
+}
+
+.metric-icon-accent {
+    color: var(--text-accent);
+}
+
+.metric-icon-warning {
+    color: var(--text-warning-bright);
+}
+
+.metric-icon-neutral {
+    color: var(--text-neutral);
+}
+
+.metric-icon-danger {
+    color: var(--text-danger);
+}

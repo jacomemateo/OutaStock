@@ -1,0 +1,35 @@
+.inventory-header {
+    margin-bottom: 32px;
+}
+
+@keyframes tableFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.no-product {
+    color: var(--text-error);
+    font-weight: var(--weight-bold);
+}
+
+.empty-state {
+    text-align: center;
+    color: var(--text-secondary);
+    padding: 2rem;
+}
+
+.product-row {
+    opacity: 0; /* start hidden */
+    animation: cardFadeIn 0.5s ease-out forwards;
+    animation-delay: calc(var(--row-index, 0) * 0.1s);
+}
+
+.inventory-container {
+    animation: boxFadeIn 0.2s ease-out;
+}

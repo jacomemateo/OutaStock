@@ -1,4 +1,4 @@
-import '@styles/Alerts.css';
+import '@styles/Alerts/Alerts.css';
 
 const Alerts = () => {
     return (

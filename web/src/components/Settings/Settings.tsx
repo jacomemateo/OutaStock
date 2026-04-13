@@ -1,4 +1,4 @@
-import '@styles/Settings.css';
+import '@styles/Settings/Settings.css';
 import { useNavigate, useLocation, Routes, Route } from 'react-router-dom';
 import BedtimeIcon from '@mui/icons-material/Bedtime';
 import PersonIcon from '@mui/icons-material/Person';
@@ -6,8 +6,8 @@ import PersonIcon from '@mui/icons-material/Person';
 import { useEffect } from 'react';
 
 //Components
-import Apperance from '@/components/Apperance';
-import Profile from '@components/Profile';
+import Apperance from '@/components/Settings/Apperance';
+import Profile from '@/components/Settings/Profile';
 
 const Settings = () => {
     const navigate = useNavigate();

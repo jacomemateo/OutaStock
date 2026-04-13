@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { useAuth } from '@contexts/AuthContext';
-import LoadingScreen from '@components/LoadingScreen';
+import LoadingScreen from '@/components/LoadingScreen/LoadingScreen';
 
 let activeCallbackUrl: string | null = null;
 let activeCompletionPromise: Promise<string> | null = null;

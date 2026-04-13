@@ -13,12 +13,12 @@ import { Tooltip } from 'react-tooltip';
 import 'react-tooltip/dist/react-tooltip.css';
 
 // Page Components
-import UpdateProducts from '@components/UpdateProducts';
-import Analytics from '@components/Analytics';
-import Alerts from '@components/Alerts';
-import Settings from '@components/Settings';
-import DashBoard from '@components/Dashboard';
-import ViewAllTransactions from '@components/ViewAllTransactions';
+import UpdateProducts from '@components/UpdateProducts/UpdateProducts';
+import Analytics from '@/components/Analytics/Analytics';
+import Alerts from '@/components/Alerts/Alerts';
+import Settings from '@/components/Settings/Settings';
+import DashBoard from '@/components/Home/Dashboard';
+import ViewAllTransactions from '@/components/Transactions/ViewAllTransactions';
 
 import { useNavigate, useLocation, Routes, Route } from 'react-router-dom';
 import { useAuth } from '@contexts/AuthContext';

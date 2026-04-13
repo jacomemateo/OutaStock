@@ -1,10 +1,10 @@
-import '@styles/Inventory.css';
+import '@styles/Home/Inventory.css';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { useState, useEffect } from 'react';
 
-import EditInventoryModal from '@/components/EditInventoryModal';
-import ConfirmationModal from '@/components/ConfirmationModal';
+import EditInventoryModal from '@/components/Modals/EditInventoryModal';
+import ConfirmationModal from '@/components/Modals/ConfirmationModal';
 import { useAlert } from '@contexts/SnackBarAlertContext';
 
 import {
@@ -212,11 +212,11 @@ const Inventory = () => {
     };
 
     return (
-        <div className="inventory-container">
-            <div className="inventory-header">
+        <div className="page-card">
+            <div className="card-header">
                 <div>
                     <h2>Inventory</h2>
-                    <p className="inventory-subtitle">
+                    <p className="card-subtitle">
                         Products currently in the vending machine
                     </p>
                 </div>

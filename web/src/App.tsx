@@ -1,11 +1,12 @@
 import '@/App.css';
 import '@styles/Global.css';
-import '@styles/Buttons.css';
-import '@styles/TableUtils.css';
+import '@styles/Utils/Buttons.css';
+import '@styles/Utils/TableUtils.css';
+import '@styles/Utils/PageLayout.css';
 import { Navigate, Route, Routes } from 'react-router-dom';
-import AuthCallback from '@components/AuthCallback';
-import LoadingScreen from '@components/LoadingScreen';
-import ProtectedRoute from '@components/ProtectedRoute';
+import AuthCallback from '@/components/LoadingScreen/AuthCallback';
+import LoadingScreen from '@/components/LoadingScreen/LoadingScreen';
+import ProtectedRoute from '@/components/LoadingScreen/ProtectedRoute';
 import Template from '@components/Template';
 import AlertProvider from '@contexts/SnackBarAlertContext';
 import { useTheme } from '@contexts/ThemeContext';
