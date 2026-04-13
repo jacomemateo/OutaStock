@@ -2,7 +2,7 @@
 .page-card {
     background: var(--container-bg);
     border-radius: var(--container-radius);
-    padding: 2rem;
+    padding: var(--container-padding);
     border: var(--border-color);
     display: flex;
     flex-direction: column;
@@ -62,8 +62,8 @@
 /* ─── Shared metric grid ────────────────────────────────────────── */
 .metric-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-    gap: 1.25rem;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: var(--container-grid-gap-small);
     width: 100%;
 }
 
@@ -100,26 +100,40 @@
     font-size: var(--text-base);
     font-weight: var(--weight-bold);
     color: var(--text-primary);
-    margin-top: 1em;
+    margin-top: auto;
 }
 
 /* ─── Shared animations ─────────────────────────────────────────── */
 @keyframes boxFadeIn {
-    from { opacity: 0; transform: translateY(16px); }
-    to   { opacity: 1; transform: translateY(0); }
+    from {
+        opacity: 0;
+        transform: translateY(16px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 @keyframes rowFadeIn {
-    from { opacity: 0; transform: translateY(8px); }
-    to   { opacity: 1; transform: translateY(0); }
+    from {
+        opacity: 0;
+        transform: translateY(8px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 .grid-container {
     padding-left: 4rem;
     padding-right: 4rem;
+    padding-top: 3rem;
+    padding-bottom: 3rem;
 
-    flex: 1;          /* fill remaining height */
-    min-height: 0;    /* CRITICAL */
+    flex: 1; /* fill remaining height */
+    min-height: 0; /* CRITICAL */
     display: flex;
     flex-direction: column;
 }

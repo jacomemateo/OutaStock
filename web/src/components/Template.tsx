@@ -205,16 +205,16 @@ const Template = () => {
             </aside>
 
             <main className="main-content">
-                    {/* The Routes block now decides what to show based on the URL */}
-                    <Routes>
-                        {pages.map((page) => (
-                            <Route
-                                key={page.id}
-                                path={page.path === '' ? '/' : page.path + '/*'} // Add /* for nested routes
-                                element={page.component}
-                            />
-                        ))}
-                    </Routes>
+                {/* The Routes block now decides what to show based on the URL */}
+                <Routes>
+                    {pages.map((page) => (
+                        <Route
+                            key={page.id}
+                            path={page.path === '' ? '/' : page.path + '/*'} // Add /* for nested routes
+                            element={page.component}
+                        />
+                    ))}
+                </Routes>
             </main>
             <Tooltip id="nav-tooltip" />
             <Tooltip id="user-tooltip" />

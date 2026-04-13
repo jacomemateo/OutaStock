@@ -10,7 +10,6 @@
     background: var(--container-bg);
     padding-bottom: 1.5rem;
     padding-top: 1rem;
-    border-radius: var(--container-radius);
     border: none;
     border-right: var(--border-color);
     display: flex;
@@ -151,7 +150,6 @@
     flex-direction: column;
     min-height: 0; /* CRITICAL */
 }
-
 
 .template-header-content {
     align-items: center;

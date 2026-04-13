@@ -30,6 +30,9 @@
     --tracking-wide: 0.5px;
     --tracking-wider: 1px;
     --shadow-strong: 0 18px 38px rgba(0, 0, 0, 0.16);
+    --container-padding: 2rem;
+    --container-grid-gap: 4rem;
+    --container-grid-gap-small: 2rem;
 }
 
 html {
@@ -163,15 +166,4 @@ select {
 /* optional: small logo sizing */
 .logo-small {
     height: 28px;
-}
-
-.default-container {
-    background: var(--container-bg);
-    border-radius: var(--container-radius);
-    padding: 2rem;
-    border: var(--border-color);
-    display: flex;
-    flex-direction: column;
-    animation: boxFadeIn 0.6s ease-out;
-    box-shadow: var(--shadow-soft);
 }

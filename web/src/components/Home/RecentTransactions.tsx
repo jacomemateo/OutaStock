@@ -63,10 +63,8 @@ const RecentTransactions = () => {
         <div className="page-card">
             <div className="card-header">
                 <div>
-                <h2>Recent Transactions</h2>
-                <p className="card-subtitle">
-                    Latest sales activity
-                </p>
+                    <h2>Recent Transactions</h2>
+                    <p className="card-subtitle">Latest sales activity</p>
                 </div>
             </div>
 

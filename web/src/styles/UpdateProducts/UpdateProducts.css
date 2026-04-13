@@ -1,31 +1,11 @@
-.update-products-layout {
-    display: flex;
-    flex-direction: column;
-    gap: 0em; /* 👈 EXACT spacing you want */
-    align-items: center; /* keeps everything centered */
-    width: 100%;
-}
-
 .update-products-grid {
     display: grid;
     grid-template-rows: auto 1fr;
-    gap: 2rem;
+    gap: var(--container-grid-gap-small);
 
     flex: 1;
     min-height: 0;
 }
-
-
-
-.metric-cards {
-    display: flex;
-    flex-direction: row;
-    gap: 2rem;
-    margin-bottom: 2rem;
-    margin-left: auto;
-    margin-right: auto;
-}
-
 
 .all-products-stock {
     gap: 2rem;

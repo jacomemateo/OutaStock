@@ -154,7 +154,8 @@ const UpdateProducts = () => {
                     <div className="metric-grid">
                         <div className="metric-card total-items-card">
                             <h2 className="metric-card-title">
-                                <InventoryIcon className="metric-icon-accent" /> Total Items
+                                <InventoryIcon className="metric-icon-accent" /> Total
+                                Items
                             </h2>
                             <p className="metric-card-subtitle">Total items in stock</p>
                             <p className="metric-card-value">{products.length}</p>
@@ -162,8 +163,8 @@ const UpdateProducts = () => {
 
                         <div className="metric-card low-stock-card">
                             <h2 className="metric-card-title">
-                                <BatteryCharging20Icon className="metric-icon-warning" /> Low
-                                Stock Items
+                                <BatteryCharging20Icon className="metric-icon-warning" />{' '}
+                                Low Stock Items
                             </h2>
                             <p className="metric-card-subtitle">
                                 Number of items that are running low
@@ -173,8 +174,8 @@ const UpdateProducts = () => {
 
                         <div className="metric-card out-of-stock-card">
                             <h2 className="metric-card-title">
-                                <HourglassDisabledIcon className="metric-icon-neutral" /> Out
-                                of Stock Items
+                                <HourglassDisabledIcon className="metric-icon-neutral" />{' '}
+                                Out of Stock Items
                             </h2>
                             <p className="metric-card-subtitle">
                                 Number of items that are out of stock
@@ -198,7 +199,9 @@ const UpdateProducts = () => {
                         <div className="card-header">
                             <div>
                                 <h2>Products Overview</h2>
-                                <p className="card-subtitle">View and modify all products</p>
+                                <p className="card-subtitle">
+                                    View and modify all products
+                                </p>
                             </div>
                             <div className="update-products-actions">
                                 <button
@@ -226,7 +229,9 @@ const UpdateProducts = () => {
                                         <th className="col-product">Product</th>
                                         <th className="col-cost">Cost</th>
                                         <th className="col-price">Price</th>
-                                        {isEditMode && <th className="col-actions">Actions</th>}
+                                        {isEditMode && (
+                                            <th className="col-actions">Actions</th>
+                                        )}
                                     </tr>
                                 </thead>
 
@@ -242,16 +247,24 @@ const UpdateProducts = () => {
                                             }
                                         >
                                             <td>{product.name}</td>
-                                            <td>${(product.costCents / 100).toFixed(2)}</td>
-                                            <td>${(product.priceCents / 100).toFixed(2)}</td>
+                                            <td>
+                                                ${(product.costCents / 100).toFixed(2)}
+                                            </td>
+                                            <td>
+                                                ${(product.priceCents / 100).toFixed(2)}
+                                            </td>
                                             {isEditMode && (
                                                 <td className="edit-btn-cell">
                                                     <div className="action-btns">
                                                         <button
                                                             className="edit-btn-row"
                                                             onClick={() => {
-                                                                setIsEditProductModalOpen(true);
-                                                                setSelectedProduct(product);
+                                                                setIsEditProductModalOpen(
+                                                                    true,
+                                                                );
+                                                                setSelectedProduct(
+                                                                    product,
+                                                                );
                                                             }}
                                                         >
                                                             <EditIcon fontSize="small" />
@@ -261,7 +274,9 @@ const UpdateProducts = () => {
                                                             className="delete-btn-row"
                                                             onClick={() => {
                                                                 setConfirmationOpen(true);
-                                                                setSlotToDelete(product.id);
+                                                                setSlotToDelete(
+                                                                    product.id,
+                                                                );
                                                             }}
                                                         >
                                                             <DeleteIcon fontSize="small" />

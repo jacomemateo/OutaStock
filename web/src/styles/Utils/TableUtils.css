@@ -49,10 +49,10 @@
 }
 
 .table-list {
-    flex: 1;              /* take remaining space inside page-card */
-    min-height: 0;        /* CRITICAL: allows it to shrink */
-    overflow-y: auto;     /* scroll when content exceeds */
-    
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+
     border: var(--table-width-thick);
     border-radius: var(--container-radius);
     scrollbar-color: var(--umbc-gold) var(--darker-black);
@@ -105,5 +105,3 @@
 .delete-btn-row:hover {
     color: var(--text-error);
 }
-
-

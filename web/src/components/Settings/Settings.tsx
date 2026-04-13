@@ -56,51 +56,65 @@ const Settings = () => {
     }, [location.pathname]);
 
     return (
-        <div className="settings-container">
-            <aside className="settings-sidebar">
-                <nav className="settings-nav">
-                    <ul>
-                        {pages.map((page, idx) => (
-                            <>
-                                {/* Show section heading if it's the first item or section changed */}
-                                {idx === 0 || pages[idx - 1].section !== page.section ? (
-                                    <li className="settings-section-heading">
-                                        {page.section}
-                                    </li>
-                                ) : null}
+        <div className="grid-container">
+            <div className="settings-grid">
+                <div className="page-card settings-card">
+                    <div className="settings-container">
+                        <aside className="settings-sidebar">
+                            <nav className="settings-nav">
+                                <ul>
+                                    {pages.map((page, idx) => (
+                                        <>
+                                            {/* Show section heading if it's the first item or section changed */}
+                                            {idx === 0 ||
+                                            pages[idx - 1].section !== page.section ? (
+                                                <li className="settings-section-heading">
+                                                    {page.section}
+                                                </li>
+                                            ) : null}
 
-                                <li className={currentId === page.id ? 'active' : ''}>
-                                    <button
-                                        className="tab-btn"
-                                        onClick={() =>
-                                            navigate(`/dashboard/settings/${page.path}`)
-                                        }
-                                    >
-                                        {page.icon} {page.label}
-                                    </button>
-                                </li>
-                            </>
-                        ))}
-                    </ul>
-                </nav>
-            </aside>
+                                            <li
+                                                className={
+                                                    currentId === page.id ? 'active' : ''
+                                                }
+                                            >
+                                                <button
+                                                    className="tab-btn"
+                                                    onClick={() =>
+                                                        navigate(
+                                                            `/dashboard/settings/${page.path}`,
+                                                        )
+                                                    }
+                                                >
+                                                    {page.icon} {page.label}
+                                                </button>
+                                            </li>
+                                        </>
+                                    ))}
+                                </ul>
+                            </nav>
+                        </aside>
 
-            <main>
-                <header className="settings-heading-section">
-                    <h1 className="settings-heading">{activePage.label}</h1>
-                </header>
-                <div className="settings-content">
-                    <Routes>
-                        {pages.map((page) => (
-                            <Route
-                                key={page.id}
-                                path={page.path}
-                                element={page.component}
-                            />
-                        ))}
-                    </Routes>
+                        <main className="settings-main">
+                            <header className="settings-heading-section">
+                                <h1 className="settings-heading">{activePage.label}</h1>
+                            </header>
+
+                            <div className="settings-content">
+                                <Routes>
+                                    {pages.map((page) => (
+                                        <Route
+                                            key={page.id}
+                                            path={page.path}
+                                            element={page.component}
+                                        />
+                                    ))}
+                                </Routes>
+                            </div>
+                        </main>
+                    </div>
                 </div>
-            </main>
+            </div>
         </div>
     );
 };
