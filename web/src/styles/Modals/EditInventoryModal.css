@@ -5,7 +5,7 @@
     right: 0;
     bottom: 0;
     /* semi-transparent black background */
-    background-color: rgba(0, 0, 0, 0.5);
+    background-color: var(--modal-overlay-color);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -23,13 +23,13 @@
 }
 
 .modal-content {
-    background-color: #1a1a1a;
-    border: 1px solid #2a2a2a;
+    background-color: var(--darker-black);
+    border: var(--border-color);
     border-radius: 12px;
     padding: 2rem;
     max-width: 400px;
     width: 90%;
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+    box-shadow: var(--shadow-strong);
     animation: slideUp 0.3s ease-out;
     color: var(--text-primary);
 }

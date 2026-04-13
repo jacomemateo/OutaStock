@@ -57,7 +57,7 @@
 }
 
 .confirmation-modal-message {
-    color: var(--text-subtle);
+    color: var(--text-primary);
     font-size: var(--text-md);
     line-height: var(--line-height-relaxed);
     margin: 1rem 0;

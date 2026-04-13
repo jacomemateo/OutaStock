@@ -33,6 +33,7 @@
     --container-padding: 2rem;
     --container-grid-gap: 4rem;
     --container-grid-gap-small: 2rem;
+    --modal-overlay-color: rgba(0, 0, 0, 0.5);
 }
 
 html {
@@ -103,7 +104,7 @@ select {
     --black-grey: #444; /* for text and subtle borders */
     --even-lighter-black: #999; /* secondary text */
     --lighter-black: rgba(162, 162, 162, 0.184); /* subtle dividers */
-    --darker-black: #ebebebb8; /* for hover overlay / subtle contrast */
+    --darker-black: #ebebeb; /* for hover overlay / subtle contrast */
     --black: #000000;
     --white: #ffffff;
     --error-red: #ff4d4d;
