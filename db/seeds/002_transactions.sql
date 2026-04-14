@@ -2,12 +2,12 @@
 DO $$
 DECLARE
     counter INTEGER := 0;
-    max_attempts INTEGER := 1000;
+    max_attempts INTEGER := 2000000;
     attempts INTEGER := 0;
     rand_product RECORD;
     rand_time TIMESTAMPTZ;
 BEGIN
-    WHILE counter < 100 AND attempts < max_attempts LOOP
+    WHILE counter < 500000 AND attempts < max_attempts LOOP
         attempts := attempts + 1;
         
         -- Get random product
@@ -17,9 +17,10 @@ BEGIN
         LIMIT 1;
         
         -- Generate random time in last 30 days
-        rand_time := NOW() - (INTERVAL '1 day' * floor(random() * 30))
-                           - (INTERVAL '1 hour' * floor(random() * 24))
-                           - (INTERVAL '1 minute' * floor(random() * 60));
+        rand_time := to_timestamp(
+            extract(epoch FROM NOW() - INTERVAL '5 years') +
+            random() * extract(epoch FROM INTERVAL '5 years')
+        );
         
         -- Try to insert, catch unique violation
         BEGIN
