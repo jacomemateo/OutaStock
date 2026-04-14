@@ -69,6 +69,8 @@ WHERE date_deleted IS NULL
 ORDER BY
     CASE WHEN $2 = 'name' AND $3 = 'asc' THEN LOWER(name) END ASC,
     CASE WHEN $2 = 'name' AND $3 = 'desc' THEN LOWER(name) END DESC,
+    CASE WHEN $2 = 'cost' AND $3 = 'asc' THEN cost_cents END ASC,
+    CASE WHEN $2 = 'cost' AND $3 = 'desc' THEN cost_cents END DESC,
     CASE WHEN $2 = 'price' AND $3 = 'asc' THEN price_cents END ASC,
     CASE WHEN $2 = 'price' AND $3 = 'desc' THEN price_cents END DESC,
     CASE WHEN $2 = 'created_at' AND $3 = 'asc' THEN date_created END ASC,

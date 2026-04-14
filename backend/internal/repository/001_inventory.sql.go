@@ -53,6 +53,8 @@ FROM inventory cp
 LEFT JOIN product_info pi ON cp.product_id = pi.product_id AND pi.date_deleted IS NULL
 WHERE $1 = '' OR COALESCE(pi.name, '') ILIKE '%' || $1 || '%'
 ORDER BY
+    CASE WHEN $2 = 'location' AND $3 = 'asc' THEN cp.slot_label END ASC,
+    CASE WHEN $2 = 'location' AND $3 = 'desc' THEN cp.slot_label END DESC,
     CASE WHEN $2 = 'product' AND $3 = 'asc' THEN LOWER(pi.name) END ASC NULLS LAST,
     CASE WHEN $2 = 'product' AND $3 = 'desc' THEN LOWER(pi.name) END DESC NULLS LAST,
     CASE WHEN $2 = 'quantity' AND $3 = 'asc' THEN cp.quantity END ASC NULLS LAST,
