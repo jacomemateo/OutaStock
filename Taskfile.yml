@@ -174,6 +174,11 @@ tasks:
           echo "Seeding $file..."
           docker exec -i vending-db-prod psql -U $APP_DB_USER -d $APP_DB_NAME < $file
         done
+  
+  clear:
+    desc: Clear all data from the production database
+    cmds:
+      - docker exec -i vending-db-prod psql -U $APP_DB_USER -d $APP_DB_NAME < db/seeds/000_clear.sql
 
   dev-seed:
     desc: Run all database seeds on the development database
