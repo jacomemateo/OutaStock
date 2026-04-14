@@ -23,18 +23,18 @@ func NewProductsService(database *Database) *ProductsService {
 }
 
 // GetAllProducts gets paginated products and returns DTOs directly
-func (s *ProductsService) GetAllProducts(ctx context.Context, pageOffset int, numRows int) ([]dto.ProductResponse, error) {
-	// 1. Get total count for the pagination helper
-	totalRows64, err := s.database.Queries.CountProductRows(ctx)
+func (s *ProductsService) GetAllProducts(ctx context.Context, query ListQuery) ([]dto.ProductResponse, error) {
+	totalRows64, err := s.database.Queries.CountProductRows(ctx, query.Search)
 	if err != nil {
 		log.Error().Err(err).Msg("Failed to get product count from database")
 		return nil, err
 	}
 
-	// 2. Wrap the DB call and DTO mapping in the Paginate helper
-	return Paginate(int(totalRows64), pageOffset, numRows, func(calculatedOffset, limit int) ([]dto.ProductResponse, error) {
-		// 3. Call repository with safe offset and limit
+	return Paginate(int(totalRows64), query.PageOffset, query.NumRows, func(calculatedOffset, limit int) ([]dto.ProductResponse, error) {
 		rows, err := s.database.Queries.GetProducts(ctx, repository.GetProductsParams{
+			Search:     query.Search,
+			SortBy:     query.SortBy,
+			SortDir:    query.SortDir,
 			NumRows:    int32(limit),
 			PageOffset: int32(calculatedOffset),
 		})
@@ -51,7 +51,7 @@ func (s *ProductsService) GetAllProducts(ctx context.Context, pageOffset int, nu
 			productResponses = append(productResponses, dto.ProductResponse{
 				ID:          uuidString,
 				Name:        row.Name,
-				CostCents: int(row.CostCents),
+				CostCents:   int(row.CostCents),
 				PriceCents:  int(row.PriceCents),
 				DateCreated: &row.DateCreated.Time,
 			})
@@ -64,7 +64,7 @@ func (s *ProductsService) GetAllProducts(ctx context.Context, pageOffset int, nu
 func (s *ProductsService) CreateProduct(ctx context.Context, prod dto.CreateProductRequest) error {
 	product := repository.CreateProductParams{
 		Name:       prod.Name,
-		CostCents: int32(prod.CostCents),
+		CostCents:  int32(prod.CostCents),
 		PriceCents: int32(prod.PriceCents),
 	}
 
@@ -89,10 +89,10 @@ func (s *ProductsService) UpdateProduct(ctx context.Context, prodUUID uuid.UUID,
 	}
 
 	// both provided -> use the existing combined query
-	if req.Name != nil  {
+	if req.Name != nil {
 		args := repository.UpdateProductNameParams{
-			Name:       *req.Name,              // sqlc generated string
-			ProductID:  uuidPgtype,
+			Name:      *req.Name, // sqlc generated string
+			ProductID: uuidPgtype,
 		}
 		if err := s.database.Queries.UpdateProductName(ctx, args); err != nil {
 			log.Warn().Msgf("error updating product name: %v", err)
@@ -110,7 +110,7 @@ func (s *ProductsService) UpdateProduct(ctx context.Context, prodUUID uuid.UUID,
 	} else if req.CostCents != nil {
 		args := repository.UpdateProductCostParams{
 			CostCents: int32(*req.CostCents), // sqlc generated int32
-			ProductID:  uuidPgtype,
+			ProductID: uuidPgtype,
 		}
 		if err := s.database.Queries.UpdateProductCost(ctx, args); err != nil {
 			log.Warn().Msgf("error updating product cost: %v", err)
@@ -135,8 +135,8 @@ func (s *ProductsService) DeleteProduct(ctx context.Context, prodUUID uuid.UUID)
 	return nil
 }
 
-func (s *ProductsService) GetProductsCount(ctx context.Context) (int, error) {
-	count, err := s.database.Queries.CountProductRows(ctx)
+func (s *ProductsService) GetProductsCount(ctx context.Context, search string) (int, error) {
+	count, err := s.database.Queries.CountProductRows(ctx, search)
 	if err != nil {
 		log.Warn().Msg("Unable to get inventory row count")
 		return 0, err

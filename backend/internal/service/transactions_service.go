@@ -20,19 +20,18 @@ func NewTransactionsService(database *Database) *TransactionsService {
 }
 
 // GetTransactions gets paginated recent transactions and returns DTOs directly
-func (s *TransactionsService) GetTransactions(ctx context.Context, pageOffset int, numRows int) ([]dto.TransactionResponse, error) {
-	// 1. Get total transaction count for the pagination helper
-	totalRows64, err := s.database.Queries.CountTransactionRows(ctx)
+func (s *TransactionsService) GetTransactions(ctx context.Context, query ListQuery) ([]dto.TransactionResponse, error) {
+	totalRows64, err := s.database.Queries.CountTransactionRows(ctx, query.Search)
 	if err != nil {
 		log.Error().Err(err).Msg("Unable to get transaction row count")
 		return nil, err
 	}
 
-	// 2. Wrap the database call and mapping in the Paginate helper
-	// T here is []dto.TransactionResponse
-	return Paginate(int(totalRows64), pageOffset, numRows, func(calculatedOffset, limit int) ([]dto.TransactionResponse, error) {
-		// 3. Call repository using the safe offset and limit
+	return Paginate(int(totalRows64), query.PageOffset, query.NumRows, func(calculatedOffset, limit int) ([]dto.TransactionResponse, error) {
 		rows, err := s.database.Queries.GetTransactions(ctx, repository.GetTransactionsParams{
+			Search:     query.Search,
+			SortBy:     query.SortBy,
+			SortDir:    query.SortDir,
 			NumRows:    int32(limit),
 			PageOffset: int32(calculatedOffset),
 		})
@@ -58,8 +57,8 @@ func (s *TransactionsService) GetTransactions(ctx context.Context, pageOffset in
 	})
 }
 
-func (s *TransactionsService) GetTransactionsCount(ctx context.Context) (int, error) {
-	count, err := s.database.Queries.CountTransactionRows(ctx)
+func (s *TransactionsService) GetTransactionsCount(ctx context.Context, search string) (int, error) {
+	count, err := s.database.Queries.CountTransactionRows(ctx, search)
 	if err != nil {
 		log.Warn().Msg("Unable to get transaction row count")
 		return 0, err

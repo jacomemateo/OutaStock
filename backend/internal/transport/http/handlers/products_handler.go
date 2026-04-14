@@ -15,6 +15,12 @@ type ProductsHandler struct {
 	productsService *service.ProductsService
 }
 
+var productSortFields = map[string]SortFieldConfig{
+	"name":       {DefaultDirection: SortDirectionAsc},
+	"price":      {DefaultDirection: SortDirectionAsc},
+	"created_at": {DefaultDirection: SortDirectionDesc},
+}
+
 func NewProductsHandler(productsService *service.ProductsService) *ProductsHandler {
 	return &ProductsHandler{
 		productsService: productsService,
@@ -32,12 +38,18 @@ func (h *ProductsHandler) RegisterRoutes(api *echo.Group) {
 
 // GetAllIProducts handles GET /api/products/?num_rows=&page_offset=
 func (h *ProductsHandler) GetAllProducts(c *echo.Context) error {
-	paginationParams, err := ParsePagination(c)
+	listQuery, err := ParseListQuery(c, "name", SortDirectionAsc, productSortFields)
 	if err != nil {
 		return err
 	}
 
-	products, err := h.productsService.GetAllProducts(c.Request().Context(), paginationParams.PageOffset, paginationParams.NumRows)
+	products, err := h.productsService.GetAllProducts(c.Request().Context(), service.ListQuery{
+		PageOffset: listQuery.PageOffset,
+		NumRows:    listQuery.NumRows,
+		Search:     listQuery.Search,
+		SortBy:     listQuery.SortBy,
+		SortDir:    listQuery.SortDir,
+	})
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, map[string]string{
 			"error": "Failed to fetch products",
@@ -115,7 +127,7 @@ func (h *ProductsHandler) DeleteProduct(c *echo.Context) error {
 }
 
 func (h *ProductsHandler) GetProductsCount(c *echo.Context) error {
-	count, err := h.productsService.GetProductsCount(c.Request().Context())
+	count, err := h.productsService.GetProductsCount(c.Request().Context(), ParseSearch(c))
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, map[string]string{
 			"error": "Failed to get product count",

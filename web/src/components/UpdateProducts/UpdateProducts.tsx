@@ -239,7 +239,6 @@ const UpdateProducts = () => {
                                     {products.map((product, index) => (
                                         <tr
                                             key={product.id}
-                                            className="product-row"
                                             style={
                                                 {
                                                     '--row-index': index,

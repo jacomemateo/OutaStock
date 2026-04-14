@@ -32,16 +32,15 @@ const RecentTransactions = () => {
         const calculateSpace = () => {
             const containerHeight = containerRef.current?.clientHeight || 0;
 
-            const firstCard =
-                containerRef.current?.querySelector('.transaction-card') as HTMLElement;
+            const firstCard = containerRef.current?.querySelector(
+                '.transaction-card',
+            ) as HTMLElement;
 
             const itemHeight =
                 firstCard?.offsetHeight || probeRef.current?.offsetHeight || 70;
 
             if (containerHeight > 0 && itemHeight > 0) {
-                const fitCount = Math.floor(
-                    (containerHeight - gap) / (itemHeight + gap)
-                );
+                const fitCount = Math.floor((containerHeight - gap) / (itemHeight + gap));
 
                 setItemsPerPage(Math.max(1, fitCount));
             }
@@ -66,16 +65,15 @@ const RecentTransactions = () => {
         requestAnimationFrame(() => {
             const containerHeight = containerRef.current?.clientHeight || 0;
 
-            const firstCard =
-                containerRef.current?.querySelector('.transaction-card') as HTMLElement;
+            const firstCard = containerRef.current?.querySelector(
+                '.transaction-card',
+            ) as HTMLElement;
 
             const itemHeight =
                 firstCard?.offsetHeight || probeRef.current?.offsetHeight || 70;
 
             if (containerHeight > 0 && itemHeight > 0) {
-                const fitCount = Math.floor(
-                    (containerHeight - gap) / (itemHeight + gap)
-                );
+                const fitCount = Math.floor((containerHeight - gap) / (itemHeight + gap));
 
                 setItemsPerPage(Math.max(1, fitCount));
             }
@@ -92,9 +90,7 @@ const RecentTransactions = () => {
         try {
             const countData = await getTransactionCount();
             const rawCount =
-                typeof countData === 'number'
-                    ? countData
-                    : (countData as any).count;
+                typeof countData === 'number' ? countData : (countData as any).count;
 
             if (rawCount !== undefined) {
                 setTotalItems(rawCount);
@@ -121,8 +117,7 @@ const RecentTransactions = () => {
     // -----------------------------
     // PAGINATION
     // -----------------------------
-    const actualTotalPages =
-        itemsPerPage > 0 ? Math.ceil(totalItems / itemsPerPage) : 1;
+    const actualTotalPages = itemsPerPage > 0 ? Math.ceil(totalItems / itemsPerPage) : 1;
 
     const totalPages = Math.min(actualTotalPages, MAX_PAGES) || 1;
 
@@ -187,19 +182,14 @@ const RecentTransactions = () => {
                                         {transaction.productName}
                                     </h3>
                                     <p className="transaction-date">
-                                        {new Date(
-                                            transaction.dateSold
-                                        ).toLocaleString()}
+                                        {new Date(transaction.dateSold).toLocaleString()}
                                     </p>
                                 </div>
                             </div>
 
                             <div className="transaction-right">
                                 <span className="transaction-price">
-                                    $
-                                    {(transaction.priceAtSaleCents / 100).toFixed(
-                                        2
-                                    )}
+                                    ${(transaction.priceAtSaleCents / 100).toFixed(2)}
                                 </span>
                             </div>
                         </div>

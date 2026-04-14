@@ -247,7 +247,6 @@ const Inventory = () => {
                             return (
                                 <tr
                                     key={product.slotId}
-                                    className="product-row"
                                     style={
                                         { '--row-index': index } as React.CSSProperties
                                     }

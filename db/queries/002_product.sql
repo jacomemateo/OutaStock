@@ -25,11 +25,31 @@ SET date_deleted = NOW()
 WHERE product_id = @product_id;
 
 -- name: GetProducts :many 
-SELECT * FROM product_info
+SELECT
+    product_id,
+    name,
+    cost_cents,
+    price_cents,
+    date_created,
+    date_modified,
+    date_deleted
+FROM product_info
 WHERE date_deleted IS NULL
-ORDER BY name
+    AND (@search = '' OR name ILIKE '%' || @search || '%')
+ORDER BY
+    CASE WHEN @sort_by = 'name' AND @sort_dir = 'asc' THEN LOWER(name) END ASC,
+    CASE WHEN @sort_by = 'name' AND @sort_dir = 'desc' THEN LOWER(name) END DESC,
+    CASE WHEN @sort_by = 'price' AND @sort_dir = 'asc' THEN price_cents END ASC,
+    CASE WHEN @sort_by = 'price' AND @sort_dir = 'desc' THEN price_cents END DESC,
+    CASE WHEN @sort_by = 'created_at' AND @sort_dir = 'asc' THEN date_created END ASC,
+    CASE WHEN @sort_by = 'created_at' AND @sort_dir = 'desc' THEN date_created END DESC,
+    LOWER(name) ASC,
+    product_id ASC
 LIMIT @num_rows
 OFFSET @page_offset;
 
 -- name: CountProductRows :one
-SELECT COUNT(*) from product_info;
+SELECT COUNT(*)
+FROM product_info
+WHERE date_deleted IS NULL
+    AND (@search = '' OR name ILIKE '%' || @search || '%');

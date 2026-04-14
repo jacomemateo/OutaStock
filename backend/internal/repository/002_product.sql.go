@@ -12,11 +12,14 @@ import (
 )
 
 const countProductRows = `-- name: CountProductRows :one
-SELECT COUNT(*) from product_info
+SELECT COUNT(*)
+FROM product_info
+WHERE date_deleted IS NULL
+    AND ($1 = '' OR name ILIKE '%' || $1 || '%')
 `
 
-func (q *Queries) CountProductRows(ctx context.Context) (int64, error) {
-	row := q.db.QueryRow(ctx, countProductRows)
+func (q *Queries) CountProductRows(ctx context.Context, search interface{}) (int64, error) {
+	row := q.db.QueryRow(ctx, countProductRows, search)
 	var count int64
 	err := row.Scan(&count)
 	return count, err
@@ -52,20 +55,46 @@ func (q *Queries) DeleteProduct(ctx context.Context, productID pgtype.UUID) erro
 }
 
 const getProducts = `-- name: GetProducts :many
-SELECT product_id, name, cost_cents, price_cents, date_created, date_modified, date_deleted FROM product_info
+SELECT
+    product_id,
+    name,
+    cost_cents,
+    price_cents,
+    date_created,
+    date_modified,
+    date_deleted
+FROM product_info
 WHERE date_deleted IS NULL
-ORDER BY name
-LIMIT $2
-OFFSET $1
+    AND ($1 = '' OR name ILIKE '%' || $1 || '%')
+ORDER BY
+    CASE WHEN $2 = 'name' AND $3 = 'asc' THEN LOWER(name) END ASC,
+    CASE WHEN $2 = 'name' AND $3 = 'desc' THEN LOWER(name) END DESC,
+    CASE WHEN $2 = 'price' AND $3 = 'asc' THEN price_cents END ASC,
+    CASE WHEN $2 = 'price' AND $3 = 'desc' THEN price_cents END DESC,
+    CASE WHEN $2 = 'created_at' AND $3 = 'asc' THEN date_created END ASC,
+    CASE WHEN $2 = 'created_at' AND $3 = 'desc' THEN date_created END DESC,
+    LOWER(name) ASC,
+    product_id ASC
+LIMIT $5
+OFFSET $4
 `
 
 type GetProductsParams struct {
+	Search     interface{}
+	SortBy     interface{}
+	SortDir    interface{}
 	PageOffset int32
 	NumRows    int32
 }
 
 func (q *Queries) GetProducts(ctx context.Context, arg GetProductsParams) ([]ProductInfo, error) {
-	rows, err := q.db.Query(ctx, getProducts, arg.PageOffset, arg.NumRows)
+	rows, err := q.db.Query(ctx, getProducts,
+		arg.Search,
+		arg.SortBy,
+		arg.SortDir,
+		arg.PageOffset,
+		arg.NumRows,
+	)
 	if err != nil {
 		return nil, err
 	}

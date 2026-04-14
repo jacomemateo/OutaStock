@@ -25,34 +25,73 @@ const authFetch = (input: string, init: RequestInit = {}) => {
     });
 };
 
+type SortDirection = 'asc' | 'desc';
+
+type ListQueryOptions = {
+    search?: string;
+    sortBy?: string;
+    sortDir?: SortDirection;
+};
+
 // To get paginated
-const getPaginated = async (endpoint: string, numRows: number, pageOffset: number) => {
+const getPaginated = async (
+    endpoint: string,
+    numRows: number,
+    pageOffset: number,
+    options: ListQueryOptions = {},
+) => {
     const params = new URLSearchParams({
         num_rows: numRows.toString(),
         page_offset: pageOffset.toString(),
     });
+
+    if (options.search) {
+        params.set('search', options.search);
+    }
+
+    if (options.sortBy) {
+        params.set('sort_by', options.sortBy);
+    }
+
+    if (options.sortDir) {
+        params.set('sort_dir', options.sortDir);
+    }
+
     const response = await authFetch(`${API_BASE_URL}${endpoint}?${params.toString()}`);
     if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
     return await response.json();
 };
 
-export const fetchInventory = (n: number, p: number) => getPaginated('/inventory/', n, p);
-export const fetchTransactions = (n: number, p: number) =>
-    getPaginated('/transactions/', n, p);
-export const fetchProducts = (n: number, p: number) => getPaginated('/products/', n, p);
+export const fetchInventory = (n: number, p: number, options: ListQueryOptions = {}) =>
+    getPaginated('/inventory/', n, p, options);
+export const fetchTransactions = (n: number, p: number, options: ListQueryOptions = {}) =>
+    getPaginated('/transactions/', n, p, options);
+export const fetchProducts = (n: number, p: number, options: ListQueryOptions = {}) =>
+    getPaginated('/products/', n, p, options);
 
 // To get row counts for each
-const getCount = async (endpoint: string) => {
-    const response = await authFetch(`${API_BASE_URL}${endpoint}`);
+const getCount = async (endpoint: string, search = '') => {
+    const params = new URLSearchParams();
+
+    if (search) {
+        params.set('search', search);
+    }
+
+    const query = params.toString();
+    const response = await authFetch(
+        `${API_BASE_URL}${endpoint}${query ? `?${query}` : ''}`,
+    );
+
     if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status} at ${endpoint}`);
     }
     return await response.json();
 };
 
-export const getInventoryCount = () => getCount('/inventory/count');
-export const getTransactionCount = () => getCount('/transactions/count');
-export const getProductCount = () => getCount('/products/count');
+export const getInventoryCount = (search = '') => getCount('/inventory/count', search);
+export const getTransactionCount = (search = '') =>
+    getCount('/transactions/count', search);
+export const getProductCount = (search = '') => getCount('/products/count', search);
 
 //  * Assign a product to a slot (initial quantity optional)
 export const assignProductToSlot = async (

@@ -15,6 +15,11 @@ type InventoryHandler struct {
 	BinderValidator
 }
 
+var inventorySortFields = map[string]SortFieldConfig{
+	"product":  {DefaultDirection: SortDirectionAsc},
+	"quantity": {DefaultDirection: SortDirectionAsc},
+}
+
 func NewInventoryHandler(inventoryService *service.InventoryService) *InventoryHandler {
 	return &InventoryHandler{
 		inventoryService: inventoryService,
@@ -31,12 +36,18 @@ func (h *InventoryHandler) RegisterRoutes(api *echo.Group) {
 
 // GetAllInventory handles GET /api/inventory/?num_rows=&page_offset=
 func (h *InventoryHandler) GetAllInventory(c *echo.Context) error {
-	paginationParams, err := ParsePagination(c)
+	listQuery, err := ParseListQuery(c, "slot_id", SortDirectionAsc, inventorySortFields)
 	if err != nil {
 		return err
 	}
 
-	inventory, err := h.inventoryService.GetAllInventory(c.Request().Context(), paginationParams.PageOffset, paginationParams.NumRows)
+	inventory, err := h.inventoryService.GetAllInventory(c.Request().Context(), service.ListQuery{
+		PageOffset: listQuery.PageOffset,
+		NumRows:    listQuery.NumRows,
+		Search:     listQuery.Search,
+		SortBy:     listQuery.SortBy,
+		SortDir:    listQuery.SortDir,
+	})
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, map[string]string{
 			"error": "Failed to fetch inventory",
@@ -74,7 +85,7 @@ func (h *InventoryHandler) UpdateInventory(c *echo.Context) error {
 }
 
 func (h *InventoryHandler) GetInventoryCount(c *echo.Context) error {
-	count, err := h.inventoryService.GetInventoryCount(c.Request().Context())
+	count, err := h.inventoryService.GetInventoryCount(c.Request().Context(), ParseSearch(c))
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, map[string]string{
 			"error": "Failed to get inventory count",

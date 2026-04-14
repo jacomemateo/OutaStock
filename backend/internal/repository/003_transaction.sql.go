@@ -12,11 +12,14 @@ import (
 )
 
 const countTransactionRows = `-- name: CountTransactionRows :one
-SELECT COUNT(*) from transactions
+SELECT COUNT(*)
+FROM transactions as t
+JOIN product_info p ON t.product_id = p.product_id
+WHERE $1 = '' OR p.name ILIKE '%' || $1 || '%'
 `
 
-func (q *Queries) CountTransactionRows(ctx context.Context) (int64, error) {
-	row := q.db.QueryRow(ctx, countTransactionRows)
+func (q *Queries) CountTransactionRows(ctx context.Context, search interface{}) (int64, error) {
+	row := q.db.QueryRow(ctx, countTransactionRows, search)
 	var count int64
 	err := row.Scan(&count)
 	return count, err
@@ -31,12 +34,24 @@ SELECT
     p.name
 FROM transactions as t
 JOIN product_info p ON t.product_id = p.product_id
-ORDER BY t.date_sold DESC
-LIMIT $2
-OFFSET $1
+WHERE $1 = '' OR p.name ILIKE '%' || $1 || '%'
+ORDER BY
+    CASE WHEN $2 = 'product' AND $3 = 'asc' THEN LOWER(p.name) END ASC,
+    CASE WHEN $2 = 'product' AND $3 = 'desc' THEN LOWER(p.name) END DESC,
+    CASE WHEN $2 = 'date' AND $3 = 'asc' THEN t.date_sold END ASC,
+    CASE WHEN $2 = 'date' AND $3 = 'desc' THEN t.date_sold END DESC,
+    CASE WHEN $2 = 'price' AND $3 = 'asc' THEN t.price_at_sale_cents END ASC,
+    CASE WHEN $2 = 'price' AND $3 = 'desc' THEN t.price_at_sale_cents END DESC,
+    t.date_sold DESC,
+    t.transaction_id ASC
+LIMIT $5
+OFFSET $4
 `
 
 type GetTransactionsParams struct {
+	Search     interface{}
+	SortBy     interface{}
+	SortDir    interface{}
 	PageOffset int32
 	NumRows    int32
 }
@@ -50,7 +65,13 @@ type GetTransactionsRow struct {
 
 // code: language=postgres
 func (q *Queries) GetTransactions(ctx context.Context, arg GetTransactionsParams) ([]GetTransactionsRow, error) {
-	rows, err := q.db.Query(ctx, getTransactions, arg.PageOffset, arg.NumRows)
+	rows, err := q.db.Query(ctx, getTransactions,
+		arg.Search,
+		arg.SortBy,
+		arg.SortDir,
+		arg.PageOffset,
+		arg.NumRows,
+	)
 	if err != nil {
 		return nil, err
 	}

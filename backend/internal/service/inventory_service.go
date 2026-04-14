@@ -19,18 +19,18 @@ func NewInventoryService(database *Database) *InventoryService {
 	}
 }
 
-func (s *InventoryService) GetAllInventory(ctx context.Context, pageOffset int, numRows int) ([]dto.InventorySlot, error) {
-	// 1. Get the total (needed for the math)
-	invTotalRows64, err := s.database.Queries.CountInventoryRows(ctx)
+func (s *InventoryService) GetAllInventory(ctx context.Context, query ListQuery) ([]dto.InventorySlot, error) {
+	invTotalRows64, err := s.database.Queries.CountInventoryRows(ctx, query.Search)
 	if err != nil {
 		log.Warn().Msg("Unable to get inventory row count")
 		return nil, err
 	}
 
-	// 2. Let Paginate handle the math and the "hand-off"
-	return Paginate(int(invTotalRows64), pageOffset, numRows, func(calculatedOffset, limit int) ([]dto.InventorySlot, error) {
-		// Call database using the SAFE offset calculated by the helper
+	return Paginate(int(invTotalRows64), query.PageOffset, query.NumRows, func(calculatedOffset, limit int) ([]dto.InventorySlot, error) {
 		rows, err := s.database.Queries.GetInventory(ctx, repository.GetInventoryParams{
+			Search:     query.Search,
+			SortBy:     query.SortBy,
+			SortDir:    query.SortDir,
 			NumRows:    int32(limit),
 			PageOffset: int32(calculatedOffset),
 		})
@@ -106,8 +106,8 @@ func (s *InventoryService) UpdateInventory(ctx context.Context, slotID int, req 
 	return nil
 }
 
-func (s *InventoryService) GetInventoryCount(ctx context.Context) (int, error) {
-	count, err := s.database.Queries.CountInventoryRows(ctx)
+func (s *InventoryService) GetInventoryCount(ctx context.Context, search string) (int, error) {
+	count, err := s.database.Queries.CountInventoryRows(ctx, search)
 	if err != nil {
 		log.Warn().Msg("Unable to get inventory row count")
 		return 0, err

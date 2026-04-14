@@ -29,10 +29,20 @@
     background: var(--darker-black);
 }
 
-.table tbody tr:hover {
-    transform: translateX(4px);
+.table tbody tr {
+    /* Set a smooth transition for all properties */
+    transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), 
+                box-shadow 0.2s ease, 
+                background-color 0.2s ease;
 }
 
+.table tbody tr:hover {
+    background-color: var(--lighter-black); /* Subtle highlight */
+    transform: scale(1.005) translateY(-2px); /* Tiny lift and grow */
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3); /* Adds depth */
+    z-index: 1; /* Ensures the shadow stays above other rows */
+    position: relative; /* Required for z-index to work */
+}
 .table tbody tr td {
     transition: background 0.2s ease;
 }
