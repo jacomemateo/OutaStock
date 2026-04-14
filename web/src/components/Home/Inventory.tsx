@@ -1,4 +1,6 @@
 import '@styles/Home/Inventory.css';
+import '@styles/Utils/Buttons.css';
+import '@styles/Utils/TableUtils.css';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { useState, useEffect } from 'react';
@@ -41,6 +43,9 @@ interface Product {
     dateCreated: string;
 }
 
+type InventorySortColumn = 'location' | 'product' | 'quantity';
+type SortDirection = 'asc' | 'desc';
+
 const Inventory = () => {
     const { showAlert } = useAlert();
     /*
@@ -56,7 +61,11 @@ const Inventory = () => {
     /*
     Current inventory slots loaded from backend
     */
-    const [products, setProducts] = useState<ProductSlot[]>([]);
+    const [inventorySlots, setInventorySlots] = useState<ProductSlot[]>([]);
+
+    const [isLoadingInventory, setIsLoadingInventory] = useState(false);
+    const [sortColumn, setSortColumn] = useState<InventorySortColumn>('location');
+    const [sortDirection, setSortDirection] = useState<SortDirection>('asc');
 
     /*
     All available products in the system (used for dropdown selection)
@@ -69,20 +78,32 @@ const Inventory = () => {
     const [confirmationOpen, setConfirmationOpen] = useState<boolean>(false);
     const [slotToDelete, setSlotToDelete] = useState<number | null>(null);
 
+    const extractCount = (countData: unknown) =>
+        typeof countData === 'number'
+            ? countData
+            : Number((countData as { count?: number })?.count ?? 0);
+
     /*
     Load vending machine inventory from backend
     */
     const loadInventory = async () => {
+        setIsLoadingInventory(true);
         try {
-            const data = await fetchInventory(await getInventoryCount(), 0);
+            const inventoryCount = extractCount(await getInventoryCount());
+            const data = await fetchInventory(inventoryCount, 0, {
+                sortBy: sortColumn,
+                sortDir: sortDirection,
+            });
             /*
             Ensure we always store an array
             */
-            setProducts(data || []);
+            setInventorySlots(data || []);
 
             console.log('Inventory slots:', data);
         } catch (error) {
             console.error('Failed to load inventory', error);
+        } finally {
+            setIsLoadingInventory(false);
         }
     };
 
@@ -91,7 +112,11 @@ const Inventory = () => {
     */
     const loadAllProducts = async () => {
         try {
-            const data = await fetchProducts(await getProductCount(), 0);
+            const productCount = extractCount(await getProductCount());
+            const data = await fetchProducts(productCount, 0, {
+                sortBy: 'name',
+                sortDir: 'asc',
+            });
 
             /*
             Store full product objects so we have access to id + name
@@ -108,14 +133,17 @@ const Inventory = () => {
     Load inventory and product catalog when component mounts
     */
     useEffect(() => {
-        loadInventory();
         loadAllProducts();
     }, []);
+
+    useEffect(() => {
+        loadInventory();
+    }, [sortColumn, sortDirection]);
 
     /*
     The slot currently being edited (used to populate modal)
     */
-    const editingSlotInfo = products.find((slot) => slot.slotId === editingSlotID);
+    const editingSlotInfo = inventorySlots.find((slot) => slot.slotId === editingSlotID);
 
     /*
     Handle saving changes from the modal
@@ -141,22 +169,7 @@ const Inventory = () => {
             */
             await updateSlotProductAndQuantity(slotId, productId, quantity);
             showAlert(`Slot updated successfully!`, 'success');
-            /*
-            Update local UI state so the table updates immediately
-            */
-            setProducts(
-                products.map((slot) =>
-                    slot.slotId === slotId
-                        ? {
-                              ...slot,
-                              productId: productId,
-                              productName: product.name,
-                              priceCents: product.priceCents,
-                              quantity: quantity,
-                          }
-                        : slot,
-                ),
-            );
+            await loadInventory();
 
             /*
             Close modal
@@ -174,24 +187,7 @@ const Inventory = () => {
     const handleRemove = async (slotId: number) => {
         try {
             await unassignProductFromSlot(slotId);
-
-            /*
-            Reset slot locally
-            */
-            setProducts(
-                products.map((slot) =>
-                    slot.slotId === slotId
-                        ? {
-                              ...slot,
-                              productName: '',
-                              quantity: 0,
-                              productId: '',
-                              priceCents: 0,
-                              dateAdded: null,
-                          }
-                        : slot,
-                ),
-            );
+            await loadInventory();
             showAlert(`Product removed from slot`, 'success');
         } catch (error) {
             showAlert(`Failed to remove product from slot`, 'error');
@@ -211,6 +207,21 @@ const Inventory = () => {
         setSlotToDelete(null);
     };
 
+    const handleSort = (column: InventorySortColumn) => {
+        if (sortColumn !== column) {
+            setSortColumn(column);
+            setSortDirection('asc');
+            return;
+        }
+
+        setSortDirection((prev) => (prev === 'asc' ? 'desc' : 'asc'));
+    };
+
+    const getSortIcon = (column: InventorySortColumn) => {
+        if (sortColumn !== column) return '';
+        return sortDirection === 'asc' ? '▲' : '▼';
+    };
+
     return (
         <div className="page-card">
             <div className="card-header">
@@ -226,68 +237,101 @@ const Inventory = () => {
                 </button>
             </div>
 
-            <div className="table-list">
-                <table className="table">
-                    <thead>
-                        <tr>
-                            <th>Location</th>
-                            <th>Product Name</th>
-                            <th>Quantity</th>
-                            {isEditMode && <th>Actions</th>}
-                        </tr>
-                    </thead>
+            <div className={`table-list ${isLoadingInventory ? 'loading-opacity' : ''}`}>
+                {inventorySlots.length > 0 ? (
+                    <table className="table">
+                        <thead>
+                            <tr>
+                                <th>
+                                    <button
+                                        className="table-sort-button"
+                                        type="button"
+                                        onClick={() => handleSort('location')}
+                                    >
+                                        Location {getSortIcon('location')}
+                                    </button>
+                                </th>
 
-                    <tbody>
-                        {products.map((product, index) => {
-                            /*
-                            If no productId exists the slot is empty
-                            */
-                            const isEmpty = !product.productId;
+                                <th>
+                                    <button
+                                        className="table-sort-button"
+                                        type="button"
+                                        onClick={() => handleSort('product')}
+                                    >
+                                        Product Name {getSortIcon('product')}
+                                    </button>
+                                </th>
 
-                            return (
-                                <tr
-                                    key={product.slotId}
-                                    style={
-                                        { '--row-index': index } as React.CSSProperties
-                                    }
-                                >
-                                    <td>{product.slotLabel}</td>
+                                <th>
+                                    <button
+                                        className="table-sort-button"
+                                        type="button"
+                                        onClick={() => handleSort('quantity')}
+                                    >
+                                        Quantity {getSortIcon('quantity')}
+                                    </button>
+                                </th>
 
-                                    <td className={isEmpty ? 'no-product' : ''}>
-                                        {isEmpty ? 'NO PRODUCT' : product.productName}
-                                    </td>
+                                {isEditMode && <th>Actions</th>}
+                            </tr>
+                        </thead>
 
-                                    <td>{isEmpty ? '' : product.quantity}</td>
+                        <tbody>
+                            {inventorySlots.map((slot, index) => {
+                                /*
+                                If no productId exists the slot is empty
+                                */
+                                const isEmpty = !slot.productId;
 
-                                    {isEditMode && (
-                                        <td className="edit-btn-cell">
-                                            <div className="action-btns">
-                                                <button
-                                                    className="edit-btn-row"
-                                                    onClick={() =>
-                                                        setEditingSlotID(product.slotId)
-                                                    }
-                                                >
-                                                    <EditIcon fontSize="small" />
-                                                </button>
+                                return (
+                                    <tr
+                                        key={slot.slotId}
+                                        style={
+                                            {
+                                                '--row-index': index,
+                                            } as React.CSSProperties
+                                        }
+                                    >
+                                        <td>{slot.slotLabel}</td>
 
-                                                <button
-                                                    className="delete-btn-row"
-                                                    onClick={() => {
-                                                        setSlotToDelete(product.slotId);
-                                                        setConfirmationOpen(true);
-                                                    }}
-                                                >
-                                                    <DeleteIcon fontSize="small" />
-                                                </button>
-                                            </div>
+                                        <td className={isEmpty ? 'no-product' : ''}>
+                                            {isEmpty ? 'NO PRODUCT' : slot.productName}
                                         </td>
-                                    )}
-                                </tr>
-                            );
-                        })}
-                    </tbody>
-                </table>
+
+                                        <td>{isEmpty ? '' : slot.quantity}</td>
+
+                                        {isEditMode && (
+                                            <td className="edit-btn-cell">
+                                                <div className="action-btns">
+                                                    <button
+                                                        className="edit-btn-row"
+                                                        onClick={() =>
+                                                            setEditingSlotID(slot.slotId)
+                                                        }
+                                                    >
+                                                        <EditIcon fontSize="small" />
+                                                    </button>
+
+                                                    <button
+                                                        className="delete-btn-row"
+                                                        onClick={() => {
+                                                            setSlotToDelete(slot.slotId);
+                                                            setConfirmationOpen(true);
+                                                        }}
+                                                    >
+                                                        <DeleteIcon fontSize="small" />
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        )}
+                                    </tr>
+                                );
+                            })}
+                        </tbody>
+                    </table>
+                ) : (
+                    <p className="no-transactions">No inventory found</p>
+                )}
             </div>
 
             {editingSlotInfo && (
