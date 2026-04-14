@@ -8,6 +8,7 @@ import AddAlertIcon from '@mui/icons-material/AddAlert';
 import SettingsIcon from '@mui/icons-material/Settings';
 import ReceiptLongIcon from '@mui/icons-material/ReceiptLong';
 import HomeIcon from '@mui/icons-material/Home';
+import UploadFileIcon from '@mui/icons-material/UploadFile';
 import { useState } from 'react';
 import { Tooltip } from 'react-tooltip';
 import 'react-tooltip/dist/react-tooltip.css';
@@ -91,6 +92,12 @@ const Template = () => {
     const activePage = pages.find((page) => page.path === currentPath) || pages[0];
     const currentId = activePage.id;
 
+    const [isDragging, setIsDragging] = useState(false);
+    const handleUpload = (files: FileList) => {
+        // wire to your file_upload_service here
+        console.log('Uploading:', files);
+    };
+
     return (
         <div className="template-container">
             <aside className={`sidebar ${isSidebarExpanded ? 'expanded' : 'collapsed'}`}>
@@ -146,6 +153,46 @@ const Template = () => {
                             </li>
                         ))}
                     </ul>
+
+                    {/* upload file */}
+                    {/* Between the two ul blocks, inside <nav className="sidebar-nav"> */}
+
+                    <div
+                        className={`sidebar-upload-zone ${isDragging ? 'dragging' : ''} ${!isSidebarExpanded ? 'collapsed' : ''}`}
+                        onDragOver={(e) => {
+                            e.preventDefault();
+                            setIsDragging(true);
+                        }}
+                        onDragLeave={() => setIsDragging(false)}
+                        onDrop={(e) => {
+                            e.preventDefault();
+                            setIsDragging(false);
+                            const files = e.dataTransfer.files;
+                            if (files.length > 0) handleUpload(files);
+                        }}
+                        onClick={() =>
+                            document.getElementById('sidebar-file-input')?.click()
+                        }
+                    >
+                        <input
+                            id="sidebar-file-input"
+                            type="file"
+                            hidden
+                            onChange={(e) => {
+                                if (e.target.files) handleUpload(e.target.files);
+                            }}
+                        />
+                        {isSidebarExpanded ? (
+                            <>
+                                <UploadFileIcon className="upload-icon" />
+                                <span className="upload-label">Drop files here</span>
+                                <span className="upload-sub">or click to browse</span>
+                            </>
+                        ) : (
+                            <UploadFileIcon className="upload-icon" />
+                        )}
+                    </div>
+
                     {bottomPages.length > 0 ? (
                         <ul className="sidebar-nav-list sidebar-nav-list-bottom">
                             {bottomPages.map((page) => (
