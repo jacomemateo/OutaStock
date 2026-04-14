@@ -1,4 +1,3 @@
-import '@styles/Transactions/ViewAllTransactions.css';
 import { useState, useEffect } from 'react';
 import { fetchTransactions, getTransactionCount } from '@/services/api';
 
@@ -67,104 +66,107 @@ const ViewAllTransactions = () => {
     };
 
     const sortedTransactions = sortTransactions(transactions);
-
     const totalPages = Math.ceil(totalItems / itemsPerPage) || 1;
 
     return (
         <>
-            <div className="sorted-by">
-                <span>Sorted by:</span>
-                <select
-                    className="sorted-by-select"
-                    value={sortBy}
-                    onChange={(e) => setSortBy(e.target.value)} // Update sortBy state on change
-                >
-                    {sortedByOptions.map((option) => (
-                        <option key={option} value={option}>
-                            {option}
-                        </option>
-                    ))}
-                </select>
-            </div>
-
-            <div className="view-all-transactions-container">
-                <div className="view-all-transactions-header">
-                    <h2>Transactions</h2>
-                    <p className="view-all-transactions-subtitle">
-                        View and manage all transactions
-                    </p>
-                </div>
-
-                <div
-                    className={`transactions-list ${isLoading ? 'loading-opacity' : ''}`}
-                >
-                    {sortedTransactions.length > 0 ? (
-                        <table className="transactions-table">
-                            <thead>
-                                <tr>
-                                    <th>Product Name</th>
-                                    <th>Date</th>
-                                    <th>Time</th>
-                                    <th>Price</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {sortedTransactions.map((transaction, index) => {
-                                    const dateObj = new Date(transaction.dateSold);
-                                    const date = dateObj.toLocaleDateString();
-                                    const time = dateObj.toLocaleTimeString();
-                                    return (
-                                        <tr
-                                            key={transaction.id}
-                                            className="transaction-row"
-                                            style={
-                                                {
-                                                    '--row-index': index,
-                                                } as React.CSSProperties
-                                            }
-                                        >
-                                            <td>{transaction.productName}</td>
-                                            <td>{date}</td>
-                                            <td>{time}</td>
-                                            <td className="price-cell">
-                                                $
-                                                {(
-                                                    transaction.priceAtSaleCents / 100
-                                                ).toFixed(2)}
-                                            </td>
-                                        </tr>
-                                    );
-                                })}
-                            </tbody>
-                        </table>
-                    ) : (
-                        <p className="no-transactions">No transactions found</p>
-                    )}
-                </div>
-
-                {totalPages > 1 && (
-                    <div className="pagination">
-                        <button
-                            className="pagination-btn"
-                            onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-                            disabled={currentPage === 1 || isLoading}
+            <div className="grid-container">
+                <div className="view-all-transactions-grid">
+                    <div className="sorted-by">
+                        <span>Sorted by:</span>
+                        <select
+                            className="sorted-by-select"
+                            value={sortBy}
+                            onChange={(e) => setSortBy(e.target.value)}
                         >
-                            Previous
-                        </button>
-
-                        <span className="pagination-info">
-                            Page {currentPage} of {totalPages}
-                        </span>
-
-                        <button
-                            className="pagination-btn"
-                            onClick={() => setCurrentPage((p) => p + 1)}
-                            disabled={currentPage === totalPages || isLoading}
-                        >
-                            Next
-                        </button>
+                            {sortedByOptions.map((option) => (
+                                <option key={option} value={option}>
+                                    {option}
+                                </option>
+                            ))}
+                        </select>
                     </div>
-                )}
+
+                    <div className="page-card">
+                        <div className="card-header">
+                            <div>
+                                <h2>Transactions</h2>
+                                <p className="card-subtitle">
+                                    View and manage all transactions
+                                </p>
+                            </div>
+                        </div>
+
+                        <div
+                            className={`table-list ${isLoading ? 'loading-opacity' : ''}`}
+                        >
+                            {sortedTransactions.length > 0 ? (
+                                <table className="table">
+                                    <thead>
+                                        <tr>
+                                            <th>Product Name</th>
+                                            <th>Date</th>
+                                            <th>Time</th>
+                                            <th>Price</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {sortedTransactions.map((transaction) => {
+                                            const dateObj = new Date(
+                                                transaction.dateSold,
+                                            );
+                                            const date = dateObj.toLocaleDateString();
+                                            const time = dateObj.toLocaleTimeString();
+
+                                            return (
+                                                <tr key={transaction.id}>
+                                                    <td>{transaction.productName}</td>
+                                                    <td>{date}</td>
+                                                    <td>{time}</td>
+                                                    <td>
+                                                        $
+                                                        {(
+                                                            transaction.priceAtSaleCents /
+                                                            100
+                                                        ).toFixed(2)}
+                                                    </td>
+                                                </tr>
+                                            );
+                                        })}
+                                    </tbody>
+                                </table>
+                            ) : (
+                                <p className="no-transactions">No transactions found</p>
+                            )}
+                        </div>
+
+                        {totalPages > 1 && (
+                            <div className="pagination">
+                                <button
+                                    className="pagination-btn"
+                                    onClick={() =>
+                                        setCurrentPage((p) => Math.max(1, p - 1))
+                                    }
+                                    disabled={currentPage === 1 || isLoading}
+                                >
+                                    Previous
+                                </button>
+
+                                <span className="pagination-info">
+                                    Page {currentPage} of {totalPages}
+                                </span>
+
+                                <button
+                                    className="pagination-btn"
+                                    onClick={() => setCurrentPage((p) => p + 1)}
+                                    disabled={currentPage === totalPages || isLoading}
+                                >
+                                    Next
+                                </button>
+                            </div>
+                        )}
+                    </div>
+                </div>
             </div>
         </>
     );

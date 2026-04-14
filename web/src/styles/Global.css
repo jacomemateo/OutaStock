@@ -152,7 +152,7 @@ select {
 
 /* hide light logo by default (dark mode default) */
 .logo-light {
-    display: none
+    display: none;
 }
 
 /* when LIGHT theme is active → swap */
