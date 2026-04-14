@@ -185,6 +185,12 @@ tasks:
           docker exec -i vending-db-dev psql -U $APP_DB_USER -d $APP_DB_NAME < $file
         done
 
+  dev-clear:
+    desc: Clear all data from the development database
+    dotenv: [.env.dev]
+    cmds:
+      - docker exec -i vending-db-dev psql -U $APP_DB_USER -d $APP_DB_NAME < db/seeds/000_clear.sql
+
   prod:
     desc: Run the production stack
     cmds:
