@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 	"strconv"
+	"strings"
 
 	"github.com/go-playground/validator/v10"
 	"github.com/jacomemateo/OutaStock/backend/internal/validation"
@@ -41,6 +42,22 @@ type PaginationParams struct {
 	PageOffset int
 }
 
+type SortFieldConfig struct {
+	DefaultDirection string
+}
+
+type ListQueryParams struct {
+	PaginationParams
+	Search  string
+	SortBy  string
+	SortDir string
+}
+
+const (
+	SortDirectionAsc  = "asc"
+	SortDirectionDesc = "desc"
+)
+
 func ParsePagination(c *echo.Context) (*PaginationParams, error) {
 	numRowsStr := c.QueryParam("num_rows")
 	numRows, errL := strconv.ParseInt(numRowsStr, 10, 32)
@@ -61,4 +78,54 @@ func ParsePagination(c *echo.Context) (*PaginationParams, error) {
 	}
 
 	return &PaginationParams{NumRows: int(numRows), PageOffset: int(pageOffset)}, nil
+}
+
+func ParseSearch(c *echo.Context) string {
+	return strings.TrimSpace(c.QueryParam("search"))
+}
+
+func ParseListQuery(c *echo.Context, defaultSortBy string, defaultSortDir string, allowedSortFields map[string]SortFieldConfig) (*ListQueryParams, error) {
+	paginationParams, err := ParsePagination(c)
+	if err != nil {
+		return nil, err
+	}
+
+	search := ParseSearch(c)
+	sortBy := strings.ToLower(strings.TrimSpace(c.QueryParam("sort_by")))
+	sortDir := strings.ToLower(strings.TrimSpace(c.QueryParam("sort_dir")))
+
+	if sortDir != "" && sortDir != SortDirectionAsc && sortDir != SortDirectionDesc {
+		log.Warn().Msgf("Failed to validate sort_dir parameter: %s", sortDir)
+		return nil, c.JSON(http.StatusBadRequest, map[string]string{
+			"error": "Invalid sort_dir parameter",
+		})
+	}
+
+	if sortBy == "" {
+		return &ListQueryParams{
+			PaginationParams: *paginationParams,
+			Search:           search,
+			SortBy:           defaultSortBy,
+			SortDir:          defaultSortDir,
+		}, nil
+	}
+
+	sortFieldConfig, ok := allowedSortFields[sortBy]
+	if !ok {
+		log.Warn().Msgf("Failed to validate sort_by parameter: %s", sortBy)
+		return nil, c.JSON(http.StatusBadRequest, map[string]string{
+			"error": "Invalid sort_by parameter",
+		})
+	}
+
+	if sortDir == "" {
+		sortDir = sortFieldConfig.DefaultDirection
+	}
+
+	return &ListQueryParams{
+		PaginationParams: *paginationParams,
+		Search:           search,
+		SortBy:           sortBy,
+		SortDir:          sortDir,
+	}, nil
 }
