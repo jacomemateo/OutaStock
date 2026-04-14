@@ -38,11 +38,13 @@
 }
 
 .transaction-card:hover {
-    transform: translateX(4px);
+    transform: scale(1.005) translateY(-2px); /* Tiny lift and grow */
+    transition: transform 0.2s ease;
 }
 
 .transaction-card:hover::before {
     background: var(--darker-black);
+    transition: background 0.2s ease;
 }
 
 .transaction-card > .transaction-content {

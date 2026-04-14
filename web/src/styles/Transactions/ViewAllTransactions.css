@@ -17,11 +17,12 @@
 .transactions-search-input {
     min-width: 260px;
     padding: 0.7rem 0.9rem;
-    border: 1px solid var(--lighter-black);
+    border: var(--border-color);
     border-radius: 8px;
-    background: var(--container-bg);
+    background: var(--darker-black);
     color: var(--text-primary);
     font-size: 0.95rem;
+    transition: all 0.2s ease;
 }
 
 .transactions-search-input::-webkit-search-cancel-button {
