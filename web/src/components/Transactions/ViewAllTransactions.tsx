@@ -1,4 +1,9 @@
 import '@styles/Transactions/ViewAllTransactions.css';
+import '@styles/UpdateProducts/UpdateProducts.css';
+import '@styles/Utils/Buttons.css';
+import '@styles/Utils/TableUtils.css';
+import '@styles/Utils/PageLayout.css';
+
 import { useState, useEffect } from 'react';
 import { fetchTransactions, getTransactionCount } from '@/services/api';
 
@@ -25,22 +30,24 @@ const ViewAllTransactions = () => {
 
     const itemsPerPage = 20;
 
+    const extractCount = (countData: unknown) =>
+        typeof countData === 'number'
+            ? countData
+            : Number((countData as { count?: number })?.count ?? 0);
+
     const loadTransactions = async () => {
         setIsLoading(true);
         try {
             const countData = await getTransactionCount(searchQuery);
-            const rawCount =
-                typeof countData === 'number' ? countData : (countData as any).count;
-
-            if (rawCount !== undefined) {
-                setTotalItems(rawCount);
-            }
+            const total = extractCount(countData);
+            setTotalItems(total);
 
             const data = await fetchTransactions(itemsPerPage, currentPage - 1, {
                 search: searchQuery,
                 sortBy: sortColumn,
                 sortDir: sortDirection,
             });
+
             setTransactions(data);
         } catch (error) {
             console.error('Failed to load transactions', error);
@@ -57,14 +64,15 @@ const ViewAllTransactions = () => {
         if (sortColumn !== column) {
             setSortColumn(column);
             setSortDirection('asc');
-        } else {
-            setSortDirection((prev) => (prev === 'asc' ? 'desc' : 'asc'));
+            return;
         }
+
+        setSortDirection((prev) => (prev === 'asc' ? 'desc' : 'asc'));
     };
 
     const getSortIcon = (column: SortColumn) => {
         if (sortColumn !== column) return '';
-        return sortDirection === 'asc' ? ' ▲' : ' ▼';
+        return sortDirection === 'asc' ? '▲' : '▼';
     };
 
     const handleSearchSubmit = (event: React.FormEvent<HTMLFormElement>) => {
@@ -93,21 +101,24 @@ const ViewAllTransactions = () => {
                             </p>
                         </div>
 
+                                            <div className="table-toolbar">
                         <form
-                            className="transactions-search-form"
+                            className="table-search-form"
                             onSubmit={handleSearchSubmit}
                         >
                             <input
-                                className="transactions-search-input"
+                                className="table-search-input"
                                 type="search"
                                 value={searchInput}
-                                onChange={(event) => setSearchInput(event.target.value)}
+                                onChange={(event) =>
+                                    setSearchInput(event.target.value)
+                                }
                                 placeholder="Search by product name"
                                 aria-label="Search transactions by product name"
                             />
 
                             <button
-                                className="transactions-search-btn"
+                                className="table-control-btn"
                                 type="submit"
                                 disabled={isLoading}
                             >
@@ -116,7 +127,7 @@ const ViewAllTransactions = () => {
 
                             {(searchInput || searchQuery) && (
                                 <button
-                                    className="transactions-clear-btn"
+                                    className="table-control-btn-secondary"
                                     type="button"
                                     onClick={handleClearSearch}
                                     disabled={isLoading}
@@ -125,64 +136,100 @@ const ViewAllTransactions = () => {
                                 </button>
                             )}
                         </form>
+
+                        {searchQuery && (
+                            <p className="table-status">
+                                Showing results for "{searchQuery}"
+                            </p>
+                        )}
+                    </div>
                     </div>
 
-                    {searchQuery && (
-                        <p className="transactions-search-status">
-                            Showing results for "{searchQuery}"
-                        </p>
-                    )}
 
-                    <div className={`table-list ${isLoading ? 'loading-opacity' : ''}`}>
+
+                    <div
+                        className={`table-list ${
+                            isLoading ? 'loading-opacity' : ''
+                        }`}
+                    >
                         {transactions.length > 0 ? (
                             <table className="table">
                                 <thead>
                                     <tr>
-                                        <th
-                                            onClick={() => handleSort('product')}
-                                            style={{ cursor: 'pointer' }}
-                                        >
-                                            Product Name{getSortIcon('product')}
+                                        <th className="col-product">
+                                            <button
+                                                className="table-sort-button"
+                                                type="button"
+                                                onClick={() =>
+                                                    handleSort('product')
+                                                }
+                                            >
+                                                Product {getSortIcon('product')}
+                                            </button>
                                         </th>
 
-                                        <th
-                                            onClick={() => handleSort('date')}
-                                            style={{ cursor: 'pointer' }}
-                                        >
-                                            Date & Time{getSortIcon('date')}
+                                        <th className="col-cost">
+                                            <button
+                                                className="table-sort-button"
+                                                type="button"
+                                                onClick={() =>
+                                                    handleSort('date')
+                                                }
+                                            >
+                                                Date & Time{' '}
+                                                {getSortIcon('date')}
+                                            </button>
                                         </th>
 
-                                        <th
-                                            onClick={() => handleSort('price')}
-                                            style={{ cursor: 'pointer' }}
-                                        >
-                                            Price{getSortIcon('price')}
+                                        <th className="col-price">
+                                            <button
+                                                className="table-sort-button"
+                                                type="button"
+                                                onClick={() =>
+                                                    handleSort('price')
+                                                }
+                                            >
+                                                Price {getSortIcon('price')}
+                                            </button>
                                         </th>
                                     </tr>
                                 </thead>
 
                                 <tbody>
-                                    {transactions.map((transaction) => {
-                                        const dateObj = new Date(transaction.dateSold);
+                                    {transactions.map((transaction, index) => {
+                                        const dateObj = new Date(
+                                            transaction.dateSold,
+                                        );
 
-                                        const dateTime = dateObj.toLocaleString([], {
-                                            year: 'numeric',
-                                            month: 'short',
-                                            day: 'numeric',
-                                            hour: '2-digit',
-                                            minute: '2-digit',
-                                        });
+                                        const dateTime =
+                                            dateObj.toLocaleString([], {
+                                                year: 'numeric',
+                                                month: 'short',
+                                                day: 'numeric',
+                                                hour: '2-digit',
+                                                minute: '2-digit',
+                                            });
 
                                         return (
-                                            <tr key={transaction.id}>
-                                                <td>{transaction.productName}</td>
+                                            <tr
+                                                key={transaction.id}
+                                                style={
+                                                    {
+                                                        '--row-index': index,
+                                                    } as React.CSSProperties
+                                                }
+                                            >
+                                                <td>
+                                                    {transaction.productName}
+                                                </td>
 
                                                 <td>{dateTime}</td>
 
                                                 <td>
                                                     $
                                                     {(
-                                                        transaction.priceAtSaleCents / 100
+                                                        transaction.priceAtSaleCents /
+                                                        100
                                                     ).toFixed(2)}
                                                 </td>
                                             </tr>
@@ -191,7 +238,9 @@ const ViewAllTransactions = () => {
                                 </tbody>
                             </table>
                         ) : (
-                            <p className="no-transactions">No transactions found</p>
+                            <p className="no-transactions">
+                                No transactions found
+                            </p>
                         )}
                     </div>
 
@@ -199,7 +248,9 @@ const ViewAllTransactions = () => {
                         <div className="pagination">
                             <button
                                 className="pagination-btn"
-                                onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                                onClick={() =>
+                                    setCurrentPage((p) => Math.max(1, p - 1))
+                                }
                                 disabled={currentPage === 1 || isLoading}
                             >
                                 Previous
@@ -211,8 +262,12 @@ const ViewAllTransactions = () => {
 
                             <button
                                 className="pagination-btn"
-                                onClick={() => setCurrentPage((p) => p + 1)}
-                                disabled={currentPage === totalPages || isLoading}
+                                onClick={() =>
+                                    setCurrentPage((p) => p + 1)
+                                }
+                                disabled={
+                                    currentPage === totalPages || isLoading
+                                }
                             >
                                 Next
                             </button>
