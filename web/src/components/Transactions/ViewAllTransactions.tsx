@@ -9,13 +9,17 @@ type Transaction = {
     dateSold: string;
 };
 
+type SortColumn = 'product' | 'date' | 'price';
+type SortDirection = 'asc' | 'desc';
+
 const ViewAllTransactions = () => {
-    const sortedByOptions = ['Product', 'Time', 'Date', 'Price'];
     const [transactions, setTransactions] = useState<Transaction[]>([]);
     const [totalItems, setTotalItems] = useState(0);
     const [currentPage, setCurrentPage] = useState(1);
     const [isLoading, setIsLoading] = useState(false);
-    const [sortBy, setSortBy] = useState('Date');
+
+    const [sortColumn, setSortColumn] = useState<SortColumn>('date');
+    const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
 
     const itemsPerPage = 20;
 
@@ -43,27 +47,42 @@ const ViewAllTransactions = () => {
         loadTransactions();
     }, [currentPage]);
 
+    const handleSort = (column: SortColumn) => {
+        if (sortColumn !== column) {
+            setSortColumn(column);
+            setSortDirection('asc');
+        } else {
+            setSortDirection((prev) => (prev === 'asc' ? 'desc' : 'asc'));
+        }
+    };
+
+    const getSortIcon = (column: SortColumn) => {
+        if (sortColumn !== column) return '';
+        return sortDirection === 'asc' ? ' ▲' : ' ▼';
+    };
+
     const sortTransactions = (data: Transaction[]): Transaction[] => {
         const sorted = [...data];
-        switch (sortBy) {
-            case 'Product':
-                return sorted.sort((a, b) =>
-                    a.productName.localeCompare(b.productName),
-                );
-            case 'Date':
-            case 'Time':
-                return sorted.sort(
-                    (a, b) =>
-                        new Date(b.dateSold).getTime() -
-                        new Date(a.dateSold).getTime(),
-                );
-            case 'Price':
-                return sorted.sort(
-                    (a, b) => b.priceAtSaleCents - a.priceAtSaleCents,
-                );
-            default:
-                return sorted;
-        }
+
+        return sorted.sort((a, b) => {
+            let comparison = 0;
+
+            if (sortColumn === 'product') {
+                comparison = a.productName.localeCompare(b.productName);
+            }
+
+            if (sortColumn === 'date') {
+                comparison =
+                    new Date(a.dateSold).getTime() -
+                    new Date(b.dateSold).getTime();
+            }
+
+            if (sortColumn === 'price') {
+                comparison = a.priceAtSaleCents - b.priceAtSaleCents;
+            }
+
+            return sortDirection === 'asc' ? comparison : -comparison;
+        });
     };
 
     const sortedTransactions = sortTransactions(transactions);
@@ -72,21 +91,6 @@ const ViewAllTransactions = () => {
     return (
         <div className="grid-container">
             <div className="view-all-transactions-grid">
-                <div className="sorted-by">
-                    <span>Sorted by:</span>
-                    <select
-                        className="sorted-by-select"
-                        value={sortBy}
-                        onChange={(e) => setSortBy(e.target.value)}
-                    >
-                        {sortedByOptions.map((option) => (
-                            <option key={option} value={option}>
-                                {option}
-                            </option>
-                        ))}
-                    </select>
-                </div>
-
                 <div className="page-card">
                     <div className="card-header">
                         <div>
@@ -106,9 +110,26 @@ const ViewAllTransactions = () => {
                             <table className="table">
                                 <thead>
                                     <tr>
-                                        <th>Product Name</th>
-                                        <th>Date & Time</th>
-                                        <th>Price</th>
+                                        <th
+                                            onClick={() => handleSort('product')}
+                                            style={{ cursor: 'pointer' }}
+                                        >
+                                            Product Name{getSortIcon('product')}
+                                        </th>
+
+                                        <th
+                                            onClick={() => handleSort('date')}
+                                            style={{ cursor: 'pointer' }}
+                                        >
+                                            Date & Time{getSortIcon('date')}
+                                        </th>
+
+                                        <th
+                                            onClick={() => handleSort('price')}
+                                            style={{ cursor: 'pointer' }}
+                                        >
+                                            Price{getSortIcon('price')}
+                                        </th>
                                     </tr>
                                 </thead>
 
@@ -116,7 +137,6 @@ const ViewAllTransactions = () => {
                                     {sortedTransactions.map((transaction) => {
                                         const dateObj = new Date(transaction.dateSold);
 
-                                        // const dateTime = dateObj.toLocaleString();
                                         const dateTime = dateObj.toLocaleString([], {
                                             year: 'numeric',
                                             month: 'short',
@@ -129,7 +149,6 @@ const ViewAllTransactions = () => {
                                             <tr key={transaction.id}>
                                                 <td>{transaction.productName}</td>
 
-                                                {/* ✅ merged column */}
                                                 <td>{dateTime}</td>
 
                                                 <td>

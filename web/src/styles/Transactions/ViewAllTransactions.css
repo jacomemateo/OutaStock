@@ -1,6 +1,6 @@
 .view-all-transactions-grid {
     display: grid;
-    grid-template-rows: 0.1fr 1fr;
+    grid-template-rows: 1fr;
     gap: var(--container-grid-gap-small);
 
     flex: 1;
