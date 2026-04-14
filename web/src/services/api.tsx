@@ -233,3 +233,25 @@ export const updateProductCost = async (productID: string, costCents: number) =>
         throw error;
     }
 };
+
+
+export const uploadFile = async (file: File) => {
+    try {
+        const formData = new FormData();
+        formData.append('file', file);
+
+        const response = await authFetch(`${API_BASE_URL}/upload`, {
+            method: 'POST',
+            body: formData,
+        });
+
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        return await response.json();
+    } catch (error) {
+        console.error('Error uploading file:', error);
+        throw error;
+    }
+};
