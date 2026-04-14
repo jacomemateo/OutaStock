@@ -7,7 +7,7 @@ DECLARE
     rand_product RECORD;
     rand_time TIMESTAMPTZ;
 BEGIN
-    WHILE counter < 500000 AND attempts < max_attempts LOOP
+    WHILE counter < 10000 AND attempts < max_attempts LOOP
         attempts := attempts + 1;
         
         -- Get random product
