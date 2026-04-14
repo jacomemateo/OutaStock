@@ -32,16 +32,30 @@ interface Product {
     dateCreated: string;
 }
 
+type ProductSortColumn = 'name' | 'cost' | 'price';
+type SortDirection = 'asc' | 'desc';
+
 const UpdateProducts = () => {
     const { showAlert } = useAlert();
     const [products, setProducts] = useState<Product[]>([]);
+    const [totalProductCount, setTotalProductCount] = useState(0);
     const [isAddProductModalOpen, setIsAddProductModalOpen] = useState(false);
     const [isEditProductModalOpen, setIsEditProductModalOpen] = useState(false);
+    const [isLoadingProducts, setIsLoadingProducts] = useState(false);
     const [lowStockCount, setLowStockCount] = useState(0);
     const [confirmationOpen, setConfirmationOpen] = useState<boolean>(false);
     const [slotToDelete, setSlotToDelete] = useState<string | null>(null);
     const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
     const [isEditMode, setIsEditMode] = useState<boolean>(false);
+    const [searchInput, setSearchInput] = useState('');
+    const [searchQuery, setSearchQuery] = useState('');
+    const [sortColumn, setSortColumn] = useState<ProductSortColumn>('name');
+    const [sortDirection, setSortDirection] = useState<SortDirection>('asc');
+
+    const extractCount = (countData: unknown) =>
+        typeof countData === 'number'
+            ? countData
+            : Number((countData as { count?: number })?.count ?? 0);
 
     // Not working
     // const getLowStockCount = async () => {
@@ -58,7 +72,11 @@ const UpdateProducts = () => {
 
     const loadInventory = async () => {
         try {
-            const data = await fetchInventory(await getInventoryCount(), 0);
+            const inventoryCount = extractCount(await getInventoryCount());
+            const data = await fetchInventory(inventoryCount, 0, {
+                sortBy: 'location',
+                sortDir: 'asc',
+            });
             /*
                     Ensure we always store an array
                     */
@@ -72,12 +90,29 @@ const UpdateProducts = () => {
     };
 
     const loadProducts = async () => {
+        setIsLoadingProducts(true);
         try {
-            const data = await fetchProducts(await getProductCount(), 0);
+            const [filteredCountData, totalCountData] = await Promise.all([
+                getProductCount(searchQuery),
+                getProductCount(),
+            ]);
+
+            const filteredCount = extractCount(filteredCountData);
+            const totalCount = extractCount(totalCountData);
+
+            const data = await fetchProducts(filteredCount, 0, {
+                search: searchQuery,
+                sortBy: sortColumn,
+                sortDir: sortDirection,
+            });
+
             setProducts(data);
+            setTotalProductCount(totalCount);
             console.log('Loaded products:', data);
         } catch (error) {
             console.error('Error loading products:', error);
+        } finally {
+            setIsLoadingProducts(false);
         }
     };
 
@@ -86,15 +121,22 @@ const UpdateProducts = () => {
         costCents: number,
         priceCents: number,
     ) => {
-        if (
-            products.some((product) => product.name.toLowerCase() === name.toLowerCase())
-        ) {
-            showAlert(`${name} already exists. Please add a new product.`, 'error');
-            return;
-        }
         try {
-            // const newProduct = await createProduct(name, priceCents);
-            // setProducts((prevProducts) => [...prevProducts, newProduct]);
+            const existingProductCount = extractCount(await getProductCount());
+            const existingProducts = await fetchProducts(existingProductCount, 0, {
+                sortBy: 'name',
+                sortDir: 'asc',
+            });
+
+            if (
+                existingProducts.some(
+                    (product: Product) => product.name.toLowerCase() === name.toLowerCase(),
+                )
+            ) {
+                showAlert(`${name} already exists. Please add a new product.`, 'error');
+                return;
+            }
+
             await createProduct(name, costCents, priceCents);
             await loadProducts(); // Reload fresh data from backend
             showAlert(`${name} added successfully!`, 'success');
@@ -142,10 +184,37 @@ const UpdateProducts = () => {
     };
 
     useEffect(() => {
-        // getLowStockCount();
-        loadProducts();
         loadInventory();
     }, []);
+
+    useEffect(() => {
+        loadProducts();
+    }, [searchQuery, sortColumn, sortDirection]);
+
+    const handleSearchSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+        event.preventDefault();
+        setSearchQuery(searchInput.trim());
+    };
+
+    const handleClearSearch = () => {
+        setSearchInput('');
+        setSearchQuery('');
+    };
+
+    const handleSort = (column: ProductSortColumn) => {
+        if (sortColumn !== column) {
+            setSortColumn(column);
+            setSortDirection('asc');
+            return;
+        }
+
+        setSortDirection((prev) => (prev === 'asc' ? 'desc' : 'asc'));
+    };
+
+    const getSortIcon = (column: ProductSortColumn) => {
+        if (sortColumn !== column) return '';
+        return sortDirection === 'asc' ? '▲' : '▼';
+    };
 
     return (
         <>
@@ -158,7 +227,7 @@ const UpdateProducts = () => {
                                 Items
                             </h2>
                             <p className="metric-card-subtitle">Total items in stock</p>
-                            <p className="metric-card-value">{products.length}</p>
+                            <p className="metric-card-value">{totalProductCount}</p>
                         </div>
 
                         <div className="metric-card low-stock-card">
@@ -203,7 +272,53 @@ const UpdateProducts = () => {
                                     View and modify all products
                                 </p>
                             </div>
-                            <div className="update-products-actions">
+
+
+                        </div>
+
+                        <div className="table-toolbar">
+                            <form
+                                className="table-search-form"
+                                onSubmit={handleSearchSubmit}
+                            >
+                                <input
+                                    className="table-search-input"
+                                    type="search"
+                                    value={searchInput}
+                                    onChange={(event) =>
+                                        setSearchInput(event.target.value)
+                                    }
+                                    placeholder="Search by product name"
+                                    aria-label="Search products by product name"
+                                />
+
+                                <button
+                                    className="table-control-btn"
+                                    type="submit"
+                                    disabled={isLoadingProducts}
+                                >
+                                    Search
+                                </button>
+
+                                {(searchInput || searchQuery) && (
+                                    <button
+                                        className="table-control-btn-secondary"
+                                        type="button"
+                                        onClick={handleClearSearch}
+                                        disabled={isLoadingProducts}
+                                    >
+                                        Clear
+                                    </button>
+                                )}
+                            </form>
+
+                            {searchQuery && (
+                                <p className="table-status">
+                                    Showing results for "{searchQuery}"
+                                </p>
+                            )}
+
+                                                        <div className="update-products-actions">
                                 <button
                                     className="edit-btn"
                                     onClick={() => setIsEditMode(!isEditMode)}
@@ -222,71 +337,112 @@ const UpdateProducts = () => {
                             </div>
                         </div>
 
-                        <div className="table-list">
-                            <table className="table">
-                                <thead>
-                                    <tr>
-                                        <th className="col-product">Product</th>
-                                        <th className="col-cost">Cost</th>
-                                        <th className="col-price">Price</th>
-                                        {isEditMode && (
-                                            <th className="col-actions">Actions</th>
-                                        )}
-                                    </tr>
-                                </thead>
+                        <div
+                            className={`table-list ${
+                                isLoadingProducts ? 'loading-opacity' : ''
+                            }`}
+                        >
+                            {products.length > 0 ? (
+                                <table className="table">
+                                    <thead>
+                                        <tr>
+                                            <th className="col-product">
+                                                <button
+                                                    className="table-sort-button"
+                                                    type="button"
+                                                    onClick={() => handleSort('name')}
+                                                >
+                                                    Product {getSortIcon('name')}
+                                                </button>
+                                            </th>
 
-                                <tbody>
-                                    {products.map((product, index) => (
-                                        <tr
-                                            key={product.id}
-                                            style={
-                                                {
-                                                    '--row-index': index,
-                                                } as React.CSSProperties
-                                            }
-                                        >
-                                            <td>{product.name}</td>
-                                            <td>
-                                                ${(product.costCents / 100).toFixed(2)}
-                                            </td>
-                                            <td>
-                                                ${(product.priceCents / 100).toFixed(2)}
-                                            </td>
+                                            <th className="col-cost">
+                                                <button
+                                                    className="table-sort-button"
+                                                    type="button"
+                                                    onClick={() => handleSort('cost')}
+                                                >
+                                                    Cost {getSortIcon('cost')}
+                                                </button>
+                                            </th>
+
+                                            <th className="col-price">
+                                                <button
+                                                    className="table-sort-button"
+                                                    type="button"
+                                                    onClick={() => handleSort('price')}
+                                                >
+                                                    Price {getSortIcon('price')}
+                                                </button>
+                                            </th>
+
                                             {isEditMode && (
-                                                <td className="edit-btn-cell">
-                                                    <div className="action-btns">
-                                                        <button
-                                                            className="edit-btn-row"
-                                                            onClick={() => {
-                                                                setIsEditProductModalOpen(
-                                                                    true,
-                                                                );
-                                                                setSelectedProduct(
-                                                                    product,
-                                                                );
-                                                            }}
-                                                        >
-                                                            <EditIcon fontSize="small" />
-                                                        </button>
-
-                                                        <button
-                                                            className="delete-btn-row"
-                                                            onClick={() => {
-                                                                setConfirmationOpen(true);
-                                                                setSlotToDelete(
-                                                                    product.id,
-                                                                );
-                                                            }}
-                                                        >
-                                                            <DeleteIcon fontSize="small" />
-                                                        </button>
-                                                    </div>
-                                                </td>
+                                                <th className="col-actions">Actions</th>
                                             )}
                                         </tr>
-                                    ))}
-                                </tbody>
-                            </table>
+                                    </thead>
+
+                                    <tbody>
+                                        {products.map((product, index) => (
+                                            <tr
+                                                key={product.id}
+                                                style={
+                                                    {
+                                                        '--row-index': index,
+                                                    } as React.CSSProperties
+                                                }
+                                            >
+                                                <td>{product.name}</td>
+                                                <td>
+                                                    $
+                                                    {(product.costCents / 100).toFixed(2)}
+                                                </td>
+                                                <td>
+                                                    $
+                                                    {(product.priceCents / 100).toFixed(
+                                                        2,
+                                                    )}
+                                                </td>
+                                                {isEditMode && (
+                                                    <td className="edit-btn-cell">
+                                                        <div className="action-btns">
+                                                            <button
+                                                                className="edit-btn-row"
+                                                                onClick={() => {
+                                                                    setIsEditProductModalOpen(
+                                                                        true,
+                                                                    );
+                                                                    setSelectedProduct(
+                                                                        product,
+                                                                    );
+                                                                }}
+                                                            >
+                                                                <EditIcon fontSize="small" />
+                                                            </button>
+
+                                                            <button
+                                                                className="delete-btn-row"
+                                                                onClick={() => {
+                                                                    setConfirmationOpen(
+                                                                        true,
+                                                                    );
+                                                                    setSlotToDelete(
+                                                                        product.id,
+                                                                    );
+                                                                }}
+                                                            >
+                                                                <DeleteIcon fontSize="small" />
+                                                            </button>
+                                                        </div>
+                                                    </td>
+                                                )}
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            ) : (
+                                <p className="no-transactions">No products found</p>
+                            )}
                         </div>
                     </div>
                 </div>
