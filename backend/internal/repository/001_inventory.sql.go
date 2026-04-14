@@ -26,12 +26,15 @@ func (q *Queries) ClearInventorySlot(ctx context.Context, slotID int32) error {
 
 const countInventoryRows = `-- name: CountInventoryRows :one
 
-SELECT COUNT(*) from inventory
+SELECT COUNT(*)
+FROM inventory cp
+LEFT JOIN product_info pi ON cp.product_id = pi.product_id AND pi.date_deleted IS NULL
+WHERE $1 = '' OR COALESCE(pi.name, '') ILIKE '%' || $1 || '%'
 `
 
 // code: language=postgres
-func (q *Queries) CountInventoryRows(ctx context.Context) (int64, error) {
-	row := q.db.QueryRow(ctx, countInventoryRows)
+func (q *Queries) CountInventoryRows(ctx context.Context, search interface{}) (int64, error) {
+	row := q.db.QueryRow(ctx, countInventoryRows, search)
 	var count int64
 	err := row.Scan(&count)
 	return count, err
@@ -47,13 +50,22 @@ SELECT
     pi.price_cents,
     pi.product_id
 FROM inventory cp
-LEFT JOIN product_info pi ON cp.product_id = pi.product_id
-ORDER BY cp.slot_id
-LIMIT $2
-OFFSET $1
+LEFT JOIN product_info pi ON cp.product_id = pi.product_id AND pi.date_deleted IS NULL
+WHERE $1 = '' OR COALESCE(pi.name, '') ILIKE '%' || $1 || '%'
+ORDER BY
+    CASE WHEN $2 = 'product' AND $3 = 'asc' THEN LOWER(pi.name) END ASC NULLS LAST,
+    CASE WHEN $2 = 'product' AND $3 = 'desc' THEN LOWER(pi.name) END DESC NULLS LAST,
+    CASE WHEN $2 = 'quantity' AND $3 = 'asc' THEN cp.quantity END ASC NULLS LAST,
+    CASE WHEN $2 = 'quantity' AND $3 = 'desc' THEN cp.quantity END DESC NULLS LAST,
+    cp.slot_id ASC
+LIMIT $5
+OFFSET $4
 `
 
 type GetInventoryParams struct {
+	Search     interface{}
+	SortBy     interface{}
+	SortDir    interface{}
 	PageOffset int32
 	NumRows    int32
 }
@@ -69,7 +81,13 @@ type GetInventoryRow struct {
 }
 
 func (q *Queries) GetInventory(ctx context.Context, arg GetInventoryParams) ([]GetInventoryRow, error) {
-	rows, err := q.db.Query(ctx, getInventory, arg.PageOffset, arg.NumRows)
+	rows, err := q.db.Query(ctx, getInventory,
+		arg.Search,
+		arg.SortBy,
+		arg.SortDir,
+		arg.PageOffset,
+		arg.NumRows,
+	)
 	if err != nil {
 		return nil, err
 	}
@@ -97,7 +115,6 @@ func (q *Queries) GetInventory(ctx context.Context, arg GetInventoryParams) ([]G
 }
 
 const updateInventory = `-- name: UpdateInventory :exec
-
 UPDATE inventory
 SET
     product_id = COALESCE($1, product_id),
@@ -111,7 +128,6 @@ type UpdateInventoryParams struct {
 	SlotID    int32
 }
 
-// I have to pass this in from the frontend
 func (q *Queries) UpdateInventory(ctx context.Context, arg UpdateInventoryParams) error {
 	_, err := q.db.Exec(ctx, updateInventory, arg.ProductID, arg.Quantity, arg.SlotID)
 	return err
