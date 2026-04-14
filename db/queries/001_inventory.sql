@@ -1,7 +1,10 @@
 -- code: language=postgres
 
 -- name: CountInventoryRows :one
-SELECT COUNT(*) from inventory;
+SELECT COUNT(*)
+FROM inventory cp
+LEFT JOIN product_info pi ON cp.product_id = pi.product_id AND pi.date_deleted IS NULL
+WHERE @search = '' OR COALESCE(pi.name, '') ILIKE '%' || @search || '%';
 
 -- name: GetInventory :many
 SELECT
@@ -13,10 +16,16 @@ SELECT
     pi.price_cents,
     pi.product_id
 FROM inventory cp
-LEFT JOIN product_info pi ON cp.product_id = pi.product_id
-ORDER BY cp.slot_id
+LEFT JOIN product_info pi ON cp.product_id = pi.product_id AND pi.date_deleted IS NULL
+WHERE @search = '' OR COALESCE(pi.name, '') ILIKE '%' || @search || '%'
+ORDER BY
+    CASE WHEN @sort_by = 'product' AND @sort_dir = 'asc' THEN LOWER(pi.name) END ASC NULLS LAST,
+    CASE WHEN @sort_by = 'product' AND @sort_dir = 'desc' THEN LOWER(pi.name) END DESC NULLS LAST,
+    CASE WHEN @sort_by = 'quantity' AND @sort_dir = 'asc' THEN cp.quantity END ASC NULLS LAST,
+    CASE WHEN @sort_by = 'quantity' AND @sort_dir = 'desc' THEN cp.quantity END DESC NULLS LAST,
+    cp.slot_id ASC
 LIMIT @num_rows
-OFFSET @page_offset; -- I have to pass this in from the frontend
+OFFSET @page_offset;
 
 -- name: UpdateInventory :exec
 UPDATE inventory
