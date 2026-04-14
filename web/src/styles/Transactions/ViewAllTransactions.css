@@ -168,11 +168,17 @@
     }
 }
 
+
+
 .no-transactions {
-    text-align: center;
+    flex: 1;                /* Takes up all available vertical space */
+    display: flex;          /* Makes this p tag a flex container too */
+    align-items: center;    /* Vertically centers the text */
+    justify-content: center; /* Horizontally centers the text */
+    
     color: var(--text-secondary);
-    padding: 2rem;
-    font-size: 0.95rem;
+    font-size: var(--text-lg);
+    margin: 0;              /* Remove default p margins */
 }
 
 .pagination {
