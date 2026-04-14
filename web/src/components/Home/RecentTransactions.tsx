@@ -20,7 +20,7 @@ const RecentTransactions = () => {
     const containerRef = useRef<HTMLDivElement>(null);
     const probeRef = useRef<HTMLDivElement>(null);
 
-    const MAX_PAGES = 5;
+    const MAX_PAGES = 1;
     const gap = 16;
 
     // -----------------------------
@@ -196,7 +196,7 @@ const RecentTransactions = () => {
                     </div>
                 ))}
             </div>
-
+{/* 
             <div className="pagination">
                 <button
                     className="pagination-btn"
@@ -217,7 +217,7 @@ const RecentTransactions = () => {
                 >
                     Next
                 </button>
-            </div>
+            </div> */}
         </div>
     );
 };
