@@ -20,13 +20,15 @@ const ViewAllTransactions = () => {
 
     const [sortColumn, setSortColumn] = useState<SortColumn>('date');
     const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
+    const [searchInput, setSearchInput] = useState('');
+    const [searchQuery, setSearchQuery] = useState('');
 
     const itemsPerPage = 20;
 
     const loadTransactions = async () => {
         setIsLoading(true);
         try {
-            const countData = await getTransactionCount();
+            const countData = await getTransactionCount(searchQuery);
             const rawCount =
                 typeof countData === 'number' ? countData : (countData as any).count;
 
@@ -35,6 +37,7 @@ const ViewAllTransactions = () => {
             }
 
             const data = await fetchTransactions(itemsPerPage, currentPage - 1, {
+                search: searchQuery,
                 sortBy: sortColumn,
                 sortDir: sortDirection,
             });
@@ -48,7 +51,7 @@ const ViewAllTransactions = () => {
 
     useEffect(() => {
         loadTransactions();
-    }, [currentPage, sortColumn, sortDirection]);
+    }, [currentPage, sortColumn, sortDirection, searchQuery]);
 
     const handleSort = (column: SortColumn) => {
         if (sortColumn !== column) {
@@ -64,6 +67,18 @@ const ViewAllTransactions = () => {
         return sortDirection === 'asc' ? ' ▲' : ' ▼';
     };
 
+    const handleSearchSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+        event.preventDefault();
+        setCurrentPage(1);
+        setSearchQuery(searchInput.trim());
+    };
+
+    const handleClearSearch = () => {
+        setSearchInput('');
+        setSearchQuery('');
+        setCurrentPage(1);
+    };
+
     const totalPages = Math.ceil(totalItems / itemsPerPage) || 1;
 
     return (
@@ -77,7 +92,46 @@ const ViewAllTransactions = () => {
                                 View and manage all transactions
                             </p>
                         </div>
+
+                        <form
+                            className="transactions-search-form"
+                            onSubmit={handleSearchSubmit}
+                        >
+                            <input
+                                className="transactions-search-input"
+                                type="search"
+                                value={searchInput}
+                                onChange={(event) => setSearchInput(event.target.value)}
+                                placeholder="Search by product name"
+                                aria-label="Search transactions by product name"
+                            />
+
+                            <button
+                                className="transactions-search-btn"
+                                type="submit"
+                                disabled={isLoading}
+                            >
+                                Search
+                            </button>
+
+                            {(searchInput || searchQuery) && (
+                                <button
+                                    className="transactions-clear-btn"
+                                    type="button"
+                                    onClick={handleClearSearch}
+                                    disabled={isLoading}
+                                >
+                                    Clear
+                                </button>
+                            )}
+                        </form>
                     </div>
+
+                    {searchQuery && (
+                        <p className="transactions-search-status">
+                            Showing results for "{searchQuery}"
+                        </p>
+                    )}
 
                     <div className={`table-list ${isLoading ? 'loading-opacity' : ''}`}>
                         {transactions.length > 0 ? (
