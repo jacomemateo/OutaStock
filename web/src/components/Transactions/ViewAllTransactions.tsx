@@ -107,7 +107,7 @@ const ViewAllTransactions = () => {
                                 <thead>
                                     <tr>
                                         <th>Product Name</th>
-                                        <th>Date & Time</th> {/* ✅ merged */}
+                                        <th>Date & Time</th>
                                         <th>Price</th>
                                     </tr>
                                 </thead>
