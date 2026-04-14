@@ -34,7 +34,10 @@ const ViewAllTransactions = () => {
                 setTotalItems(rawCount);
             }
 
-            const data = await fetchTransactions(itemsPerPage, currentPage - 1);
+            const data = await fetchTransactions(itemsPerPage, currentPage - 1, {
+                sortBy: sortColumn,
+                sortDir: sortDirection,
+            });
             setTransactions(data);
         } catch (error) {
             console.error('Failed to load transactions', error);
@@ -45,7 +48,7 @@ const ViewAllTransactions = () => {
 
     useEffect(() => {
         loadTransactions();
-    }, [currentPage]);
+    }, [currentPage, sortColumn, sortDirection]);
 
     const handleSort = (column: SortColumn) => {
         if (sortColumn !== column) {
@@ -61,31 +64,6 @@ const ViewAllTransactions = () => {
         return sortDirection === 'asc' ? ' ▲' : ' ▼';
     };
 
-    const sortTransactions = (data: Transaction[]): Transaction[] => {
-        const sorted = [...data];
-
-        return sorted.sort((a, b) => {
-            let comparison = 0;
-
-            if (sortColumn === 'product') {
-                comparison = a.productName.localeCompare(b.productName);
-            }
-
-            if (sortColumn === 'date') {
-                comparison =
-                    new Date(a.dateSold).getTime() -
-                    new Date(b.dateSold).getTime();
-            }
-
-            if (sortColumn === 'price') {
-                comparison = a.priceAtSaleCents - b.priceAtSaleCents;
-            }
-
-            return sortDirection === 'asc' ? comparison : -comparison;
-        });
-    };
-
-    const sortedTransactions = sortTransactions(transactions);
     const totalPages = Math.ceil(totalItems / itemsPerPage) || 1;
 
     return (
@@ -101,12 +79,8 @@ const ViewAllTransactions = () => {
                         </div>
                     </div>
 
-                    <div
-                        className={`table-list ${
-                            isLoading ? 'loading-opacity' : ''
-                        }`}
-                    >
-                        {sortedTransactions.length > 0 ? (
+                    <div className={`table-list ${isLoading ? 'loading-opacity' : ''}`}>
+                        {transactions.length > 0 ? (
                             <table className="table">
                                 <thead>
                                     <tr>
@@ -134,7 +108,7 @@ const ViewAllTransactions = () => {
                                 </thead>
 
                                 <tbody>
-                                    {sortedTransactions.map((transaction) => {
+                                    {transactions.map((transaction) => {
                                         const dateObj = new Date(transaction.dateSold);
 
                                         const dateTime = dateObj.toLocaleString([], {
@@ -154,8 +128,7 @@ const ViewAllTransactions = () => {
                                                 <td>
                                                     $
                                                     {(
-                                                        transaction.priceAtSaleCents /
-                                                        100
+                                                        transaction.priceAtSaleCents / 100
                                                     ).toFixed(2)}
                                                 </td>
                                             </tr>
@@ -164,9 +137,7 @@ const ViewAllTransactions = () => {
                                 </tbody>
                             </table>
                         ) : (
-                            <p className="no-transactions">
-                                No transactions found
-                            </p>
+                            <p className="no-transactions">No transactions found</p>
                         )}
                     </div>
 
@@ -174,9 +145,7 @@ const ViewAllTransactions = () => {
                         <div className="pagination">
                             <button
                                 className="pagination-btn"
-                                onClick={() =>
-                                    setCurrentPage((p) => Math.max(1, p - 1))
-                                }
+                                onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
                                 disabled={currentPage === 1 || isLoading}
                             >
                                 Previous
@@ -188,12 +157,8 @@ const ViewAllTransactions = () => {
 
                             <button
                                 className="pagination-btn"
-                                onClick={() =>
-                                    setCurrentPage((p) => p + 1)
-                                }
-                                disabled={
-                                    currentPage === totalPages || isLoading
-                                }
+                                onClick={() => setCurrentPage((p) => p + 1)}
+                                disabled={currentPage === totalPages || isLoading}
                             >
                                 Next
                             </button>
