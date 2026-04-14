@@ -14,6 +14,12 @@ type TransactionsHandler struct {
 	BinderValidator
 }
 
+var transactionSortFields = map[string]SortFieldConfig{
+	"product": {DefaultDirection: SortDirectionAsc},
+	"date":    {DefaultDirection: SortDirectionDesc},
+	"price":   {DefaultDirection: SortDirectionAsc},
+}
+
 func NewTransactionsHandler(transactionsService *service.TransactionsService) *TransactionsHandler {
 	return &TransactionsHandler{
 		transactionsService: transactionsService,
@@ -33,13 +39,18 @@ const (
 
 // GetRecentTransactions handles GET /api/transactions/recent?num_rows=&page_offset=
 func (h *TransactionsHandler) GetTransactions(c *echo.Context) error {
-	paginationParams, err := ParsePagination(c)
+	listQuery, err := ParseListQuery(c, "date", SortDirectionDesc, transactionSortFields)
 	if err != nil {
 		return err
 	}
 
-	// 3. Call service with pagination params
-	transactions, err := h.transactionsService.GetTransactions(c.Request().Context(), paginationParams.PageOffset, paginationParams.NumRows)
+	transactions, err := h.transactionsService.GetTransactions(c.Request().Context(), service.ListQuery{
+		PageOffset: listQuery.PageOffset,
+		NumRows:    listQuery.NumRows,
+		Search:     listQuery.Search,
+		SortBy:     listQuery.SortBy,
+		SortDir:    listQuery.SortDir,
+	})
 	if err != nil {
 		log.Error().Err(err).Msg("Failed to fetch transactions from service")
 		return c.JSON(http.StatusInternalServerError, map[string]string{
@@ -52,7 +63,7 @@ func (h *TransactionsHandler) GetTransactions(c *echo.Context) error {
 }
 
 func (h *TransactionsHandler) GetTransactionsCount(c *echo.Context) error {
-	count, err := h.transactionsService.GetTransactionsCount(c.Request().Context())
+	count, err := h.transactionsService.GetTransactionsCount(c.Request().Context(), ParseSearch(c))
 	if err != nil {
 		return c.JSON(http.StatusInternalServerError, map[string]string{
 			"error": "Failed to get transactions count",
