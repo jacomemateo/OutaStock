@@ -16,6 +16,7 @@ type InventoryHandler struct {
 }
 
 var inventorySortFields = map[string]SortFieldConfig{
+	"location": {DefaultDirection: SortDirectionAsc},
 	"product":  {DefaultDirection: SortDirectionAsc},
 	"quantity": {DefaultDirection: SortDirectionAsc},
 }

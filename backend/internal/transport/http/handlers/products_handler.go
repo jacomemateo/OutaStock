@@ -17,6 +17,7 @@ type ProductsHandler struct {
 
 var productSortFields = map[string]SortFieldConfig{
 	"name":       {DefaultDirection: SortDirectionAsc},
+	"cost":       {DefaultDirection: SortDirectionAsc},
 	"price":      {DefaultDirection: SortDirectionAsc},
 	"created_at": {DefaultDirection: SortDirectionDesc},
 }
