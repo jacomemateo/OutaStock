@@ -1,4 +1,4 @@
-import '@styles/ViewAllTransactions.css';
+import '@styles/Transactions/ViewAllTransactions.css';
 import { useState, useEffect } from 'react';
 import { fetchTransactions, getTransactionCount } from '@/services/api';
 
