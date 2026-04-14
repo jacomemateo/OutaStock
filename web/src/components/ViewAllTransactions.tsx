@@ -77,7 +77,7 @@ const ViewAllTransactions = () => {
                 <select
                     className="sorted-by-select"
                     value={sortBy}
-                    onChange={(e) => setSortBy(e.target.value)}
+                    onChange={(e) => setSortBy(e.target.value)} // Update sortBy state on change
                 >
                     {sortedByOptions.map((option) => (
                         <option key={option} value={option}>
