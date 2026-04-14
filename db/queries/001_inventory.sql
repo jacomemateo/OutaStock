@@ -19,6 +19,8 @@ FROM inventory cp
 LEFT JOIN product_info pi ON cp.product_id = pi.product_id AND pi.date_deleted IS NULL
 WHERE @search = '' OR COALESCE(pi.name, '') ILIKE '%' || @search || '%'
 ORDER BY
+    CASE WHEN @sort_by = 'location' AND @sort_dir = 'asc' THEN cp.slot_label END ASC,
+    CASE WHEN @sort_by = 'location' AND @sort_dir = 'desc' THEN cp.slot_label END DESC,
     CASE WHEN @sort_by = 'product' AND @sort_dir = 'asc' THEN LOWER(pi.name) END ASC NULLS LAST,
     CASE WHEN @sort_by = 'product' AND @sort_dir = 'desc' THEN LOWER(pi.name) END DESC NULLS LAST,
     CASE WHEN @sort_by = 'quantity' AND @sort_dir = 'asc' THEN cp.quantity END ASC NULLS LAST,

@@ -39,6 +39,8 @@ WHERE date_deleted IS NULL
 ORDER BY
     CASE WHEN @sort_by = 'name' AND @sort_dir = 'asc' THEN LOWER(name) END ASC,
     CASE WHEN @sort_by = 'name' AND @sort_dir = 'desc' THEN LOWER(name) END DESC,
+    CASE WHEN @sort_by = 'cost' AND @sort_dir = 'asc' THEN cost_cents END ASC,
+    CASE WHEN @sort_by = 'cost' AND @sort_dir = 'desc' THEN cost_cents END DESC,
     CASE WHEN @sort_by = 'price' AND @sort_dir = 'asc' THEN price_cents END ASC,
     CASE WHEN @sort_by = 'price' AND @sort_dir = 'desc' THEN price_cents END DESC,
     CASE WHEN @sort_by = 'created_at' AND @sort_dir = 'asc' THEN date_created END ASC,
