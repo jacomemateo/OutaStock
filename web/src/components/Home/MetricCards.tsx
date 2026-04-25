@@ -3,15 +3,23 @@ import { useEffect, useState } from 'react';
 // Icons
 import InventoryIcon from '@mui/icons-material/Inventory';
 import HourglassDisabledIcon from '@mui/icons-material/HourglassDisabled';
-import RunningWithErrorsIcon from '@mui/icons-material/RunningWithErrors';
 import BatteryCharging20Icon from '@mui/icons-material/BatteryCharging20';
 
 // API
-import { getProductCount, getInventoryCount, fetchInventory } from '@/services/api';
+import {
+    getProductCount,
+    getInventoryCount,
+    fetchInventory,
+} from '@/services/api';
 
-const MetricCards = () => {
+interface MetricCardsProps {
+    refreshKey: number;
+}
+
+const MetricCards = ({ refreshKey }: MetricCardsProps) => {
     const [lowStockCount, setLowStockCount] = useState(0);
     const [totalProductCount, setTotalProductCount] = useState(0);
+    const [outOfStockCount, setOutOfStockCount] = useState(0);
 
     const extractCount = (countData: unknown) =>
         typeof countData === 'number'
@@ -24,23 +32,31 @@ const MetricCards = () => {
             const total = extractCount(await getProductCount());
             setTotalProductCount(total);
 
-            // inventory → low stock
+            // inventory
             const inventoryCount = extractCount(await getInventoryCount());
             const inventory = await fetchInventory(inventoryCount, 0, {
                 sortBy: 'location',
                 sortDir: 'asc',
             });
 
-            const lowStockItems = inventory.filter((item: any) => item.quantity < 5);
+            const lowStockItems = inventory.filter(
+                (item: any) => item.quantity < 5
+            );
             setLowStockCount(lowStockItems.length);
+
+            const outOfStockItems = inventory.filter(
+                (item: any) => item.quantity === 0
+            );
+            setOutOfStockCount(outOfStockItems.length);
         } catch (err) {
             console.error('Failed to load metric data', err);
         }
     };
 
+    // ✅ now reacts to external changes
     useEffect(() => {
         loadData();
-    }, []);
+    }, [refreshKey]);
 
     return (
         <div className="metric-grid">
@@ -69,9 +85,8 @@ const MetricCards = () => {
                 <p className="metric-card-subtitle">
                     Number of items that are out of stock
                 </p>
-                <p className="metric-card-value">30</p>
+                <p className="metric-card-value">{outOfStockCount}</p>
             </div>
-
         </div>
     );
 };

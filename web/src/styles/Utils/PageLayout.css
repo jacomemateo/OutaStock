@@ -74,7 +74,7 @@
     background: var(--container-bg);
     border-radius: var(--container-radius);
     box-shadow: var(--shadow-soft);
-    padding: 1.25rem 2.5rem;
+    padding: 1.25rem 2.5rem 3.1rem;
 
     
     border: var(--border-color);

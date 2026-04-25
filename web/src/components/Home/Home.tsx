@@ -1,20 +1,29 @@
+import { useState } from 'react';
+
 import '@styles/Home/Home.css';
 import RecentTransactions from '@/components/Home/RecentTransactions';
 import Inventory from '@/components/Home/Inventory';
 import MetricCards from '@/components/Home/MetricCards';
 
 const DashBoard = () => {
+    // 🔁 used to trigger metric refresh
+    const [metricRefreshKey, setMetricRefreshKey] = useState(0);
+
     return (
         <div className="grid-container">
             <div className="dashboard-grid">
-                <MetricCards/>
+                {/* Top full-width metrics */}
+                <MetricCards refreshKey={metricRefreshKey} />
 
                 {/* Transaction History Box */}
                 <RecentTransactions />
 
                 {/* Current Inventory Box */}
-                <Inventory />
-
+                <Inventory
+                    onInventoryChange={() =>
+                        setMetricRefreshKey((prev) => prev + 1)
+                    }
+                />
             </div>
         </div>
     );
