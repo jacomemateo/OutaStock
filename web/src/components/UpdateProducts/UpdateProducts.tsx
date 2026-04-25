@@ -3,11 +3,6 @@ import '@styles/UpdateProducts/UpdateProducts.css';
 import '@styles/Utils/Buttons.css';
 import '@styles/Utils/TableUtils.css';
 import '@styles/Utils/PageLayout.css';
-// Icons
-import InventoryIcon from '@mui/icons-material/Inventory';
-import HourglassDisabledIcon from '@mui/icons-material/HourglassDisabled';
-import RunningWithErrorsIcon from '@mui/icons-material/RunningWithErrors';
-import BatteryCharging20Icon from '@mui/icons-material/BatteryCharging20';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import AddIcon from '@mui/icons-material/Add';
@@ -38,11 +33,9 @@ type SortDirection = 'asc' | 'desc';
 const UpdateProducts = () => {
     const { showAlert } = useAlert();
     const [products, setProducts] = useState<Product[]>([]);
-    const [totalProductCount, setTotalProductCount] = useState(0);
     const [isAddProductModalOpen, setIsAddProductModalOpen] = useState(false);
     const [isEditProductModalOpen, setIsEditProductModalOpen] = useState(false);
     const [isLoadingProducts, setIsLoadingProducts] = useState(false);
-    const [lowStockCount, setLowStockCount] = useState(0);
     const [confirmationOpen, setConfirmationOpen] = useState<boolean>(false);
     const [slotToDelete, setSlotToDelete] = useState<string | null>(null);
     const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
@@ -80,8 +73,6 @@ const UpdateProducts = () => {
             /*
                     Ensure we always store an array
                     */
-            const lowStockItems = data.filter((item: any) => item.quantity < 5);
-            setLowStockCount(lowStockItems.length);
 
             console.log('Inventory slots:', data);
         } catch (error) {
@@ -92,13 +83,12 @@ const UpdateProducts = () => {
     const loadProducts = async () => {
         setIsLoadingProducts(true);
         try {
-            const [filteredCountData, totalCountData] = await Promise.all([
+            const [filteredCountData] = await Promise.all([
                 getProductCount(searchQuery),
                 getProductCount(),
             ]);
 
             const filteredCount = extractCount(filteredCountData);
-            const totalCount = extractCount(totalCountData);
 
             const data = await fetchProducts(filteredCount, 0, {
                 search: searchQuery,
@@ -107,7 +97,6 @@ const UpdateProducts = () => {
             });
 
             setProducts(data);
-            setTotalProductCount(totalCount);
             console.log('Loaded products:', data);
         } catch (error) {
             console.error('Error loading products:', error);
@@ -220,49 +209,7 @@ const UpdateProducts = () => {
         <>
             <div className="grid-container">
                 <div className="update-products-grid">
-                    <div className="metric-grid">
-                        <div className="metric-card total-items-card">
-                            <h2 className="metric-card-title">
-                                <InventoryIcon className="metric-icon-accent" /> Total
-                                Items
-                            </h2>
-                            <p className="metric-card-subtitle">Total items in stock</p>
-                            <p className="metric-card-value">{totalProductCount}</p>
-                        </div>
 
-                        <div className="metric-card low-stock-card">
-                            <h2 className="metric-card-title">
-                                <BatteryCharging20Icon className="metric-icon-warning" />{' '}
-                                Low Stock Items
-                            </h2>
-                            <p className="metric-card-subtitle">
-                                Number of items that are running low
-                            </p>
-                            <p className="metric-card-value">{lowStockCount}</p>
-                        </div>
-
-                        <div className="metric-card out-of-stock-card">
-                            <h2 className="metric-card-title">
-                                <HourglassDisabledIcon className="metric-icon-neutral" />{' '}
-                                Out of Stock Items
-                            </h2>
-                            <p className="metric-card-subtitle">
-                                Number of items that are out of stock
-                            </p>
-                            <p className="metric-card-value">30</p>
-                        </div>
-
-                        <div className="metric-card expired-card">
-                            <h2 className="metric-card-title">
-                                <RunningWithErrorsIcon className="metric-icon-danger" />{' '}
-                                Expired Items
-                            </h2>
-                            <p className="metric-card-subtitle">
-                                Number of items that are expired
-                            </p>
-                            <p className="metric-card-value">30</p>
-                        </div>
-                    </div>
 
                     <div className="page-card">
                         <div className="card-header">

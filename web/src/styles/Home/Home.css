@@ -1,8 +1,15 @@
 .dashboard-grid {
     display: grid;
-    grid-template-columns: 1.25fr 2fr;
+    grid-template-columns: 1fr 1.25fr;
+    grid-template-rows: auto 1fr;
     gap: var(--container-grid-gap);
 
     flex: 1;
     min-height: 0;
+    align-items: stretch;
+}
+
+.dashboard-grid > * {
+    min-height: 0;
+    height: 100%;
 }

@@ -1,6 +1,6 @@
 .update-products-grid {
     display: grid;
-    grid-template-rows: auto 1fr;
+    grid-template-rows: 1fr;
     gap: var(--container-grid-gap-small);
 
     flex: 1;
@@ -32,3 +32,4 @@
 .metric-icon-danger {
     color: var(--text-danger);
 }
+
