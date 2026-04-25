@@ -137,11 +137,11 @@ const ViewAllTransactions = () => {
                             )}
                         </form>
 
-                        {searchQuery && (
+                        {/* {searchQuery && (
                             <p className="table-status">
                                 Showing results for "{searchQuery}"
                             </p>
-                        )}
+                        )} */}
                     </div>
                     </div>
 

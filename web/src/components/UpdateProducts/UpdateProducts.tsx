@@ -312,11 +312,11 @@ const UpdateProducts = () => {
                                 )}
                             </form>
 
-                            {searchQuery && (
+                            {/* {searchQuery && (
                                 <p className="table-status">
                                     Showing results for "{searchQuery}"
                                 </p>
-                            )}
+                            )} */}
 
                                                         <div className="update-products-actions">
                                 <button
