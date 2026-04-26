@@ -124,12 +124,14 @@
     flex-direction: column;
     width: 100%;
     min-width: 0;
+    min-height: 0;
 }
 
 .settings-content > * {
     flex: 1;
     width: 100%;
     min-width: 0;
+    min-height: 0;
 }
 
 @keyframes fadeIn {
@@ -164,4 +166,141 @@
     padding: 0 0 1rem 0;
     border-bottom: 2px solid var(--umbc-gold);
     letter-spacing: var(--tracking-wide);
+}
+
+.settings-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.settings-panel h3 {
+    color: var(--text-primary);
+    font-size: var(--text-2xl);
+    margin: 0;
+}
+
+.settings-form-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.settings-form-row {
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+}
+
+.settings-field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.45rem;
+}
+
+.settings-field span {
+    color: var(--text-accent);
+    font-size: var(--text-2xs);
+    font-weight: var(--weight-bold);
+    letter-spacing: var(--tracking-label);
+    text-transform: uppercase;
+}
+
+.settings-field input,
+.settings-field select,
+.settings-role-select {
+    background: var(--darker-black);
+    border: var(--border-color);
+    border-radius: 10px;
+    color: var(--text-primary);
+    font-size: var(--text-sm);
+    padding: 0.75rem 0.9rem;
+}
+
+.settings-field input:focus,
+.settings-field select:focus,
+.settings-role-select:focus {
+    border-color: var(--umbc-gold);
+    outline: none;
+}
+
+.settings-field-note {
+    font-size: var(--text-xs);
+    line-height: 1.4;
+    text-transform: none !important;
+}
+
+.settings-field-note-error {
+    color: var(--text-error);
+}
+
+.settings-inline-actions {
+    display: flex;
+    gap: 0.75rem;
+}
+
+.settings-status-copy {
+    color: var(--text-secondary);
+    margin: 0;
+}
+
+.settings-actions-cell {
+    align-items: center;
+    display: flex;
+    gap: 0.75rem;
+    min-height: 2.5rem;
+}
+
+.settings-row-inactive {
+    opacity: 0.55;
+}
+
+.settings-empty-state {
+    color: var(--text-secondary);
+    text-align: center;
+}
+
+.settings-table-panel {
+    flex: 1 1 0;
+    min-height: 320px;
+    overflow: hidden;
+}
+
+.settings-table-panel .table-list {
+    flex: 1 1 auto;
+    height: 0;
+    min-height: 0;
+}
+
+.settings-team-table {
+    min-width: 560px;
+}
+
+.table-control-btn-danger:hover:not(:disabled) {
+    border-color: var(--text-error);
+    color: var(--text-error);
+}
+
+@media (max-width: 768px) {
+    .settings-sidebar {
+        width: 100%;
+        border-right: none;
+        border-bottom: 1px solid var(--lighter-black);
+        padding-bottom: 1rem;
+    }
+
+    .settings-container {
+        flex-direction: column;
+        width: 100%;
+        margin-left: 0 !important;
+    }
+
+    .settings-main {
+        padding: 1.25rem;
+    }
+
+    .settings-actions-cell,
+    .settings-inline-actions {
+        flex-wrap: wrap;
+    }
 }

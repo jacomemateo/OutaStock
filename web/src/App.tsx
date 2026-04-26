@@ -4,7 +4,6 @@ import '@styles/Utils/Buttons.css';
 import '@styles/Utils/TableUtils.css';
 import '@styles/Utils/PageLayout.css';
 import { Navigate, Route, Routes } from 'react-router-dom';
-import AuthCallback from '@/components/LoadingScreen/AuthCallback';
 import LoadingScreen from '@/components/LoadingScreen/LoadingScreen';
 import ProtectedRoute from '@/components/LoadingScreen/ProtectedRoute';
 import Template from '@components/Template';
@@ -23,7 +22,6 @@ function App() {
         <AlertProvider>
             <Routes>
                 <Route path="/" element={<LoadingScreen />} />
-                <Route path="/auth/callback" element={<AuthCallback />} />
                 <Route
                     path="/dashboard/*"
                     element={

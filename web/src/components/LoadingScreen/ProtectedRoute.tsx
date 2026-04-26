@@ -10,7 +10,7 @@ const ProtectedRoute = ({ children }: { children: ReactNode }) => {
     if (status === 'loading') {
         return (
             <LoadingScreen
-                message="Restoring your local ZITADEL session."
+                message="Checking your session."
                 mode="processing"
                 title="Checking Session"
             />

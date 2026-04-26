@@ -1,5 +1,5 @@
-import { useState, type FormEvent } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useEffect, useState, type FormEvent } from 'react';
+import { useNavigate } from 'react-router-dom';
 import '@styles/LoadingScreen/LoadingScreen.css';
 import logo from '@assets/logo-black.png';
 import { useAuth } from '@contexts/AuthContext';
@@ -16,65 +16,51 @@ const LoadingScreen = ({
     title = 'OutaStock',
 }: LoadingScreenProps) => {
     const navigate = useNavigate();
-    const location = useLocation();
-    const [username, setUsername] = useState('');
+    const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
-    const {
-        config,
-        error,
-        isAuthenticated,
-        isConfigured,
-        signInHeadless,
-        signOut,
-        status,
-        user,
-    } = useAuth();
+    const auth = useAuth();
 
-    if (mode === 'processing' || status === 'loading') {
+    useEffect(() => {
+        if (auth.isAuthenticated) {
+            navigate('/dashboard', { replace: true });
+        }
+    }, [auth.isAuthenticated, navigate]);
+
+    if (mode === 'processing' || auth.status === 'loading') {
         return (
             <div className="loading-container">
                 <div className="loading-content">
                     <img src={logo} alt="Company-logo" />
                     <div className="loading-state-card">
                         <h1>{title}</h1>
-                        <p>{message ?? 'Connecting to your local ZITADEL instance.'}</p>
+                        <p>{message ?? 'Signing you in.'}</p>
+                        <div className="loading-text">
+                            Please wait
+                            <span className="loading-spinner" aria-hidden="true">
+                                ◌
+                            </span>
+                        </div>
                     </div>
                 </div>
             </div>
         );
     }
 
-    const returnTo = new URLSearchParams(location.search).get('returnTo') ?? '/dashboard';
-    const primaryActionLabel = isAuthenticated ? 'Open Dashboard' : 'Sign In';
-    const statusText = isAuthenticated
-        ? `Signed in as ${user?.name ?? user?.email ?? user?.preferred_username ?? 'OutaStock User'}`
-        : isConfigured
-          ? config?.issuer
-              ? `Enter your ZITADEL credentials to sign in locally through ${config.issuer}.`
-              : 'Enter your ZITADEL credentials to sign in locally.'
-          : 'Headless auth is not configured for the frontend yet.';
-
-    const handlePrimaryAction = () => {
-        navigate(returnTo);
-    };
-
     const handleLoginSubmit = async (event: FormEvent<HTMLFormElement>) => {
         event.preventDefault();
 
-        const normalizedUsername = username.trim();
-        if (!normalizedUsername || !password) {
+        const normalizedEmail = email.trim();
+        if (!normalizedEmail || !password) {
             return;
         }
 
         try {
-            await signInHeadless(normalizedUsername, password);
-            navigate(returnTo);
+            await auth.signIn(normalizedEmail, password);
+            navigate('/dashboard', { replace: true });
         } catch {
             // AuthContext exposes the user-facing error state for this screen.
         }
     };
-
-    const resolvedMessage = message ?? error ?? statusText;
 
     return (
         <div className="loading-container">
@@ -82,60 +68,51 @@ const LoadingScreen = ({
                 <img src={logo} alt="Company-logo" />
                 <div className="loading-state-card">
                     <h1>{title}</h1>
-                    <p>{resolvedMessage}</p>
+                    <p>Sign in with your OutaStock account to continue.</p>
                 </div>
-                {isAuthenticated ? (
-                    <div className="dashboard-btn">
-                        <button className="view-inventory" onClick={handlePrimaryAction}>
-                            {primaryActionLabel}
-                        </button>
+                <form
+                    className="login-form"
+                    onSubmit={(event) => void handleLoginSubmit(event)}
+                >
+                    <label className="login-field">
+                        <span>Email</span>
+                        <input
+                            autoComplete="email"
+                            onChange={(event) => setEmail(event.target.value)}
+                            placeholder="you@example.com"
+                            required
+                            type="email"
+                            value={email}
+                        />
+                    </label>
+                    <label className="login-field">
+                        <span>Password</span>
+                        <input
+                            autoComplete="current-password"
+                            onChange={(event) => setPassword(event.target.value)}
+                            placeholder="Enter your password"
+                            required
+                            type="password"
+                            value={password}
+                        />
+                    </label>
+                    {auth.error ? (
+                        <p className="loading-error" role="alert">
+                            {auth.error}
+                        </p>
+                    ) : null}
+                    <div className="dashboard-btn login-actions">
                         <button
-                            className="secondary-action"
-                            onClick={() => void signOut()}
+                            className="view-inventory"
+                            disabled={
+                                auth.status === 'loading' || !email.trim() || !password
+                            }
+                            type="submit"
                         >
-                            Sign Out
+                            Sign In
                         </button>
                     </div>
-                ) : (
-                    <form
-                        className="login-form"
-                        onSubmit={(event) => void handleLoginSubmit(event)}
-                    >
-                        <label className="login-field">
-                            <span>Username</span>
-                            <input
-                                autoComplete="username"
-                                disabled={!isConfigured}
-                                onChange={(event) => setUsername(event.target.value)}
-                                placeholder="Enter your username"
-                                required
-                                type="text"
-                                value={username}
-                            />
-                        </label>
-                        <label className="login-field">
-                            <span>Password</span>
-                            <input
-                                autoComplete="current-password"
-                                disabled={!isConfigured}
-                                onChange={(event) => setPassword(event.target.value)}
-                                placeholder="Enter your password"
-                                required
-                                type="password"
-                                value={password}
-                            />
-                        </label>
-                        <div className="dashboard-btn login-actions">
-                            <button
-                                className="view-inventory"
-                                disabled={!isConfigured || !username.trim() || !password}
-                                type="submit"
-                            >
-                                {primaryActionLabel}
-                            </button>
-                        </div>
-                    </form>
-                )}
+                </form>
             </div>
         </div>
     );

@@ -28,6 +28,9 @@ const Template = () => {
     const navigate = useNavigate();
     const location = useLocation();
     const { user } = useAuth();
+    const userLabel = user?.email ?? 'Authenticated User';
+    const userName = user?.email?.split('@')[0] ?? 'Authenticated User';
+    const userInitial = user?.email?.charAt(0).toUpperCase() ?? 'U';
 
     const [isSidebarExpanded, setIsSidebarExpanded] = useState(true);
 
@@ -225,16 +228,10 @@ const Template = () => {
                 >
                     {isSidebarExpanded && (
                         <>
-                            <div className="user-icon">{user?.name?.charAt(0)}</div>
+                            <div className="user-icon">{userInitial}</div>
                             <div className="template-user-chip">
-                                <span className="template-user-name">
-                                    {user?.name ?? 'Authenticated User'}
-                                </span>
-                                <span className="template-user-email">
-                                    {user?.email ??
-                                        user?.preferred_username ??
-                                        'No email'}
-                                </span>
+                                <span className="template-user-name">{userName}</span>
+                                <span className="template-user-email">{userLabel}</span>
                             </div>
                         </>
                     )}
@@ -242,10 +239,10 @@ const Template = () => {
                         <div
                             className="user-icon"
                             data-tooltip-id="user-tooltip"
-                            data-tooltip-content={user?.name ?? 'Profile'}
+                            data-tooltip-content={userLabel}
                             data-tooltip-place="right"
                         >
-                            {user?.name?.charAt(0)}
+                            {userInitial}
                         </div>
                     )}
                 </div>

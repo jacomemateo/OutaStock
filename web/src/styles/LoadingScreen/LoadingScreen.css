@@ -124,6 +124,14 @@
     margin-top: 0.5rem;
 }
 
+.loading-error {
+    color: #9f1d1d;
+    font-size: var(--text-sm);
+    font-weight: var(--weight-semibold);
+    margin: 0;
+    text-align: left;
+}
+
 .view-inventory {
     padding: 0.75rem 2.5rem;
     font-size: var(--text-xl);

@@ -1,15 +1,9 @@
 // src/services/api.tsx
 // src/services/api.js
 
-import { getAccessToken } from '@/services/auth';
+import { getAccessToken, getApiBaseUrl } from '@/services/auth';
 
-let API_BASE_URL = window.env?.API_BASE_URL;
-
-if (!API_BASE_URL || API_BASE_URL === '__API_BASE_URL__') {
-    API_BASE_URL = import.meta.env.VITE_API_URL;
-}
-
-console.log('API Base URL:', API_BASE_URL);
+const API_BASE_URL = `${getApiBaseUrl()}/api`;
 
 const authFetch = (input: string, init: RequestInit = {}) => {
     const headers = new Headers(init.headers);
@@ -233,7 +227,6 @@ export const updateProductCost = async (productID: string, costCents: number) =>
         throw error;
     }
 };
-
 
 export const uploadFile = async (file: File) => {
     try {

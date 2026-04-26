@@ -1,31 +1,22 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
 import {
     clearStoredSession,
-    completeLogin,
-    getAuthConfig,
     getStoredSession,
-    isAuthConfigured,
     isSessionExpired,
-    loginHeadless,
+    loginWithPassword,
     setStoredSession,
-    startLogin,
-    startLogout,
     type AuthSession,
 } from '@/services/auth';
 
 type AuthStatus = 'anonymous' | 'authenticated' | 'loading';
 
 interface AuthContextValue {
-    completeSignIn: (callbackUrl?: string) => Promise<string>;
-    config: ReturnType<typeof getAuthConfig>;
     error: string | null;
     isAuthenticated: boolean;
-    isConfigured: boolean;
+    isAdmin: boolean;
     session: AuthSession | null;
-    setSessionManually: (session: AuthSession | null) => void;
-    signIn: (returnTo?: string) => Promise<void>;
-    signInHeadless: (username: string, password: string) => Promise<AuthSession>;
-    signOut: () => Promise<void>;
+    signIn: (email: string, password: string) => Promise<AuthSession>;
+    signOut: () => void;
     status: AuthStatus;
     user: AuthSession['user'] | null;
 }
@@ -58,19 +49,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         setStatus(storedSession ? 'authenticated' : 'anonymous');
     }, []);
 
-    const setSessionManually = (nextSession: AuthSession | null) => {
-        if (!nextSession) {
-            clearStoredSession();
-            setSession(null);
-            setStatus('anonymous');
-            return;
-        }
-
-        setStoredSession(nextSession);
-        setSession(nextSession);
-        setStatus('authenticated');
-    };
-
     useEffect(() => {
         if (!session) {
             return;
@@ -82,6 +60,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             clearStoredSession();
             setSession(null);
             setStatus('anonymous');
+            setError('Your session has expired. Please sign in again.');
             return;
         }
 
@@ -89,45 +68,26 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             clearStoredSession();
             setSession(null);
             setStatus('anonymous');
+            setError('Your session has expired. Please sign in again.');
         }, remainingTime);
 
         return () => window.clearTimeout(timeoutId);
     }, [session]);
 
-    const signIn = async (returnTo = '/dashboard') => {
-        setError(null);
-        await startLogin(returnTo);
-    };
-
-    const completeSignIn = async (callbackUrl = window.location.href) => {
+    const signIn = async (email: string, password: string) => {
         setError(null);
         setStatus('loading');
 
         try {
-            const result = await completeLogin(callbackUrl);
-            setSessionManually(result.session);
-            return result.returnTo;
-        } catch (caughtError) {
-            setSessionManually(null);
-            setError(
-                caughtError instanceof Error
-                    ? caughtError.message
-                    : 'Sign-in failed unexpectedly.',
-            );
-            throw caughtError;
-        }
-    };
-
-    const signInHeadless = async (username: string, password: string) => {
-        setError(null);
-        setStatus('loading');
-
-        try {
-            const nextSession = await loginHeadless(username, password);
-            setSessionManually(nextSession);
+            const nextSession = await loginWithPassword(email, password);
+            setStoredSession(nextSession);
+            setSession(nextSession);
+            setStatus('authenticated');
             return nextSession;
         } catch (caughtError) {
-            setSessionManually(null);
+            clearStoredSession();
+            setSession(null);
+            setStatus('anonymous');
             setError(
                 caughtError instanceof Error
                     ? caughtError.message
@@ -137,25 +97,21 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         }
     };
 
-    const signOut = async () => {
+    const signOut = () => {
         setError(null);
-        const currentSession = getStoredSession();
-        setSessionManually(null);
-        await startLogout(currentSession);
+        clearStoredSession();
+        setSession(null);
+        setStatus('anonymous');
     };
 
     return (
         <AuthContext.Provider
             value={{
-                completeSignIn,
-                config: getAuthConfig(),
                 error,
                 isAuthenticated: Boolean(session),
-                isConfigured: isAuthConfigured(),
+                isAdmin: session?.role === 'admin',
                 session,
-                setSessionManually,
                 signIn,
-                signInHeadless,
                 signOut,
                 status,
                 user: session?.user ?? null,

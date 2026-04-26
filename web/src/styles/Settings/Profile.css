@@ -1,10 +1,13 @@
 .profile-container {
     display: flex;
     flex-direction: column;
+    flex: 1;
     gap: 1.5rem;
     color: var(--text-primary);
+    min-height: 0;
     width: 100%;
     min-width: 0;
+    overflow: hidden;
 }
 
 .profile-card {
@@ -13,7 +16,7 @@
     border: var(--border-color);
     border-radius: var(--container-radius);
     padding: 1.5rem;
-    margin-top: 1rem;
+    min-height: 0;
 }
 
 .profile-card h2 {

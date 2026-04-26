@@ -1,17 +1,22 @@
 import '@styles/Settings/Settings.css';
+import { Fragment, useEffect } from 'react';
 import { useNavigate, useLocation, Routes, Route } from 'react-router-dom';
 import BedtimeIcon from '@mui/icons-material/Bedtime';
 import PersonIcon from '@mui/icons-material/Person';
+import GroupsIcon from '@mui/icons-material/Groups';
+import TuneIcon from '@mui/icons-material/Tune';
 
-import { useEffect } from 'react';
-
-//Components
 import Apperance from '@/components/Settings/Apperance';
+import AdminRoute from '@/components/LoadingScreen/AdminRoute';
 import Profile from '@/components/Settings/Profile';
+import Team from '@/components/Settings/Team';
+import Thresholds from '@/components/Settings/Thresholds';
+import { useAuth } from '@contexts/AuthContext';
 
 const Settings = () => {
     const navigate = useNavigate();
     const location = useLocation();
+    const { isAdmin } = useAuth();
 
     const pages = [
         {
@@ -21,17 +26,21 @@ const Settings = () => {
             icon: <PersonIcon />,
             component: <Profile />,
             path: 'profile',
+            adminOnly: false,
         },
-
-        // {
-        //     id: 'team',
-        //     label: 'Team',
-        //     section: 'Account', // Same section
-        //     icon: <GroupsIcon />,
-        //     component: <div>Team</div>,
-        //     path: 'team',
-        // },
-
+        {
+            id: 'team',
+            label: 'Team',
+            section: 'Account',
+            icon: <GroupsIcon />,
+            component: (
+                <AdminRoute>
+                    <Team />
+                </AdminRoute>
+            ),
+            path: 'team',
+            adminOnly: true,
+        },
         {
             id: 'appearance',
             label: 'Appearance',
@@ -39,21 +48,35 @@ const Settings = () => {
             icon: <BedtimeIcon />,
             component: <Apperance />,
             path: 'appearance',
+            adminOnly: false,
+        },
+        {
+            id: 'thresholds',
+            label: 'Thresholds',
+            section: 'Administration',
+            icon: <TuneIcon />,
+            component: (
+                <AdminRoute>
+                    <Thresholds />
+                </AdminRoute>
+            ),
+            path: 'thresholds',
+            adminOnly: true,
         },
     ];
 
+    const visiblePages = pages.filter((page) => !page.adminOnly || isAdmin);
     const currentId = location.pathname.split('/').pop() || 'profile';
     const activePage = pages.find((p) => p.id === currentId) || pages[0];
-    // Determine which page is active based on the current URL
 
     useEffect(() => {
         if (
             location.pathname === '/dashboard/settings' ||
             location.pathname.endsWith('/settings')
         ) {
-            navigate('/dashboard/settings/profile');
+            navigate('/dashboard/settings/profile', { replace: true });
         }
-    }, [location.pathname]);
+    }, [location.pathname, navigate]);
 
     return (
         <div className="grid-container">
@@ -63,11 +86,11 @@ const Settings = () => {
                         <aside className="settings-sidebar">
                             <nav className="settings-nav">
                                 <ul>
-                                    {pages.map((page, idx) => (
-                                        <>
-                                            {/* Show section heading if it's the first item or section changed */}
+                                    {visiblePages.map((page, idx) => (
+                                        <Fragment key={page.id}>
                                             {idx === 0 ||
-                                            pages[idx - 1].section !== page.section ? (
+                                            visiblePages[idx - 1].section !==
+                                                page.section ? (
                                                 <li className="settings-section-heading">
                                                     {page.section}
                                                 </li>
@@ -89,7 +112,7 @@ const Settings = () => {
                                                     {page.icon} {page.label}
                                                 </button>
                                             </li>
-                                        </>
+                                        </Fragment>
                                     ))}
                                 </ul>
                             </nav>
