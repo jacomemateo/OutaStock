@@ -10,7 +10,7 @@ import (
 
 type Database struct {
 	pool    *pgxpool.Pool
-	Queries *repository.Queries
+	queries *repository.Queries
 }
 
 func NewDatabase(ctx context.Context, connString string) (*Database, error) {
@@ -28,7 +28,7 @@ func NewDatabase(ctx context.Context, connString string) (*Database, error) {
 
 	d := &Database{
 		pool:    pool,
-		Queries: repository.New(pool),
+		queries: repository.New(pool),
 	}
 
 	return d, nil
@@ -47,4 +47,8 @@ func (d *Database) Close() {
 	if d.pool != nil {
 		d.pool.Close()
 	}
+}
+
+func (d *Database) Queries() *repository.Queries {
+	return d.queries
 }

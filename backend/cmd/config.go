@@ -5,94 +5,55 @@ import (
 	"fmt"
 	"os"
 	"strconv"
+	"strings"
 )
 
 type Config struct {
-	DatabaseURL                     string
-	Port                            string
-	LogLevel                        string
-	AuthEnabled                     bool
-	ZitadelAPIURL                   string
-	ZitadelIssuer                   string
-	IntrospectionURL                string
-	APIClientID                     string
-	APIClientSecret                 string
-	ZitadelOIDCClientID             string
-	ZitadelOIDCScope                string
-	ZitadelProjectID                string
-	ZitadelServiceUserMachineKeyB64 string
-	ZitadelServiceUserToken         string
+	DatabaseURL       string
+	Port              string
+	LogLevel          string
+	AuthEnabled       bool
+	JWTSecret         string
+	AccessTokenTTL    int
+	SeedAdminEmail    string
+	SeedAdminPassword string
 }
 
 func Load() (*Config, error) {
 	cfg := &Config{}
 
-	db_url, err := GetEnv("DATABASE_URL")
+	databaseURL, err := GetEnv("DATABASE_URL")
 	if err != nil {
 		return nil, err
 	}
-	cfg.DatabaseURL = db_url
+	cfg.DatabaseURL = databaseURL
 
-	cfg.Port, err = GetEnv("ECHO_PORT")
-	if err != nil {
-		return nil, err
+	cfg.Port = GetEnvOrDefault("PORT", "8080")
+	if !strings.HasPrefix(cfg.Port, ":") {
+		cfg.Port = ":" + cfg.Port
 	}
 
-	cfg.Port = ":" + cfg.Port // Prepend ":" for echo server
-
-	cfg.LogLevel, err = GetEnv("ECHO_LOG_LEVEL")
-	if err != nil {
-		return nil, err
-	}
+	cfg.LogLevel = GetEnvOrDefault("LOG_LEVEL", "info")
 
 	authEnabledValue := GetEnvOrDefault("AUTH_ENABLED", "false")
 	cfg.AuthEnabled, err = strconv.ParseBool(authEnabledValue)
 	if err != nil {
-		return nil, fmt.Errorf("Failed to parse AUTH_ENABLED: %w", err)
+		return nil, fmt.Errorf("failed to parse AUTH_ENABLED: %w", err)
 	}
 
-	if cfg.AuthEnabled {
-		cfg.ZitadelIssuer, err = GetEnv("ZITADEL_ISSUER")
-		if err != nil {
-			return nil, err
-		}
-
-		cfg.ZitadelAPIURL = GetEnvOrDefault("ZITADEL_API_URL", cfg.ZitadelIssuer)
-
-		cfg.IntrospectionURL, err = GetEnv("ZITADEL_INTROSPECTION_URL")
-		if err != nil {
-			return nil, err
-		}
-
-		cfg.APIClientID, err = GetEnv("ZITADEL_API_CLIENT_ID")
-		if err != nil {
-			return nil, err
-		}
-
-		cfg.APIClientSecret, err = GetEnv("ZITADEL_API_CLIENT_SECRET")
-		if err != nil {
-			return nil, err
-		}
-
-		cfg.ZitadelOIDCClientID, err = GetEnv("ZITADEL_OIDC_CLIENT_ID")
-		if err != nil {
-			return nil, err
-		}
-
-		cfg.ZitadelProjectID = GetEnvOrDefault("ZITADEL_PROJECT_ID", "")
-		defaultScope := "openid profile email"
-		if cfg.ZitadelProjectID != "" {
-			defaultScope += " urn:zitadel:iam:org:project:id:" + cfg.ZitadelProjectID + ":aud"
-		}
-
-		cfg.ZitadelOIDCScope = GetEnvOrDefault("ZITADEL_OIDC_SCOPE", defaultScope)
-		cfg.ZitadelServiceUserMachineKeyB64 = GetEnvOrDefault("ZITADEL_SERVICE_USER_MACHINE_KEY_BASE64", "")
-		cfg.ZitadelServiceUserToken = GetEnvOrDefault("ZITADEL_SERVICE_USER_TOKEN", "")
-
-		if cfg.ZitadelServiceUserMachineKeyB64 == "" && cfg.ZitadelServiceUserToken == "" {
-			return nil, fmt.Errorf("failed to get environment variable: ZITADEL_SERVICE_USER_MACHINE_KEY_BASE64 or ZITADEL_SERVICE_USER_TOKEN")
-		}
+	cfg.JWTSecret, err = GetEnv("JWT_SECRET")
+	if err != nil {
+		return nil, err
 	}
+
+	accessTokenTTLValue := GetEnvOrDefault("ACCESS_TOKEN_TTL_MINUTES", "15")
+	cfg.AccessTokenTTL, err = strconv.Atoi(accessTokenTTLValue)
+	if err != nil {
+		return nil, fmt.Errorf("failed to parse ACCESS_TOKEN_TTL_MINUTES: %w", err)
+	}
+
+	cfg.SeedAdminEmail = GetEnvOrDefault("SEED_ADMIN_EMAIL", "")
+	cfg.SeedAdminPassword = GetEnvOrDefault("SEED_ADMIN_PASSWORD", "")
 
 	return cfg, nil
 }
@@ -101,7 +62,7 @@ func GetEnv(key string) (string, error) {
 	if value := os.Getenv(key); value != "" {
 		return value, nil
 	}
-	return "", fmt.Errorf("Failed to get environment variable: %s", key)
+	return "", fmt.Errorf("failed to get environment variable: %s", key)
 }
 
 func GetEnvOrDefault(key string, defaultValue string) string {

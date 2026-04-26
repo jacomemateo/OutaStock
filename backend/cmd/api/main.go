@@ -2,11 +2,13 @@ package main
 
 import (
 	"context"
+	"errors"
 	"os"
 	"os/signal"
 	"syscall"
 	"time"
 
+	"github.com/jackc/pgx/v5/pgconn"
 	config "github.com/jacomemateo/OutaStock/backend/cmd"
 	"github.com/jacomemateo/OutaStock/backend/internal/service"
 	"github.com/jacomemateo/OutaStock/backend/internal/transport"
@@ -64,6 +66,8 @@ func main() {
 		log.Fatal().Err(err).Str("service", "echo_server").Msg("Failed to initialize router")
 	}
 
+	seedAdminIfNeeded(ctx, db, cfg)
+
 	// Create signal-aware context
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
@@ -74,4 +78,41 @@ func main() {
 	}
 
 	log.Info().Str("service", "echo_server").Msg("Server shut down gracefully")
+}
+
+func seedAdminIfNeeded(ctx context.Context, db *service.Database, cfg *config.Config) {
+	if cfg.SeedAdminEmail == "" || cfg.SeedAdminPassword == "" {
+		return
+	}
+
+	count, err := db.Queries().CountUsers(ctx)
+	if err != nil {
+		if isMissingUsersTableError(err) {
+			log.Warn().Msg("Seeder: users table not found yet; skipping initial admin seed")
+			return
+		}
+		log.Error().Err(err).Msg("Seeder: could not count users")
+		return
+	}
+	if count > 0 {
+		return
+	}
+
+	authSvc := service.NewAuthService(db, cfg)
+	_, err = authSvc.CreateUser(ctx, cfg.SeedAdminEmail, cfg.SeedAdminPassword, "admin", nil)
+	if err != nil {
+		log.Error().Err(err).Msg("Seeder: failed to create initial admin")
+		return
+	}
+
+	log.Info().Str("email", cfg.SeedAdminEmail).Msg("Seeder: initial admin created")
+}
+
+func isMissingUsersTableError(err error) bool {
+	var pgErr *pgconn.PgError
+	if !errors.As(err, &pgErr) {
+		return false
+	}
+
+	return pgErr.Code == "42P01" && pgErr.TableName == "users"
 }

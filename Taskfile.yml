@@ -1,7 +1,5 @@
 version: '3'
 
-# This replaces all that hacky Makefile logic for loading .env files.
-# It handles colons in URLs perfectly.
 dotenv: ['.env']
 
 tasks:
@@ -14,74 +12,6 @@ tasks:
     desc: Create the local development env file if it is missing
     cmds:
       - test -f .env.dev
-
-  terraform-init:
-    desc: Initialize the Terraform working directory
-    dir: terraform
-    cmds:
-      - terraform init -input=false
-
-  terraform-bootstrap-check:
-    desc: Ensure the local ZITADEL machine key exists before Terraform apply
-    cmds:
-      - |
-        if [ ! -f terraform/bootstrap/zitadel-admin-sa.json ]; then
-          echo "Missing terraform/bootstrap/zitadel-admin-sa.json." >&2
-          echo "Start the local auth stack first with 'task dev' or 'task prod'." >&2
-          exit 1
-        fi
-
-  zitadel-ready-check:
-    desc: Wait for the local ZITADEL OIDC discovery endpoint to become reachable
-    cmds:
-      - |
-        attempts=0
-        until curl -fsS http://auth.localhost/.well-known/openid-configuration >/dev/null; do
-          attempts=$((attempts + 1))
-          if [ "$attempts" -ge 30 ]; then
-            echo "ZITADEL is not reachable at http://auth.localhost." >&2
-            echo "Start the local auth stack first with 'task dev' or 'task prod'." >&2
-            exit 1
-          fi
-          echo "Waiting for ZITADEL at http://auth.localhost..."
-          sleep 2
-        done
-
-  terraform-apply:
-    desc: Apply the local Terraform configuration
-    dir: terraform
-    cmds:
-      - task: terraform-bootstrap-check
-      - task: zitadel-ready-check
-      - task: terraform-init
-      - terraform apply -auto-approve -input=false
-
-  dev-auth-sync:
-    desc: Export local Air and Vite ZITADEL settings into .env.dev.local
-    deps: [terraform-apply]
-    cmds:
-      - sh terraform/export-dev-env.sh
-
-  dev:
-    desc: Start the shared Docker services for local Air and Vite development
-    dotenv: [.env.dev]
-    cmds:
-      - task: dev-env-setup
-      - mkdir -p terraform/bootstrap
-      - docker volume create outastock-prod_db-data-zitadel >/dev/null
-      - docker volume create outastock-prod_zitadel-bootstrap >/dev/null
-      - docker compose -p outastock-dev --env-file .env.dev -f docker-compose.dev.yml up db swagger zitadel-db zitadel-api zitadel-login caddy
-      - |
-        until [ -f terraform/bootstrap/zitadel-admin-sa.json ]; do
-          echo "Waiting for ZITADEL bootstrap machine key..."
-          sleep 2
-        done
-      - |
-        until curl -s -o /tmp/outastock-dev-zitadel-ready.json -w '%{http_code}' http://auth.localhost/.well-known/openid-configuration | grep -q '^200$'; do
-          echo "Waiting for ZITADEL OIDC discovery endpoint..."
-          sleep 2
-        done
-      - task: dev-auth-sync
 
   connect:
     desc: Access the database CLI
@@ -110,62 +40,22 @@ tasks:
         npm run pretty
 
   env-setup:
-    desc: Create .env file for production from .env.example
+    desc: Create .env if it is missing
     cmds:
-      # Use 'test -f' so we don't overwrite an existing .env 
-      # which would lose your manual changes (like the Master Key)
       - test -f .env || cp .env.example .env
-      - mkdir -p terraform/bootstrap
-      - |
-        cat > terraform/zitadel-web.env <<EOF
-        ZITADEL_ISSUER=${ZITADEL_ISSUER}
-        ZITADEL_CLIENT_ID=${ZITADEL_CLIENT_ID}
-        ZITADEL_ORGANIZATION_ID=${ZITADEL_ORGANIZATION_ID}
-        ZITADEL_REDIRECT_URI=${ZITADEL_REDIRECT_URI}
-        ZITADEL_POST_LOGOUT_REDIRECT_URI=${ZITADEL_POST_LOGOUT_REDIRECT_URI}
-        ZITADEL_SCOPE=${ZITADEL_SCOPE}
-        EOF
-      - |
-        cat > terraform/zitadel-backend.env <<EOF
-        ZITADEL_AUTH_ENABLED=${ZITADEL_AUTH_ENABLED}
-        EOF
 
   setup:
-    desc: Bootstrap ZITADEL, apply Terraform, sync auth envs, and run the production stack
+    desc: Prepare the production env file
     cmds:
       - task: env-setup
-      - docker compose -p outastock-prod --env-file .env -f docker-compose.yml up -d --no-deps zitadel-db zitadel-api zitadel-login caddy
-      - |
-        until [ -f terraform/bootstrap/zitadel-admin-sa.json ]; do
-          echo "Waiting for ZITADEL bootstrap machine key..."
-          sleep 2
-        done
-      - |
-        until curl -s -o /tmp/outastock-zitadel-ready.json -w '%{http_code}' http://auth.localhost/.well-known/openid-configuration | grep -q '^200$'; do
-          echo "Waiting for ZITADEL OIDC discovery endpoint..."
-          sleep 2
-        done
-      - task: terraform-apply
-      - task: auth-sync
 
-  auth-sync:
-    desc: Export frontend and backend ZITADEL auth settings from Terraform outputs
-    deps: [terraform-apply]
+  dev:
+    desc: Start the shared Docker services for local Air and Vite development
+    dotenv: [.env.dev]
     cmds:
-      - sh terraform/export-web-env.sh
-      - sh terraform/export-backend-env.sh
+      - task: dev-env-setup
+      - docker compose -p outastock-dev --env-file .env.dev -f docker-compose.dev.yml up db swagger caddy
 
-  nuke:
-    desc: Delete the production stack, volumes, and local Terraform runtime artifacts
-    cmds:
-      - docker compose -p outastock-prod --env-file .env -f docker-compose.yml down -v --remove-orphans
-      - rm -rf terraform/.terraform
-      - rm -f terraform/terraform.tfstate terraform/terraform.tfstate.backup terraform/terraform.tfstate.*.backup
-      - rm -f terraform/zitadel-web.env terraform/zitadel-backend.env
-      - rm -f terraform/bootstrap/zitadel-admin-sa.json
-      - mkdir -p terraform/bootstrap
-      - touch terraform/bootstrap/.gitkeep
-  
   seed:
     desc: Run all database seeds on production database
     cmds:
@@ -174,7 +64,7 @@ tasks:
           echo "Seeding $file..."
           docker exec -i vending-db-prod psql -U $APP_DB_USER -d $APP_DB_NAME < $file
         done
-  
+
   clear:
     desc: Clear all data from the production database
     cmds:
@@ -204,7 +94,6 @@ tasks:
 
   dev-back:
     desc: Run the Go backend locally with Air against the development stack
-    deps: [dev-auth-sync]
     dotenv: [.env.dev]
     cmds:
       - air
@@ -212,8 +101,7 @@ tasks:
   dev-front:
     desc: Run the Vite frontend locally against the development stack
     dir: web
-    deps: [dev-auth-sync]
-    dotenv: [../.env.dev, ../.env.dev.local]
+    dotenv: [../.env.dev]
     cmds:
       - npm install
       - npm run dev
@@ -225,25 +113,12 @@ tasks:
       - docker compose -p outastock-dev --env-file .env.dev -f docker-compose.dev.yml down
 
   dev-nuke:
-    desc: Stop and remove the development Docker services and local auth cache
+    desc: Stop and remove the development Docker services
     dotenv: [.env.dev]
     cmds:
       - docker compose -p outastock-dev --env-file .env.dev -f docker-compose.dev.yml down -v
-      - rm -f .env.dev.local
-      - rm -f web/.env.local
 
-  rebootstrap:
-    desc: Recreate the local shared ZITADEL bootstrap state when the machine key has been lost
+  nuke:
+    desc: Delete the production stack and volumes
     cmds:
-      - cp .env.example .env
-      - docker compose -p outastock-dev --env-file .env.dev -f docker-compose.dev.yml down -v --remove-orphans
       - docker compose -p outastock-prod --env-file .env -f docker-compose.yml down -v --remove-orphans
-      - docker volume rm -f outastock-prod_db-data-zitadel outastock-prod_zitadel-bootstrap
-      - rm -rf terraform/.terraform
-      - rm -f terraform/terraform.tfstate terraform/terraform.tfstate.backup terraform/terraform.tfstate.*.backup
-      - rm -f terraform/bootstrap/zitadel-admin-sa.json
-      - rm -f terraform/zitadel-web.env terraform/zitadel-backend.env
-      - rm -f .env.dev.local web/.env.local
-      - mkdir -p terraform/bootstrap
-      - touch terraform/bootstrap/.gitkeep
-      - echo "Local ZITADEL auth state was reset. Run 'task dev' or 'task prod' next."

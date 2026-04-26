@@ -16,11 +16,14 @@ import (
 )
 
 type Router struct {
-	authHandler *handlers.AuthHandler
-	handlers    []handlers.Handler
-	echo        *echo.Echo
-	database    *service.Database // Just store the Database, not the raw pool
-	config      *config.Config
+	authHandler     *handlers.AuthHandler
+	usersHandler    *handlers.UsersHandler
+	settingsHandler *handlers.SettingsHandler
+	handlers        []handlers.Handler
+	echo            *echo.Echo
+	database        *service.Database
+	config          *config.Config
+	authService     *service.AuthService
 }
 
 func NewRouter(database *service.Database, config *config.Config) (*Router, error) {
@@ -67,21 +70,18 @@ func NewRouter(database *service.Database, config *config.Config) (*Router, erro
 		log.Info().Str("CORS", "DISABLED").Msg("CORS Config")
 	}
 
-	// Initialize services (using database.queries)
+	authService := service.NewAuthService(database, config)
 	transactionsService := service.NewTransactionsService(database)
 	inventoryService := service.NewInventoryService(database)
 	productsService := service.NewProductsService(database)
+	usersService := service.NewUsersService(database)
+	settingsService := service.NewSettingsService(database)
 
-	if config.AuthEnabled {
-		authService, err := service.NewHeadlessAuthService(config)
-		if err != nil {
-			return nil, err
-		}
+	r.authService = authService
+	r.authHandler = handlers.NewAuthHandler(authService)
+	r.usersHandler = handlers.NewUsersHandler(usersService, authService)
+	r.settingsHandler = handlers.NewSettingsHandler(settingsService)
 
-		r.authHandler = handlers.NewAuthHandler(authService)
-	}
-
-	// Build handler list
 	r.handlers = []handlers.Handler{
 		handlers.NewTransactionsHandler(transactionsService),
 		handlers.NewInventoryHandler(inventoryService),
@@ -128,28 +128,30 @@ func (r *Router) addRoutes() {
 		})
 	})
 
-	if r.authHandler != nil {
-		r.authHandler.RegisterRoutes(api)
-	}
+	r.authHandler.RegisterRoutes(api)
 
 	protectedAPI := api.Group("")
+	var adminAPI *echo.Group
 
 	if r.config.AuthEnabled {
 		log.Info().
 			Str("service", "auth").
-			Str("issuer", r.config.ZitadelIssuer).
-			Str("project_id", r.config.ZitadelProjectID).
-			Msg("ZITADEL bearer token protection enabled")
+			Msg("JWT bearer token protection enabled")
 
-		protectedAPI.Use(httpmiddleware.NewZitadelAuthenticator(r.config).Middleware())
+		protectedAPI.Use(httpmiddleware.NewJWTAuthMiddleware(r.authService))
 	} else {
 		log.Warn().
 			Str("service", "auth").
-			Msg("ZITADEL bearer token protection is disabled")
+			Msg("JWT bearer token protection is disabled")
 	}
 
-	// Let each handler register its own routes
+	adminAPI = protectedAPI.Group("")
+	adminAPI.Use(httpmiddleware.RequireAdmin)
+
 	for _, h := range r.handlers {
 		h.RegisterRoutes(protectedAPI)
 	}
+
+	r.settingsHandler.RegisterRoutes(protectedAPI, adminAPI)
+	r.usersHandler.RegisterRoutes(protectedAPI, adminAPI)
 }

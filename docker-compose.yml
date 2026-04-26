@@ -1,300 +1,77 @@
 services:
-  # =============================================================================
-  # REVERSE PROXY — Caddy handles TLS and routes all traffic
-  # Needs to be on BOTH networks so it can reach app services AND Zitadel services
-  # =============================================================================
   caddy:
     image: caddy:latest
     environment:
       BACKEND_HOST: ${BACKEND_HOST}
       FRONTEND_HOST: ${FRONTEND_HOST}
-      ZITADEL_DOMAIN: ${ZITADEL_DOMAIN}
     restart: unless-stopped
     ports:
-      - "80:80"    # HTTP
-      # Had to comment out HTTPS for now to get everything to work for production.
-      # - "443:443"  # HTTPS
+      - "80:80"
     volumes:
       - ./Caddyfile:/etc/caddy/Caddyfile
       - caddy_data:/data
       - caddy_config:/config
-    networks:
-      - default   # talks to: backend, frontend
-      - zitadel   # talks to: zitadel-api, zitadel-login
     depends_on:
-      - zitadel-api
-      - zitadel-login
+      backend:
+        condition: service_started
+      frontend:
+        condition: service_started
+      swagger:
+        condition: service_started
 
-  # =============================================================================
-  # APP DATABASE — existing Postgres for inventory/products/transactions
-  # =============================================================================
   db:
     image: postgres:18
     container_name: vending-db-prod
     environment:
-      POSTGRES_USER: ${APP_DB_USER}         # CHANGED (was POSTGRES_USER)
-      POSTGRES_PASSWORD: ${APP_DB_PASSWORD} # CHANGED
-      POSTGRES_DB: ${APP_DB_NAME}           # CHANGED
+      POSTGRES_USER: ${APP_DB_USER}
+      POSTGRES_PASSWORD: ${APP_DB_PASSWORD}
+      POSTGRES_DB: ${APP_DB_NAME}
     volumes:
-      - db-data:/var/lib/postgresql # add /data later
+      - db-data:/var/lib/postgresql
       - ./db/migrations:/docker-entrypoint-initdb.d
-    healthcheck: # Add healthcheck so backend waits for DB
+    healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${APP_DB_USER} -d ${APP_DB_NAME}"]
       interval: 5s
       timeout: 5s
       retries: 5
-    networks:
-      - default
 
-  # =============================================================================
-  # BACKEND — Go/Echo API
-  # =============================================================================
   backend:
     build:
       context: ./backend
       dockerfile: Dockerfile
-    env_file:
-      - ./terraform/zitadel-backend.env
     environment:
-      DATABASE_URL: postgres://${APP_DB_USER}:${APP_DB_PASSWORD}@db:5432/${APP_DB_NAME}?sslmode=disable  # FIXED VARS
-      ECHO_PORT: ${ECHO_PORT}
-      ECHO_LOG_LEVEL: ${ECHO_LOG_LEVEL}
+      DATABASE_URL: postgres://${APP_DB_USER}:${APP_DB_PASSWORD}@db:5432/${APP_DB_NAME}?sslmode=disable
+      PORT: ${PORT}
+      LOG_LEVEL: ${LOG_LEVEL}
+      AUTH_ENABLED: ${AUTH_ENABLED}
+      JWT_SECRET: ${JWT_SECRET}
+      ACCESS_TOKEN_TTL_MINUTES: ${ACCESS_TOKEN_TTL_MINUTES}
+      SEED_ADMIN_EMAIL: ${SEED_ADMIN_EMAIL}
+      SEED_ADMIN_PASSWORD: ${SEED_ADMIN_PASSWORD}
     depends_on:
-      caddy:
-        condition: service_started
       db:
         condition: service_healthy
-    networks:
-      - default
-      - zitadel
 
-  # =============================================================================
-  # FRONTEND — React app
-  # =============================================================================
   frontend:
     build:
       context: ./web
       dockerfile: Dockerfile
-    env_file:
-      - ./terraform/zitadel-web.env
     environment:
-      # This is injected into window.env at runtime
       API_BASE_URL: ${API_BASE_URL}
     depends_on:
       backend:
         condition: service_started
-      caddy:
-        condition: service_started
     restart: unless-stopped
-    networks:
-      - default
 
-  # =============================================================================
-  # SWAGGER UI
-  # =============================================================================
   swagger:
-      image: swaggerapi/swagger-ui:latest
-      environment:
-        # This tells the UI to look for the file at the root of the web server
-        URL: /openapi.yaml          
-      volumes:
-        # Correct the destination path to the NGINX root
-        - ./docs/openapi.yaml:/usr/share/nginx/html/openapi.yaml:ro
-      restart: unless-stopped
-      networks:
-        - default
-    
-  # =============================================================================
-  # ZITADEL API — the auth server itself
-  # All Traefik labels have been removed; Caddy handles routing instead
-  # =============================================================================
-  zitadel-api:
-    image: ghcr.io/zitadel/zitadel:${ZITADEL_VERSION}
-    restart: unless-stopped
-    user: "0"
-    command: start-from-init --masterkey "${ZITADEL_MASTERKEY}"
+    image: swaggerapi/swagger-ui:latest
     environment:
-
-      # Log in credentials for the first human user created on first startup.
-      ZITADEL_FIRSTINSTANCE_ORG_HUMAN_USERNAME: admin
-      ZITADEL_FIRSTINSTANCE_ORG_HUMAN_PASSWORD: SecurePassword123!
-      ZITADEL_FIRSTINSTANCE_ORG_HUMAN_FIRSTNAME: Zitadel
-      ZITADEL_FIRSTINSTANCE_ORG_HUMAN_LASTNAME: Admin
-      ZITADEL_FIRSTINSTANCE_ORG_HUMAN_EMAIL: admin@zitadel.example.com
-      ZITADEL_FIRSTINSTANCE_ORG_HUMAN_PASSWORDCHANGEREQUIRED: false
-
-      # Organization name
-      ZITADEL_FIRSTINSTANCE_ORG_NAME: outastock
-      ZITADEL_FIRSTINSTANCE_MACHINEKEYPATH: /terraform/zitadel-admin-sa.json
-      ZITADEL_FIRSTINSTANCE_ORG_MACHINE_MACHINE_USERNAME: terraform-admin
-      ZITADEL_FIRSTINSTANCE_ORG_MACHINE_MACHINE_NAME: Terraform Admin
-      ZITADEL_FIRSTINSTANCE_ORG_MACHINE_MACHINEKEY_TYPE: 1
-      ZITADEL_FIRSTINSTANCE_LOGINCLIENTPATPATH: /zitadel/bootstrap/login-client.pat
-      ZITADEL_FIRSTINSTANCE_ORG_LOGINCLIENT_MACHINE_USERNAME: login-client
-      ZITADEL_FIRSTINSTANCE_ORG_LOGINCLIENT_MACHINE_NAME: Automatically Initialized IAM_LOGIN_CLIENT
-      ZITADEL_FIRSTINSTANCE_ORG_LOGINCLIENT_PAT_EXPIRATIONDATE: ${LOGIN_CLIENT_PAT_EXPIRATION}
-
-      ZITADEL_PORT: 8080
-      ZITADEL_EXTERNALDOMAIN: ${ZITADEL_DOMAIN}
-      ZITADEL_EXTERNALPORT: ${ZITADEL_EXTERNALPORT}
-      ZITADEL_EXTERNALSECURE: ${ZITADEL_EXTERNALSECURE}
-      ZITADEL_TLS_ENABLED: false
-
-      # Points to zitadel-db (NOT our app's db service)
-      # ADD these in its place:
-      ZITADEL_DATABASE_POSTGRES_HOST: zitadel-db
-      ZITADEL_DATABASE_POSTGRES_PORT: 5432
-      ZITADEL_DATABASE_POSTGRES_DATABASE: ${ZITADEL_DB_NAME}
-      ZITADEL_DATABASE_POSTGRES_USER_USERNAME: ${ZITADEL_DB_USER}
-      ZITADEL_DATABASE_POSTGRES_USER_PASSWORD: ${ZITADEL_DB_PASSWORD}
-      ZITADEL_DATABASE_POSTGRES_USER_SSL_MODE: disable
-      ZITADEL_DATABASE_POSTGRES_ADMIN_USERNAME: ${ZITADEL_DB_USER}
-      ZITADEL_DATABASE_POSTGRES_ADMIN_PASSWORD: ${ZITADEL_DB_PASSWORD}
-      ZITADEL_DATABASE_POSTGRES_ADMIN_SSL_MODE: disable
-
-      ZITADEL_DEFAULTINSTANCE_FEATURES_LOGINV2_REQUIRED: true
-      ZITADEL_DEFAULTINSTANCE_FEATURES_LOGINV2_BASEURI: ${ZITADEL_PUBLIC_SCHEME}://${ZITADEL_DOMAIN}:${ZITADEL_EXTERNALPORT}/ui/v2/login/
-      ZITADEL_OIDC_DEFAULTLOGINURLV2: ${ZITADEL_PUBLIC_SCHEME}://${ZITADEL_DOMAIN}:${ZITADEL_EXTERNALPORT}/ui/v2/login/login?authRequest=
-      ZITADEL_OIDC_DEFAULTLOGOUTURLV2: ${ZITADEL_PUBLIC_SCHEME}://${ZITADEL_DOMAIN}:${ZITADEL_EXTERNALPORT}/ui/v2/login/logout?post_logout_redirect=
-      ZITADEL_SAML_DEFAULTLOGINURLV2: ${ZITADEL_PUBLIC_SCHEME}://${ZITADEL_DOMAIN}:${ZITADEL_EXTERNALPORT}/ui/v2/login/login?samlRequest=
-
-      ZITADEL_LOGSTORE_ACCESS_STDOUT_ENABLED: ${ZITADEL_ACCESS_LOG_STDOUT_ENABLED}
-
-      ZITADEL_INSTRUMENTATION_TRACE_EXPORTER_TYPE: ${ZITADEL_INSTRUMENTATION_TRACE_EXPORTER_TYPE}
-      ZITADEL_INSTRUMENTATION_TRACE_EXPORTER_ENDPOINT: ${ZITADEL_INSTRUMENTATION_TRACE_EXPORTER_ENDPOINT}
-      ZITADEL_INSTRUMENTATION_TRACE_EXPORTER_INSECURE: ${ZITADEL_INSTRUMENTATION_TRACE_EXPORTER_INSECURE}
-      ZITADEL_INSTRUMENTATION_SERVICENAME: ${ZITADEL_INSTRUMENTATION_SERVICENAME}
-
-      ZITADEL_CACHES_CONNECTORS_REDIS_ENABLED: ${ZITADEL_CACHES_CONNECTORS_REDIS_ENABLED}
-      ZITADEL_CACHES_CONNECTORS_REDIS_URL: ${ZITADEL_CACHES_CONNECTORS_REDIS_URL}
-      ZITADEL_CACHES_INSTANCE_CONNECTOR: ${ZITADEL_CACHES_INSTANCE_CONNECTOR:-}         # The :- syntax allows these
-      ZITADEL_CACHES_MILESTONES_CONNECTOR: ${ZITADEL_CACHES_MILESTONES_CONNECTOR:-}     # to be optional and default 
-      ZITADEL_CACHES_ORGANIZATION_CONNECTOR: ${ZITADEL_CACHES_ORGANIZATION_CONNECTOR:-} # to empty if not set
-
-    healthcheck:
-      test:
-        - CMD
-        - /app/zitadel
-        - ready
-      interval: 10s
-      timeout: 30s
-      retries: 12
-      start_period: 20s
+      URL: /openapi.yaml
     volumes:
-      - zitadel-bootstrap:/zitadel/bootstrap:rw
-      - ./terraform/bootstrap:/terraform:rw
-    networks:
-      - zitadel
-    depends_on:
-      zitadel-db:   # FIXED (was postgres)
-        condition: service_healthy
-
-  # =============================================================================
-  # ZITADEL LOGIN UI — the Next.js login page users see
-  # All Traefik labels have been removed; Caddy handles routing instead
-  # =============================================================================
-  zitadel-login:
-    image: ghcr.io/zitadel/zitadel-login:${ZITADEL_VERSION}
+      - ./docs/openapi.yaml:/usr/share/nginx/html/openapi.yaml:ro
     restart: unless-stopped
-    user: "0"
-    environment:
-      ZITADEL_API_URL: http://zitadel-api:8080
-      NEXT_PUBLIC_BASE_PATH: /ui/v2/login
-      ZITADEL_SERVICE_USER_TOKEN_FILE: /zitadel/bootstrap/login-client.pat
-      CUSTOM_REQUEST_HEADERS: Host:${ZITADEL_DOMAIN},X-Forwarded-Proto:${ZITADEL_PUBLIC_SCHEME}
-
-      # Future-ready placeholders for upcoming Login OTEL support.
-      OTEL_SERVICE_NAME: ${LOGIN_OTEL_SERVICE_NAME}
-      OTEL_EXPORTER_OTLP_ENDPOINT: ${LOGIN_OTEL_EXPORTER_OTLP_ENDPOINT}
-      OTEL_EXPORTER_OTLP_PROTOCOL: ${LOGIN_OTEL_EXPORTER_OTLP_PROTOCOL}
-    healthcheck:
-      test:
-        - CMD
-        - /bin/sh
-        - -c
-        - node /app/healthcheck.mjs http://localhost:3000/ui/v2/login/healthy
-      interval: 10s
-      timeout: 30s
-      retries: 12
-      start_period: 20s
-    volumes:
-      - zitadel-bootstrap:/zitadel/bootstrap:ro
-    networks:
-      - zitadel
-    depends_on:
-      zitadel-api:
-        condition: service_healthy
-
-  # =============================================================================
-  # ZITADEL DATABASE — separate Postgres instance, Zitadel owns this schema
-  # Using postgres:17 since that's what Zitadel's official image targets
-  # =============================================================================
-  zitadel-db:
-    image: ${POSTGRES_IMAGE}
-    restart: unless-stopped
-    environment:
-      POSTGRES_PASSWORD: ${ZITADEL_DB_PASSWORD}  # CHANGED
-      POSTGRES_USER: ${ZITADEL_DB_USER}          # CHANGED
-      POSTGRES_DB: ${ZITADEL_DB_NAME}            # CHANGED
-    healthcheck:
-      test:
-        - CMD-SHELL
-        - pg_isready -d ${ZITADEL_DB_NAME} -U ${ZITADEL_DB_USER}  # FIXED
-      interval: 10s
-      timeout: 30s
-      retries: 10
-      start_period: 20s
-    volumes:
-      - db-data-zitadel:/var/lib/postgresql/data:rw
-    networks:
-      - zitadel
-
-  # =============================================================================
-  # REDIS — optional cache for Zitadel (only starts if you run with --profile cache)
-  # Example: docker compose --profile cache -f docker-compose.prod.yml up
-  # =============================================================================
-  redis:
-    image: ${REDIS_IMAGE}
-    restart: unless-stopped
-    profiles:
-      - cache
-    command:
-      - --save
-      - ""
-      - --appendonly
-      - "no"
-    networks:
-      - zitadel
-
-  # =============================================================================
-  # OTEL COLLECTOR — optional tracing (only starts with --profile observability)
-  # =============================================================================
-  otel-collector:
-    image: ${OTEL_COLLECTOR_IMAGE}
-    restart: unless-stopped
-    profiles:
-      - observability
-    command:
-      - --config=/etc/otelcol/config.yaml
-    volumes:
-      - ./otel-collector-config.yaml:/etc/otelcol/config.yaml:ro
-    networks:
-      - zitadel
-# =============================================================================
-# NETWORKS
-# "default" = app services (caddy, db, backend, frontend, swagger)
-# "zitadel" = auth services (caddy, zitadel-api, zitadel-login, zitadel-db)
-# Caddy sits on both so it can proxy to everything
-# =============================================================================
-networks:
-  default: {}
-  zitadel:
-    name: zitadel
-
 
 volumes:
-  db-data:            # OutaStock DB data
-  caddy_data:   
+  db-data:
+  caddy_data:
   caddy_config:
-  db-data-zitadel:    # Zitadel DB data
-  zitadel-bootstrap:  # shared between zitadel-api and zitadel-login for first-time setup files

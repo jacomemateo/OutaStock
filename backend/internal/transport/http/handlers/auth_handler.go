@@ -3,8 +3,6 @@ package handlers
 import (
 	"errors"
 	"net/http"
-	"net/url"
-	"strings"
 
 	"github.com/jacomemateo/OutaStock/backend/internal/service"
 	"github.com/jacomemateo/OutaStock/backend/internal/transport/http/dto"
@@ -14,97 +12,41 @@ import (
 
 type AuthHandler struct {
 	BinderValidator
-	authService *service.HeadlessAuthService
+	authService *service.AuthService
 }
 
-func NewAuthHandler(authService *service.HeadlessAuthService) *AuthHandler {
+func NewAuthHandler(authService *service.AuthService) *AuthHandler {
 	return &AuthHandler{authService: authService}
 }
 
 func (h *AuthHandler) RegisterRoutes(api *echo.Group) {
-	api.POST("/auth/login", h.LoginHeadless)
+	api.POST("/auth/login", h.Login)
 }
 
-func (h *AuthHandler) LoginHeadless(c *echo.Context) error {
-	var req dto.HeadlessLoginRequest
+func (h *AuthHandler) Login(c *echo.Context) error {
+	var req dto.LoginRequest
 	if ok, jsonErr := h.bindAndValidate(c, &req); !ok {
 		return jsonErr
 	}
 
-	redirectURI, err := resolveRedirectURI(c)
+	result, err := h.authService.Login(c.Request().Context(), req.Email, req.Password)
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, map[string]string{
-			"error":   "invalid_origin",
-			"message": "Could not determine a valid frontend origin for sign-in.",
-		})
-	}
-
-	result, err := h.authService.Login(c.Request().Context(), service.HeadlessLoginInput{
-		Password:    req.Password,
-		RedirectURI: redirectURI,
-		Username:    req.Username,
-	})
-	if err != nil {
-		log.Error().
-			Err(err).
-			Str("service", "auth").
-			Msg("Headless login failed")
-
-		var authErr *service.HeadlessAuthError
-		if ok := errors.As(err, &authErr); ok {
-			return c.JSON(authErr.StatusCode, map[string]string{
-				"error":   "login_failed",
-				"message": authErr.PublicMessage,
+		if errors.Is(err, service.ErrInvalidCredentials) || errors.Is(err, service.ErrUserInactive) {
+			return c.JSON(http.StatusUnauthorized, map[string]string{
+				"error":   "unauthorized",
+				"message": "Invalid email or password.",
 			})
 		}
-
-		return c.JSON(http.StatusServiceUnavailable, map[string]string{
-			"error":   "auth_unavailable",
-			"message": "Authentication service is temporarily unavailable.",
-		})
+		log.Error().Err(err).Msg("Login error")
+		return c.JSON(http.StatusInternalServerError, map[string]string{"error": "internal_error"})
 	}
 
-	return c.JSON(http.StatusOK, result)
-}
-
-func resolveRedirectURI(c *echo.Context) (string, error) {
-	origin := strings.TrimSpace(c.Request().Header.Get(echo.HeaderOrigin))
-	if origin == "" {
-		referer := strings.TrimSpace(c.Request().Header.Get("Referer"))
-		if referer != "" {
-			refererURL, err := url.Parse(referer)
-			if err == nil && refererURL.Scheme != "" && refererURL.Host != "" {
-				origin = refererURL.Scheme + "://" + refererURL.Host
-			}
-		}
-	}
-
-	if origin == "" {
-		scheme := c.Scheme()
-		if scheme == "" {
-			scheme = "http"
-		}
-
-		host := c.Request().Host
-		if host == "" {
-			return "", echo.NewHTTPError(http.StatusBadRequest, "missing request host")
-		}
-
-		origin = scheme + "://" + host
-	}
-
-	originURL, err := url.Parse(origin)
-	if err != nil {
-		return "", err
-	}
-
-	if originURL.Scheme == "" || originURL.Host == "" {
-		return "", echo.NewHTTPError(http.StatusBadRequest, "invalid request origin")
-	}
-
-	originURL.Path = "/auth/callback"
-	originURL.RawPath = ""
-	originURL.RawQuery = ""
-	originURL.Fragment = ""
-	return originURL.String(), nil
+	return c.JSON(http.StatusOK, dto.LoginResponse{
+		AccessToken: result.AccessToken,
+		TokenType:   result.TokenType,
+		ExpiresIn:   result.ExpiresIn,
+		Role:        result.Role,
+		Email:       result.Email,
+		UserID:      result.UserID,
+	})
 }

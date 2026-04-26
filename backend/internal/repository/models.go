@@ -8,6 +8,11 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
+type AppSetting struct {
+	ID                int32
+	LowStockThreshold int32
+}
+
 type Inventory struct {
 	SlotID    int32
 	SlotLabel string
@@ -31,4 +36,15 @@ type Transaction struct {
 	ProductID        pgtype.UUID
 	PriceAtSaleCents int32
 	DateSold         pgtype.Timestamptz
+}
+
+type User struct {
+	UserID       pgtype.UUID
+	Email        string
+	PasswordHash string
+	Role         string
+	IsActive     bool
+	CreatedBy    pgtype.UUID
+	DateCreated  pgtype.Timestamptz
+	DateModified pgtype.Timestamptz
 }
