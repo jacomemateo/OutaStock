@@ -60,6 +60,18 @@ func (s *AuthService) Login(ctx context.Context, email, password string) (*Login
 	return s.issueToken(user)
 }
 
+func (s *AuthService) RevalidateSession(ctx context.Context, userID uuid.UUID) (*LoginResult, error) {
+	user, err := s.db.queries.GetUserByID(ctx, uuidToPgtype(userID))
+	if err != nil {
+		return nil, ErrInvalidCredentials
+	}
+	if !user.IsActive {
+		return nil, ErrUserInactive
+	}
+
+	return s.issueToken(user)
+}
+
 func (s *AuthService) issueToken(user repository.User) (*LoginResult, error) {
 	if !user.UserID.Valid {
 		return nil, fmt.Errorf("user is missing a valid id")

@@ -147,6 +147,7 @@ func (r *Router) addRoutes() {
 
 	adminAPI = protectedAPI.Group("")
 	adminAPI.Use(httpmiddleware.RequireAdmin)
+	r.authHandler.RegisterProtectedRoutes(protectedAPI)
 
 	for _, h := range r.handlers {
 		h.RegisterRoutes(protectedAPI)
