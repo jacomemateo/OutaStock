@@ -185,7 +185,7 @@
 .table-list {
     flex: 1;
     min-height: 0;
-    overflow-y: auto;
+    overflow: auto;
 
     border: var(--table-width-thick);
     border-radius: var(--container-radius);

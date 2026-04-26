@@ -6,17 +6,16 @@ import HourglassDisabledIcon from '@mui/icons-material/HourglassDisabled';
 import BatteryCharging20Icon from '@mui/icons-material/BatteryCharging20';
 
 // API
-import {
-    getProductCount,
-    getInventoryCount,
-    fetchInventory,
-} from '@/services/api';
+import { getProductCount, getInventoryCount, fetchInventory } from '@/services/api';
+import { fetchSettings } from '@/services/settingsApi';
+import { useAuth } from '@contexts/AuthContext';
 
 interface MetricCardsProps {
     refreshKey: number;
 }
 
 const MetricCards = ({ refreshKey }: MetricCardsProps) => {
+    const { session } = useAuth();
     const [lowStockCount, setLowStockCount] = useState(0);
     const [totalProductCount, setTotalProductCount] = useState(0);
     const [outOfStockCount, setOutOfStockCount] = useState(0);
@@ -27,10 +26,16 @@ const MetricCards = ({ refreshKey }: MetricCardsProps) => {
             : Number((countData as { count?: number })?.count ?? 0);
 
     const loadData = async () => {
+        if (!session) {
+            return;
+        }
+
         try {
             // total products
             const total = extractCount(await getProductCount());
             setTotalProductCount(total);
+
+            const settings = await fetchSettings(session.accessToken);
 
             // inventory
             const inventoryCount = extractCount(await getInventoryCount());
@@ -40,12 +45,13 @@ const MetricCards = ({ refreshKey }: MetricCardsProps) => {
             });
 
             const lowStockItems = inventory.filter(
-                (item: any) => item.quantity < 5
+                (item: { quantity: number }) =>
+                    item.quantity < settings.lowStockThreshold,
             );
             setLowStockCount(lowStockItems.length);
 
             const outOfStockItems = inventory.filter(
-                (item: any) => item.quantity === 0
+                (item: { quantity: number }) => item.quantity === 0,
             );
             setOutOfStockCount(outOfStockItems.length);
         } catch (err) {
@@ -55,8 +61,8 @@ const MetricCards = ({ refreshKey }: MetricCardsProps) => {
 
     // ✅ now reacts to external changes
     useEffect(() => {
-        loadData();
-    }, [refreshKey]);
+        void loadData();
+    }, [refreshKey, session]);
 
     return (
         <div className="metric-grid">
@@ -70,7 +76,8 @@ const MetricCards = ({ refreshKey }: MetricCardsProps) => {
 
             <div className="metric-card low-stock-card">
                 <h2 className="metric-card-title">
-                    <BatteryCharging20Icon className="metric-icon-warning" /> Low Stock Items
+                    <BatteryCharging20Icon className="metric-icon-warning" /> Low Stock
+                    Items
                 </h2>
                 <p className="metric-card-subtitle">
                     Number of items that are running low
@@ -80,7 +87,8 @@ const MetricCards = ({ refreshKey }: MetricCardsProps) => {
 
             <div className="metric-card out-of-stock-card">
                 <h2 className="metric-card-title">
-                    <HourglassDisabledIcon className="metric-icon-neutral" /> Out of Stock Items
+                    <HourglassDisabledIcon className="metric-icon-neutral" /> Out of Stock
+                    Items
                 </h2>
                 <p className="metric-card-subtitle">
                     Number of items that are out of stock

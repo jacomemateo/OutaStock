@@ -16,14 +16,18 @@ const DashBoard = () => {
                 <MetricCards refreshKey={metricRefreshKey} />
 
                 {/* Transaction History Box */}
-                <RecentTransactions />
+                <div className="dashboard-panel">
+                    <RecentTransactions />
+                </div>
 
                 {/* Current Inventory Box */}
-                <Inventory
-                    onInventoryChange={() =>
-                        setMetricRefreshKey((prev) => prev + 1)
-                    }
-                />
+                <div className="dashboard-panel">
+                    <Inventory
+                        onInventoryChange={() =>
+                            setMetricRefreshKey((prev) => prev + 1)
+                        }
+                    />
+                </div>
             </div>
         </div>
     );

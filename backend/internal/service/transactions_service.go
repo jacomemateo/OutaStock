@@ -21,14 +21,14 @@ func NewTransactionsService(database *Database) *TransactionsService {
 
 // GetTransactions gets paginated recent transactions and returns DTOs directly
 func (s *TransactionsService) GetTransactions(ctx context.Context, query ListQuery) ([]dto.TransactionResponse, error) {
-	totalRows64, err := s.database.Queries.CountTransactionRows(ctx, query.Search)
+	totalRows64, err := s.database.queries.CountTransactionRows(ctx, query.Search)
 	if err != nil {
 		log.Error().Err(err).Msg("Unable to get transaction row count")
 		return nil, err
 	}
 
 	return Paginate(int(totalRows64), query.PageOffset, query.NumRows, func(calculatedOffset, limit int) ([]dto.TransactionResponse, error) {
-		rows, err := s.database.Queries.GetTransactions(ctx, repository.GetTransactionsParams{
+		rows, err := s.database.queries.GetTransactions(ctx, repository.GetTransactionsParams{
 			Search:     query.Search,
 			SortBy:     query.SortBy,
 			SortDir:    query.SortDir,
@@ -58,7 +58,7 @@ func (s *TransactionsService) GetTransactions(ctx context.Context, query ListQue
 }
 
 func (s *TransactionsService) GetTransactionsCount(ctx context.Context, search string) (int, error) {
-	count, err := s.database.Queries.CountTransactionRows(ctx, search)
+	count, err := s.database.queries.CountTransactionRows(ctx, search)
 	if err != nil {
 		log.Warn().Msg("Unable to get transaction row count")
 		return 0, err

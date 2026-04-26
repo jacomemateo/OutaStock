@@ -24,14 +24,14 @@ func NewProductsService(database *Database) *ProductsService {
 
 // GetAllProducts gets paginated products and returns DTOs directly
 func (s *ProductsService) GetAllProducts(ctx context.Context, query ListQuery) ([]dto.ProductResponse, error) {
-	totalRows64, err := s.database.Queries.CountProductRows(ctx, query.Search)
+	totalRows64, err := s.database.queries.CountProductRows(ctx, query.Search)
 	if err != nil {
 		log.Error().Err(err).Msg("Failed to get product count from database")
 		return nil, err
 	}
 
 	return Paginate(int(totalRows64), query.PageOffset, query.NumRows, func(calculatedOffset, limit int) ([]dto.ProductResponse, error) {
-		rows, err := s.database.Queries.GetProducts(ctx, repository.GetProductsParams{
+		rows, err := s.database.queries.GetProducts(ctx, repository.GetProductsParams{
 			Search:     query.Search,
 			SortBy:     query.SortBy,
 			SortDir:    query.SortDir,
@@ -68,7 +68,7 @@ func (s *ProductsService) CreateProduct(ctx context.Context, prod dto.CreateProd
 		PriceCents: int32(prod.PriceCents),
 	}
 
-	err := s.database.Queries.CreateProduct(ctx, product)
+	err := s.database.queries.CreateProduct(ctx, product)
 	if err != nil {
 		return fmt.Errorf("create product in db: %w", err)
 	}
@@ -94,7 +94,7 @@ func (s *ProductsService) UpdateProduct(ctx context.Context, prodUUID uuid.UUID,
 			Name:      *req.Name, // sqlc generated string
 			ProductID: uuidPgtype,
 		}
-		if err := s.database.Queries.UpdateProductName(ctx, args); err != nil {
+		if err := s.database.queries.UpdateProductName(ctx, args); err != nil {
 			log.Warn().Msgf("error updating product name: %v", err)
 			return err
 		}
@@ -103,7 +103,7 @@ func (s *ProductsService) UpdateProduct(ctx context.Context, prodUUID uuid.UUID,
 			PriceCents: int32(*req.PriceCents), // sqlc generated int32
 			ProductID:  uuidPgtype,
 		}
-		if err := s.database.Queries.UpdateProductPrice(ctx, args); err != nil {
+		if err := s.database.queries.UpdateProductPrice(ctx, args); err != nil {
 			log.Warn().Msgf("error updating product price: %v", err)
 			return err
 		}
@@ -112,7 +112,7 @@ func (s *ProductsService) UpdateProduct(ctx context.Context, prodUUID uuid.UUID,
 			CostCents: int32(*req.CostCents), // sqlc generated int32
 			ProductID: uuidPgtype,
 		}
-		if err := s.database.Queries.UpdateProductCost(ctx, args); err != nil {
+		if err := s.database.queries.UpdateProductCost(ctx, args); err != nil {
 			log.Warn().Msgf("error updating product cost: %v", err)
 			return err
 		}
@@ -127,7 +127,7 @@ func (s *ProductsService) DeleteProduct(ctx context.Context, prodUUID uuid.UUID)
 		Valid: true,
 	}
 
-	if err := s.database.Queries.DeleteProduct(ctx, uuidPgtype); err != nil {
+	if err := s.database.queries.DeleteProduct(ctx, uuidPgtype); err != nil {
 		log.Warn().Msgf("error deleting product: %v", err)
 		return err
 	}
@@ -136,7 +136,7 @@ func (s *ProductsService) DeleteProduct(ctx context.Context, prodUUID uuid.UUID)
 }
 
 func (s *ProductsService) GetProductsCount(ctx context.Context, search string) (int, error) {
-	count, err := s.database.Queries.CountProductRows(ctx, search)
+	count, err := s.database.queries.CountProductRows(ctx, search)
 	if err != nil {
 		log.Warn().Msg("Unable to get inventory row count")
 		return 0, err

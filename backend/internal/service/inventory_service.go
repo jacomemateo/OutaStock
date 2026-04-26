@@ -20,14 +20,14 @@ func NewInventoryService(database *Database) *InventoryService {
 }
 
 func (s *InventoryService) GetAllInventory(ctx context.Context, query ListQuery) ([]dto.InventorySlot, error) {
-	invTotalRows64, err := s.database.Queries.CountInventoryRows(ctx, query.Search)
+	invTotalRows64, err := s.database.queries.CountInventoryRows(ctx, query.Search)
 	if err != nil {
 		log.Warn().Msg("Unable to get inventory row count")
 		return nil, err
 	}
 
 	return Paginate(int(invTotalRows64), query.PageOffset, query.NumRows, func(calculatedOffset, limit int) ([]dto.InventorySlot, error) {
-		rows, err := s.database.Queries.GetInventory(ctx, repository.GetInventoryParams{
+		rows, err := s.database.queries.GetInventory(ctx, repository.GetInventoryParams{
 			Search:     query.Search,
 			SortBy:     query.SortBy,
 			SortDir:    query.SortDir,
@@ -63,7 +63,7 @@ func (s *InventoryService) GetAllInventory(ctx context.Context, query ListQuery)
 
 func (s *InventoryService) UpdateInventory(ctx context.Context, slotID int, req dto.UpdateInventoryRequest) error {
 	if req.ProductID == nil && req.Quantity == nil {
-		err := s.database.Queries.ClearInventorySlot(ctx, int32(slotID))
+		err := s.database.queries.ClearInventorySlot(ctx, int32(slotID))
 		if err != nil {
 			return err
 		}
@@ -97,7 +97,7 @@ func (s *InventoryService) UpdateInventory(ctx context.Context, slotID int, req 
 		SlotID:    int32(slotID),
 	}
 
-	err := s.database.Queries.UpdateInventory(ctx, args)
+	err := s.database.queries.UpdateInventory(ctx, args)
 	if err != nil {
 		log.Warn().Msgf("error with the database %s", err)
 		return err
@@ -107,7 +107,7 @@ func (s *InventoryService) UpdateInventory(ctx context.Context, slotID int, req 
 }
 
 func (s *InventoryService) GetInventoryCount(ctx context.Context, search string) (int, error) {
-	count, err := s.database.Queries.CountInventoryRows(ctx, search)
+	count, err := s.database.queries.CountInventoryRows(ctx, search)
 	if err != nil {
 		log.Warn().Msg("Unable to get inventory row count")
 		return 0, err
