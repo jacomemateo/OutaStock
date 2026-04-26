@@ -19,6 +19,7 @@ declare module '*.svg' {
 interface Window {
     env: {
         API_BASE_URL: string;
+        WS_URL?: string;
         [key: string]: string | undefined; // for other env vars you may add
     };
 }

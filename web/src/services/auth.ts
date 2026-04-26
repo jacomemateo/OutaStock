@@ -1,18 +1,29 @@
+import type { UserRole } from '@/services/types';
+
 const AUTH_SESSION_STORAGE_KEY = 'outastock.auth.session';
 
 export interface AuthUser {
     sub: string;
     userId: string;
     email: string;
-    role: 'admin' | 'worker';
+    role: UserRole;
 }
 
 export interface AuthSession {
     accessToken: string;
     tokenType: string;
     expiresAt: number;
-    role: 'admin' | 'worker';
+    role: UserRole;
     user: AuthUser;
+}
+
+interface AuthResponse {
+    accessToken: string;
+    tokenType: string;
+    expiresIn: number;
+    role: UserRole;
+    email: string;
+    userId: string;
 }
 
 function cleanRuntimeValue(value?: string): string | undefined {
@@ -59,6 +70,20 @@ export function getApiBaseUrl() {
     return apiBaseUrl.replace(/\/+$/, '').replace(/\/api$/, '');
 }
 
+export function getRealtimeBaseUrl() {
+    const runtimeValue = cleanRuntimeValue(
+        typeof window === 'undefined' ? undefined : window.env?.WS_URL,
+    );
+    const viteValue = cleanRuntimeValue(import.meta.env.VITE_WS_URL);
+    const realtimeBaseUrl = runtimeValue ?? viteValue;
+
+    if (realtimeBaseUrl) {
+        return realtimeBaseUrl.replace(/\/+$/, '');
+    }
+
+    return getApiBaseUrl().replace(/^http/, 'ws').replace(/\/+$/, '') + '/ws';
+}
+
 export function setStoredSession(session: AuthSession) {
     if (typeof window === 'undefined') {
         return;
@@ -98,6 +123,21 @@ export function getAccessToken() {
     return getStoredSession()?.accessToken ?? null;
 }
 
+function toAuthSession(data: AuthResponse): AuthSession {
+    return {
+        accessToken: data.accessToken,
+        tokenType: data.tokenType,
+        expiresAt: Date.now() + data.expiresIn * 1000,
+        role: data.role,
+        user: {
+            sub: data.userId,
+            userId: data.userId,
+            email: data.email,
+            role: data.role,
+        },
+    };
+}
+
 export async function loginWithPassword(
     email: string,
     password: string,
@@ -114,25 +154,29 @@ export async function loginWithPassword(
         throw new Error((body as { message?: string }).message ?? 'Login failed.');
     }
 
-    const data = (await response.json()) as {
-        accessToken: string;
-        tokenType: string;
-        expiresIn: number;
-        role: 'admin' | 'worker';
-        email: string;
-        userId: string;
-    };
+    const data = (await response.json()) as AuthResponse;
 
-    return {
-        accessToken: data.accessToken,
-        tokenType: data.tokenType,
-        expiresAt: Date.now() + data.expiresIn * 1000,
-        role: data.role,
-        user: {
-            sub: data.userId,
-            userId: data.userId,
-            email: data.email,
-            role: data.role,
+    return toAuthSession(data);
+}
+
+export async function revalidateSession(accessToken: string): Promise<AuthSession> {
+    const apiBase = getApiBaseUrl();
+    const response = await fetch(`${apiBase}/api/auth/session`, {
+        headers: {
+            Authorization: `Bearer ${accessToken}`,
         },
-    };
+    });
+
+    if (!response.ok) {
+        const body = await response.json().catch(() => ({}));
+        const error = new Error(
+            (body as { message?: string }).message ??
+                'Session refresh failed unexpectedly.',
+        ) as Error & { status?: number };
+        error.status = response.status;
+        throw error;
+    }
+
+    const data = (await response.json()) as AuthResponse;
+    return toAuthSession(data);
 }

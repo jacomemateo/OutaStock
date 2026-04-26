@@ -1,27 +1,27 @@
-import { useState, useEffect, useRef, useLayoutEffect } from 'react';
-import { fetchTransactions, getTransactionCount } from '@/services/api';
+import { useState, useRef, useLayoutEffect, type CSSProperties } from 'react';
+import { useTransactions } from '@/hooks/useTransactions';
 import '@styles/Home/RecentTransactions.css';
 
-type Transaction = {
-    id: string;
-    productName: string;
-    priceAtSaleCents: number;
-    dateSold: string;
-};
-
 const RecentTransactions = () => {
-    const [transactions, setTransactions] = useState<Transaction[]>([]);
-    const [totalItems, setTotalItems] = useState(0);
-    const [currentPage, setCurrentPage] = useState(1);
-    const [isLoading, setIsLoading] = useState(false);
-
     const [itemsPerPage, setItemsPerPage] = useState(0);
 
     const containerRef = useRef<HTMLDivElement>(null);
     const probeRef = useRef<HTMLDivElement>(null);
 
-    const MAX_PAGES = 1;
     const gap = 16;
+    const transactionsQuery = useTransactions(
+        {
+            numRows: Math.max(itemsPerPage, 1),
+            pageOffset: 0,
+            sortBy: 'date',
+            sortDir: 'desc',
+        },
+        {
+            enabled: itemsPerPage > 0,
+            includeCount: false,
+        },
+    );
+    const transactions = transactionsQuery.data?.items ?? [];
 
     // -----------------------------
     // FIX 1: ResizeObserver (still useful)
@@ -80,56 +80,8 @@ const RecentTransactions = () => {
         });
     }, [transactions.length]);
 
-    // -----------------------------
-    // DATA LOADING
-    // -----------------------------
-    const loadData = async () => {
-        if (itemsPerPage === 0) return;
+    const isLoading = itemsPerPage > 0 && (transactionsQuery.isPending || transactionsQuery.isFetching);
 
-        setIsLoading(true);
-        try {
-            const countData = await getTransactionCount();
-            const rawCount =
-                typeof countData === 'number' ? countData : (countData as any).count;
-
-            if (rawCount !== undefined) {
-                setTotalItems(rawCount);
-            }
-
-            const data = await fetchTransactions(itemsPerPage, currentPage - 1);
-            setTransactions(data);
-        } catch (error) {
-            console.error('Failed to load transactions', error);
-        } finally {
-            setIsLoading(false);
-        }
-    };
-
-    useEffect(() => {
-        if (itemsPerPage === 0) return;
-
-        loadData();
-        const interval = setInterval(loadData, 10000);
-
-        return () => clearInterval(interval);
-    }, [currentPage, itemsPerPage]);
-
-    // -----------------------------
-    // PAGINATION
-    // -----------------------------
-    const actualTotalPages = itemsPerPage > 0 ? Math.ceil(totalItems / itemsPerPage) : 1;
-
-    const totalPages = Math.min(actualTotalPages, MAX_PAGES) || 1;
-
-    useEffect(() => {
-        if (currentPage > totalPages) {
-            setCurrentPage(totalPages);
-        }
-    }, [totalPages, currentPage]);
-
-    // -----------------------------
-    // RENDER
-    // -----------------------------
     return (
         <div
             className="page-card"
@@ -170,7 +122,7 @@ const RecentTransactions = () => {
                     <div
                         key={transaction.id}
                         className="transaction-card"
-                        style={{ '--card-index': index } as React.CSSProperties}
+                        style={{ '--card-index': index } as CSSProperties}
                     >
                         <div className="transaction-content">
                             <div className="transaction-left">
@@ -182,7 +134,11 @@ const RecentTransactions = () => {
                                         {transaction.productName}
                                     </h3>
                                     <p className="transaction-date">
-                                        {new Date(transaction.dateSold).toLocaleString()}
+                                        {transaction.dateSold
+                                            ? new Date(
+                                                  transaction.dateSold,
+                                              ).toLocaleString()
+                                            : 'Date unavailable'}
                                     </p>
                                 </div>
                             </div>
@@ -196,28 +152,6 @@ const RecentTransactions = () => {
                     </div>
                 ))}
             </div>
-{/* 
-            <div className="pagination">
-                <button
-                    className="pagination-btn"
-                    onClick={() => setCurrentPage((p) => p - 1)}
-                    disabled={currentPage === 1 || isLoading}
-                >
-                    Previous
-                </button>
-
-                <span className="pagination-info">
-                    Page {currentPage} of {totalPages}
-                </span>
-
-                <button
-                    className="pagination-btn"
-                    onClick={() => setCurrentPage((p) => p + 1)}
-                    disabled={currentPage === totalPages || isLoading}
-                >
-                    Next
-                </button>
-            </div> */}
         </div>
     );
 };

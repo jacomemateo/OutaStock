@@ -1,76 +1,49 @@
-import { getApiBaseUrl } from '@/services/auth';
+import { requestJson } from '@/services/http';
+import type { UserRecord, UserRole } from '@/services/types';
 
-const headers = (token: string) => ({
-    'Content-Type': 'application/json',
-    Authorization: `Bearer ${token}`,
-});
-
-export interface UserRecord {
+export interface CreatedUserResponse {
     userId: string;
     email: string;
-    role: 'admin' | 'worker';
-    isActive: boolean;
-    dateCreated: string;
+    role: UserRole;
 }
 
-const parseErrorMessage = async (res: Response, fallback: string) => {
-    const body = await res.json().catch(() => ({}));
-    return (
-        (body as { error?: string; message?: string }).message ??
-        (body as { error?: string; message?: string }).error ??
-        fallback
-    );
-};
+export function listUsers(): Promise<UserRecord[]> {
+    return requestJson<UserRecord[]>('/users');
+}
 
-export const listUsers = async (token: string): Promise<UserRecord[]> => {
-    const res = await fetch(`${getApiBaseUrl()}/api/users`, { headers: headers(token) });
-    if (!res.ok) throw new Error(await parseErrorMessage(res, 'Failed to fetch users'));
-    return res.json();
-};
-
-export const createUser = async (
-    token: string,
-    payload: { email: string; password: string; role: 'admin' | 'worker' },
-): Promise<UserRecord> => {
-    const res = await fetch(`${getApiBaseUrl()}/api/users`, {
+export function createUser(payload: {
+    email: string;
+    password: string;
+    role: UserRole;
+}): Promise<CreatedUserResponse> {
+    return requestJson<CreatedUserResponse>('/users', {
         method: 'POST',
-        headers: headers(token),
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
     });
-    if (!res.ok) throw new Error(await parseErrorMessage(res, 'Failed to create user'));
-    return res.json();
-};
+}
 
-export const updateUserRole = async (
-    token: string,
-    userId: string,
-    role: 'admin' | 'worker',
-): Promise<void> => {
-    const res = await fetch(`${getApiBaseUrl()}/api/users/${userId}/role`, {
+export function updateUserRole(userId: string, role: UserRole): Promise<void> {
+    return requestJson<void>(`/users/${userId}/role`, {
         method: 'PATCH',
-        headers: headers(token),
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ role }),
     });
-    if (!res.ok) throw new Error(await parseErrorMessage(res, 'Failed to update role'));
-};
+}
 
-export const deleteUser = async (token: string, userId: string): Promise<void> => {
-    const res = await fetch(`${getApiBaseUrl()}/api/users/${userId}`, {
+export function deleteUser(userId: string): Promise<void> {
+    return requestJson<void>(`/users/${userId}`, {
         method: 'DELETE',
-        headers: headers(token),
     });
-    if (!res.ok) throw new Error(await parseErrorMessage(res, 'Failed to delete user'));
-};
+}
 
-export const changeMyPassword = async (
-    token: string,
-    payload: { currentPassword: string; newPassword: string },
-): Promise<void> => {
-    const res = await fetch(`${getApiBaseUrl()}/api/users/me/password`, {
+export function changeMyPassword(payload: {
+    currentPassword: string;
+    newPassword: string;
+}): Promise<void> {
+    return requestJson<void>('/users/me/password', {
         method: 'PATCH',
-        headers: headers(token),
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
     });
-    if (!res.ok)
-        throw new Error(await parseErrorMessage(res, 'Failed to change password'));
-};
+}

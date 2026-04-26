@@ -1,17 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import '@styles/Modals/EditInventoryModal.css';
 import { FormControl } from '@mui/material';
-
-/*
-Product type coming from your backend.
-We store the full object in `inventory` so we have access to the UUID.
-*/
-interface Product {
-    id: string;
-    name: string;
-    priceCents: number;
-    dateCreated: string;
-}
+import type { Product } from '@/services/types';
 
 interface EditInventoryModalProps {
     isOpen: boolean;
@@ -54,26 +44,11 @@ const EditInventoryModal = ({
     Instead of storing productName we store productId.
     This prevents the UUID mismatch bug you were seeing.
     */
+    const matchingProduct = inventory.find((product) => product.name === currentProductName);
     const [formData, setFormData] = useState({
-        productId: '',
+        productId: matchingProduct ? matchingProduct.id : '',
         quantity: currentQuantity.toString(),
     });
-
-    /*
-    When the modal opens, we want to set the initial productId
-    based on the current product name.
-
-    This finds the matching product object and sets its UUID.
-    */
-    useEffect(() => {
-        const product = inventory.find((p) => p.name === currentProductName);
-        console.log('Found product for currentProductName:', product);
-
-        setFormData({
-            productId: product ? product.id : '',
-            quantity: currentQuantity.toString(),
-        });
-    }, [inventory, currentProductName, currentQuantity]);
 
     /*
     Submit handler

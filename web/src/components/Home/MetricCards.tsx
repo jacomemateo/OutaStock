@@ -1,68 +1,14 @@
-import { useEffect, useState } from 'react';
-
 // Icons
 import InventoryIcon from '@mui/icons-material/Inventory';
 import HourglassDisabledIcon from '@mui/icons-material/HourglassDisabled';
 import BatteryCharging20Icon from '@mui/icons-material/BatteryCharging20';
+import { useMetrics } from '@/hooks/useMetrics';
 
-// API
-import { getProductCount, getInventoryCount, fetchInventory } from '@/services/api';
-import { fetchSettings } from '@/services/settingsApi';
-import { useAuth } from '@contexts/AuthContext';
-
-interface MetricCardsProps {
-    refreshKey: number;
-}
-
-const MetricCards = ({ refreshKey }: MetricCardsProps) => {
-    const { session } = useAuth();
-    const [lowStockCount, setLowStockCount] = useState(0);
-    const [totalProductCount, setTotalProductCount] = useState(0);
-    const [outOfStockCount, setOutOfStockCount] = useState(0);
-
-    const extractCount = (countData: unknown) =>
-        typeof countData === 'number'
-            ? countData
-            : Number((countData as { count?: number })?.count ?? 0);
-
-    const loadData = async () => {
-        if (!session) {
-            return;
-        }
-
-        try {
-            // total products
-            const total = extractCount(await getProductCount());
-            setTotalProductCount(total);
-
-            const settings = await fetchSettings(session.accessToken);
-
-            // inventory
-            const inventoryCount = extractCount(await getInventoryCount());
-            const inventory = await fetchInventory(inventoryCount, 0, {
-                sortBy: 'location',
-                sortDir: 'asc',
-            });
-
-            const lowStockItems = inventory.filter(
-                (item: { quantity: number }) =>
-                    item.quantity < settings.lowStockThreshold,
-            );
-            setLowStockCount(lowStockItems.length);
-
-            const outOfStockItems = inventory.filter(
-                (item: { quantity: number }) => item.quantity === 0,
-            );
-            setOutOfStockCount(outOfStockItems.length);
-        } catch (err) {
-            console.error('Failed to load metric data', err);
-        }
-    };
-
-    // ✅ now reacts to external changes
-    useEffect(() => {
-        void loadData();
-    }, [refreshKey, session]);
+const MetricCards = () => {
+    const { data: metrics } = useMetrics();
+    const totalProductCount = metrics?.totalProductCount ?? 0;
+    const lowStockCount = metrics?.lowStockCount ?? 0;
+    const outOfStockCount = metrics?.outOfStockCount ?? 0;
 
     return (
         <div className="metric-grid">

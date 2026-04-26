@@ -2,7 +2,7 @@ import '@styles/Settings/Profile.css';
 import { useAuth } from '@contexts/AuthContext';
 import { useAlert } from '@contexts/SnackBarAlertContext';
 import { useState, type FormEvent } from 'react';
-import { changeMyPassword } from '@/services/usersApi';
+import { useChangePasswordMutation } from '@/hooks/useUsers';
 import {
     getPasswordValidationMessage,
     isPasswordComplexEnough,
@@ -11,11 +11,11 @@ import {
 const Profile = () => {
     const { session, signOut } = useAuth();
     const { showAlert } = useAlert();
+    const changePasswordMutation = useChangePasswordMutation();
     const roleLabel = session?.role === 'admin' ? 'Admin' : 'Worker';
     const [currentPassword, setCurrentPassword] = useState('');
     const [newPassword, setNewPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
-    const [isUpdatingPassword, setIsUpdatingPassword] = useState(false);
 
     const profileFields = [
         { label: 'Email', value: session?.user.email },
@@ -44,9 +44,8 @@ const Profile = () => {
             return;
         }
 
-        setIsUpdatingPassword(true);
         try {
-            await changeMyPassword(session.accessToken, {
+            await changePasswordMutation.mutateAsync({
                 currentPassword,
                 newPassword,
             });
@@ -59,8 +58,6 @@ const Profile = () => {
                 error instanceof Error ? error.message : 'Failed to change password.',
                 'error',
             );
-        } finally {
-            setIsUpdatingPassword(false);
         }
     };
 
@@ -141,7 +138,7 @@ const Profile = () => {
                         <button
                             className="table-control-btn"
                             disabled={
-                                isUpdatingPassword ||
+                                changePasswordMutation.isPending ||
                                 !currentPassword ||
                                 !newPassword ||
                                 !confirmPassword ||
@@ -150,14 +147,16 @@ const Profile = () => {
                             }
                             type="submit"
                         >
-                            {isUpdatingPassword ? 'Updating...' : 'Change Password'}
+                            {changePasswordMutation.isPending
+                                ? 'Updating...'
+                                : 'Change Password'}
                         </button>
                     </div>
                 </form>
             </section>
 
             <div className="profile-actions">
-                <button className="profile-button" onClick={signOut}>
+                <button className="profile-button" onClick={() => signOut()}>
                     Sign Out
                 </button>
             </div>

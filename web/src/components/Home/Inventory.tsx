@@ -3,107 +3,66 @@ import '@styles/Utils/Buttons.css';
 import '@styles/Utils/TableUtils.css';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
-import { useState, useEffect } from 'react';
+import { useState, type CSSProperties } from 'react';
 
 import EditInventoryModal from '@/components/Modals/EditInventoryModal';
 import ConfirmationModal from '@/components/Modals/ConfirmationModal';
 import { useAlert } from '@contexts/SnackBarAlertContext';
-
 import {
-    fetchInventory,
-    unassignProductFromSlot,
-    fetchProducts,
-    updateSlotProductAndQuantity,
-    getInventoryCount,
-    getProductCount,
-} from '@/services/api';
-
-/*
-Represents a slot inside the vending machine.
-*/
-interface ProductSlot {
-    slotId: number;
-    slotLabel: string;
-    quantity: number;
-    productName: string;
-    priceCents: number;
-    productId: string;
-    dateAdded: string | null;
-}
-
-interface Product {
-    id: string;
-    name: string;
-    priceCents: number;
-    dateCreated: string;
-}
+    useInventory,
+    useRemoveInventorySlotMutation,
+    useUpdateInventorySlotMutation,
+} from '@/hooks/useInventory';
+import { useProducts } from '@/hooks/useProducts';
+import type { InventoryItem } from '@/services/types';
 
 type InventorySortColumn = 'location' | 'product' | 'quantity';
 type SortDirection = 'asc' | 'desc';
 
-interface InventoryProps {
-    onInventoryChange?: () => void;
+function sortInventory(
+    inventory: InventoryItem[],
+    sortColumn: InventorySortColumn,
+    sortDirection: SortDirection,
+) {
+    return [...inventory].sort((left, right) => {
+        const direction = sortDirection === 'asc' ? 1 : -1;
+
+        switch (sortColumn) {
+            case 'location':
+                return left.slotLabel.localeCompare(right.slotLabel) * direction;
+            case 'product':
+                return left.productName.localeCompare(right.productName) * direction;
+            case 'quantity':
+                return (left.quantity - right.quantity) * direction;
+        }
+    });
 }
 
-const Inventory = ({ onInventoryChange }: InventoryProps) => {
+const Inventory = () => {
     const { showAlert } = useAlert();
+    const inventoryQuery = useInventory();
+    const productsQuery = useProducts();
+    const updateSlotMutation = useUpdateInventorySlotMutation();
+    const removeSlotMutation = useRemoveInventorySlotMutation();
 
     const [editingSlotID, setEditingSlotID] = useState<number | null>(null);
     const [isEditMode, setIsEditMode] = useState<boolean>(false);
-    const [inventorySlots, setInventorySlots] = useState<ProductSlot[]>([]);
-    const [isLoadingInventory, setIsLoadingInventory] = useState(false);
-
     const [sortColumn, setSortColumn] = useState<InventorySortColumn>('location');
     const [sortDirection, setSortDirection] = useState<SortDirection>('asc');
-
-    const [allProducts, setAllProducts] = useState<Product[]>([]);
-
     const [confirmationOpen, setConfirmationOpen] = useState<boolean>(false);
     const [slotToDelete, setSlotToDelete] = useState<number | null>(null);
-
-    const extractCount = (countData: unknown) =>
-        typeof countData === 'number'
-            ? countData
-            : Number((countData as { count?: number })?.count ?? 0);
-
-    const loadInventory = async () => {
-        setIsLoadingInventory(true);
-        try {
-            const inventoryCount = extractCount(await getInventoryCount());
-            const data = await fetchInventory(inventoryCount, 0, {
-                sortBy: sortColumn,
-                sortDir: sortDirection,
-            });
-
-            setInventorySlots(data || []);
-        } catch (error) {
-            console.error('Failed to load inventory', error);
-        } finally {
-            setIsLoadingInventory(false);
-        }
-    };
-
-    const loadAllProducts = async () => {
-        try {
-            const productCount = extractCount(await getProductCount());
-            const data = await fetchProducts(productCount, 0, {
-                sortBy: 'name',
-                sortDir: 'asc',
-            });
-
-            setAllProducts(data);
-        } catch (error) {
-            console.error('Failed to load all products', error);
-        }
-    };
-
-    useEffect(() => {
-        loadAllProducts();
-    }, []);
-
-    useEffect(() => {
-        loadInventory();
-    }, [sortColumn, sortDirection]);
+    const inventorySlots = sortInventory(
+        inventoryQuery.data ?? [],
+        sortColumn,
+        sortDirection,
+    );
+    const allProducts = productsQuery.data ?? [];
+    const isLoadingInventory =
+        inventoryQuery.isPending ||
+        inventoryQuery.isFetching ||
+        productsQuery.isPending ||
+        updateSlotMutation.isPending ||
+        removeSlotMutation.isPending;
 
     const editingSlotInfo = inventorySlots.find(
         (slot) => slot.slotId === editingSlotID,
@@ -117,17 +76,18 @@ const Inventory = ({ onInventoryChange }: InventoryProps) => {
         try {
             const product = allProducts.find((p) => p.id === productId);
 
-            if (!product) return;
+            if (!product) {
+                return;
+            }
 
-            await updateSlotProductAndQuantity(slotId, productId, quantity);
+            await updateSlotMutation.mutateAsync({
+                slotId,
+                product,
+                productId,
+                quantity,
+            });
 
             showAlert(`Slot updated successfully!`, 'success');
-
-            await loadInventory();
-
-            // 🔁 notify dashboard
-            onInventoryChange?.();
-
             setEditingSlotID(null);
         } catch (error) {
             console.error(error);
@@ -137,13 +97,8 @@ const Inventory = ({ onInventoryChange }: InventoryProps) => {
 
     const handleRemove = async (slotId: number) => {
         try {
-            await unassignProductFromSlot(slotId);
-            await loadInventory();
-
+            await removeSlotMutation.mutateAsync(slotId);
             showAlert(`Product removed from slot`, 'success');
-
-            // 🔁 notify dashboard
-            onInventoryChange?.();
         } catch (error) {
             console.error(error);
             showAlert(`Failed to remove product from slot`, 'error');
@@ -152,7 +107,7 @@ const Inventory = ({ onInventoryChange }: InventoryProps) => {
 
     const handleDeleteConfirm = (confirmed: boolean) => {
         if (confirmed && slotToDelete !== null) {
-            handleRemove(slotToDelete);
+            void handleRemove(slotToDelete);
         }
 
         setConfirmationOpen(false);
@@ -242,7 +197,7 @@ const Inventory = ({ onInventoryChange }: InventoryProps) => {
                                         style={
                                             {
                                                 '--row-index': index,
-                                            } as React.CSSProperties
+                                            } as CSSProperties
                                         }
                                     >
                                         <td>{slot.slotLabel}</td>
@@ -287,6 +242,7 @@ const Inventory = ({ onInventoryChange }: InventoryProps) => {
 
             {editingSlotInfo && (
                 <EditInventoryModal
+                    key={`${editingSlotInfo.slotId}-${editingSlotInfo.productId}-${editingSlotInfo.quantity}`}
                     isOpen={editingSlotID !== null}
                     onClose={() => setEditingSlotID(null)}
                     onSave={handleSave}

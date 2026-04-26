@@ -1,12 +1,15 @@
-import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
 import {
-    clearStoredSession,
-    getStoredSession,
-    isSessionExpired,
-    loginWithPassword,
-    setStoredSession,
-    type AuthSession,
-} from '@/services/auth';
+    createContext,
+    useCallback,
+    useContext,
+    useState,
+    type ReactNode,
+} from 'react';
+import { useQueryClient } from '@tanstack/react-query';
+import { clearStoredSession, type AuthSession } from '@/services/auth';
+import { useIdleSession } from '@/hooks/useIdleSession';
+import { useSession, useSignInMutation } from '@/hooks/useSession';
+import { queryKeys, serverStateRoots } from '@/lib/queryKeys';
 
 type AuthStatus = 'anonymous' | 'authenticated' | 'loading';
 
@@ -16,105 +19,77 @@ interface AuthContextValue {
     isAdmin: boolean;
     session: AuthSession | null;
     signIn: (email: string, password: string) => Promise<AuthSession>;
-    signOut: () => void;
+    signOut: (message?: string) => void;
     status: AuthStatus;
     user: AuthSession['user'] | null;
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);
 
-function readSessionFromStorage() {
-    const storedSession = getStoredSession();
-
-    if (!storedSession) {
-        return null;
-    }
-
-    if (isSessionExpired(storedSession)) {
-        clearStoredSession();
-        return null;
-    }
-
-    return storedSession;
-}
-
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
-    const [session, setSession] = useState<AuthSession | null>(null);
-    const [status, setStatus] = useState<AuthStatus>('loading');
+    const queryClient = useQueryClient();
+    const { isAdmin, isAuthenticated, session, user, isPending } = useSession();
+    const signInMutation = useSignInMutation();
     const [error, setError] = useState<string | null>(null);
 
-    useEffect(() => {
-        const storedSession = readSessionFromStorage();
-        setSession(storedSession);
-        setStatus(storedSession ? 'authenticated' : 'anonymous');
-    }, []);
+    const clearServerState = useCallback(() => {
+        serverStateRoots
+            .filter((rootKey) => rootKey !== queryKeys.session.all[0])
+            .forEach((rootKey) => {
+                queryClient.removeQueries({ queryKey: [rootKey] });
+            });
+    }, [queryClient]);
 
-    useEffect(() => {
-        if (!session) {
-            return;
-        }
+    const signIn = useCallback(
+        async (email: string, password: string) => {
+            setError(null);
 
-        const remainingTime = session.expiresAt - Date.now();
+            try {
+                return await signInMutation.mutateAsync({ email, password });
+            } catch (caughtError) {
+                clearStoredSession();
+                queryClient.setQueryData(queryKeys.session.all, null);
+                setError(
+                    caughtError instanceof Error
+                        ? caughtError.message
+                        : 'Sign-in failed unexpectedly.',
+                );
+                throw caughtError;
+            }
+        },
+        [queryClient, signInMutation],
+    );
 
-        if (remainingTime <= 0) {
+    const signOut = useCallback(
+        (message?: string) => {
+            setError(message ?? null);
             clearStoredSession();
-            setSession(null);
-            setStatus('anonymous');
-            setError('Your session has expired. Please sign in again.');
-            return;
-        }
+            clearServerState();
+            queryClient.setQueryData(queryKeys.session.all, null);
+        },
+        [clearServerState, queryClient],
+    );
 
-        const timeoutId = window.setTimeout(() => {
-            clearStoredSession();
-            setSession(null);
-            setStatus('anonymous');
-            setError('Your session has expired. Please sign in again.');
-        }, remainingTime);
+    useIdleSession({ session, signOut });
 
-        return () => window.clearTimeout(timeoutId);
-    }, [session]);
-
-    const signIn = async (email: string, password: string) => {
-        setError(null);
-        setStatus('loading');
-
-        try {
-            const nextSession = await loginWithPassword(email, password);
-            setStoredSession(nextSession);
-            setSession(nextSession);
-            setStatus('authenticated');
-            return nextSession;
-        } catch (caughtError) {
-            clearStoredSession();
-            setSession(null);
-            setStatus('anonymous');
-            setError(
-                caughtError instanceof Error
-                    ? caughtError.message
-                    : 'Sign-in failed unexpectedly.',
-            );
-            throw caughtError;
-        }
-    };
-
-    const signOut = () => {
-        setError(null);
-        clearStoredSession();
-        setSession(null);
-        setStatus('anonymous');
-    };
+    const status: AuthStatus =
+        signInMutation.isPending || (isPending && !session)
+            ? 'loading'
+            : session
+              ? 'authenticated'
+              : 'anonymous';
 
     return (
         <AuthContext.Provider
             value={{
                 error,
-                isAuthenticated: Boolean(session),
-                isAdmin: session?.role === 'admin',
+                isAuthenticated,
+                isAdmin,
                 session,
                 signIn,
                 signOut,
                 status,
-                user: session?.user ?? null,
+                user,
             }}
         >
             {children}

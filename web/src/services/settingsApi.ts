@@ -1,31 +1,14 @@
-import { getApiBaseUrl } from '@/services/auth';
+import { requestJson } from '@/services/http';
+import type { AppSettings } from '@/services/types';
 
-const headers = (token: string) => ({
-    'Content-Type': 'application/json',
-    Authorization: `Bearer ${token}`,
-});
-
-export interface AppSettings {
-    lowStockThreshold: number;
+export function fetchSettings(): Promise<AppSettings> {
+    return requestJson<AppSettings>('/settings');
 }
 
-export async function fetchSettings(token: string): Promise<AppSettings> {
-    const res = await fetch(`${getApiBaseUrl()}/api/settings`, {
-        headers: headers(token),
-    });
-    if (!res.ok) throw new Error('Failed to fetch settings');
-    return res.json();
-}
-
-export async function updateLowStockThreshold(
-    token: string,
-    threshold: number,
-): Promise<AppSettings> {
-    const res = await fetch(`${getApiBaseUrl()}/api/settings`, {
+export function updateLowStockThreshold(threshold: number): Promise<AppSettings> {
+    return requestJson<AppSettings>('/settings', {
         method: 'PATCH',
-        headers: headers(token),
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ lowStockThreshold: threshold }),
     });
-    if (!res.ok) throw new Error('Failed to update settings');
-    return res.json();
 }

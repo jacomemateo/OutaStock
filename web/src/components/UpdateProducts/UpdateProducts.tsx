@@ -1,4 +1,3 @@
-// Styles
 import '@styles/UpdateProducts/UpdateProducts.css';
 import '@styles/Utils/Buttons.css';
 import '@styles/Utils/TableUtils.css';
@@ -6,38 +5,60 @@ import '@styles/Utils/PageLayout.css';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import AddIcon from '@mui/icons-material/Add';
-// React
-import { useEffect, useState } from 'react';
-// Api functions
-import { fetchProducts, getProductCount } from '@/services/api';
+import { useState, type CSSProperties } from 'react';
 import { useAlert } from '@contexts/SnackBarAlertContext';
-import { fetchInventory, getInventoryCount, createProduct } from '@/services/api';
-import { deleteProduct } from '@/services/api';
-import { updateProductPrice, updateProductCost } from '@/services/api';
-// Modals
+import {
+    useCreateProductMutation,
+    useDeleteProductMutation,
+    useProducts,
+    useUpdateProductMutation,
+} from '@/hooks/useProducts';
+import type { Product } from '@/services/types';
 import EditProductModal from '@/components/Modals/EditProductModal';
 import ConfirmationModal from '@/components/Modals/ConfirmationModal';
 import AddProductModal from '@/components/Modals/AddProductModal';
 
-interface Product {
-    id: string;
-    name: string;
-    costCents: number;
-    priceCents: number;
-    dateCreated: string;
-}
-
 type ProductSortColumn = 'name' | 'cost' | 'price';
 type SortDirection = 'asc' | 'desc';
 
+function filterAndSortProducts(
+    products: Product[],
+    searchQuery: string,
+    sortColumn: ProductSortColumn,
+    sortDirection: SortDirection,
+) {
+    const normalizedSearch = searchQuery.trim().toLowerCase();
+    const filteredProducts = normalizedSearch
+        ? products.filter((product) =>
+              product.name.toLowerCase().includes(normalizedSearch),
+          )
+        : products;
+
+    return [...filteredProducts].sort((left, right) => {
+        const direction = sortDirection === 'asc' ? 1 : -1;
+
+        switch (sortColumn) {
+            case 'name':
+                return left.name.localeCompare(right.name) * direction;
+            case 'cost':
+                return (left.costCents - right.costCents) * direction;
+            case 'price':
+                return (left.priceCents - right.priceCents) * direction;
+        }
+    });
+}
+
 const UpdateProducts = () => {
     const { showAlert } = useAlert();
-    const [products, setProducts] = useState<Product[]>([]);
+    const productsQuery = useProducts();
+    const createProductMutation = useCreateProductMutation();
+    const updateProductMutation = useUpdateProductMutation();
+    const deleteProductMutation = useDeleteProductMutation();
+
     const [isAddProductModalOpen, setIsAddProductModalOpen] = useState(false);
     const [isEditProductModalOpen, setIsEditProductModalOpen] = useState(false);
-    const [isLoadingProducts, setIsLoadingProducts] = useState(false);
     const [confirmationOpen, setConfirmationOpen] = useState<boolean>(false);
-    const [slotToDelete, setSlotToDelete] = useState<string | null>(null);
+    const [productToDelete, setProductToDelete] = useState<string | null>(null);
     const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
     const [isEditMode, setIsEditMode] = useState<boolean>(false);
     const [searchInput, setSearchInput] = useState('');
@@ -45,65 +66,19 @@ const UpdateProducts = () => {
     const [sortColumn, setSortColumn] = useState<ProductSortColumn>('name');
     const [sortDirection, setSortDirection] = useState<SortDirection>('asc');
 
-    const extractCount = (countData: unknown) =>
-        typeof countData === 'number'
-            ? countData
-            : Number((countData as { count?: number })?.count ?? 0);
-
-    // Not working
-    // const getLowStockCount = async () => {
-    //     try{
-    //         const inventoryData = await getAllInventory();
-    //         console.log('Inventory data for low stock count:', inventoryData);
-    //         const lowStockItems = inventoryData.filter((item: any) => item.quantity < 5);
-    //         setLowStockCount(lowStockItems.length);
-    //     } catch (error) {
-    //         console.error('Error fetching low stock count:', error);
-
-    //     }
-    // }
-
-    const loadInventory = async () => {
-        try {
-            const inventoryCount = extractCount(await getInventoryCount());
-            const data = await fetchInventory(inventoryCount, 0, {
-                sortBy: 'location',
-                sortDir: 'asc',
-            });
-            /*
-                    Ensure we always store an array
-                    */
-
-            console.log('Inventory slots:', data);
-        } catch (error) {
-            console.error('Failed to load inventory', error);
-        }
-    };
-
-    const loadProducts = async () => {
-        setIsLoadingProducts(true);
-        try {
-            const [filteredCountData] = await Promise.all([
-                getProductCount(searchQuery),
-                getProductCount(),
-            ]);
-
-            const filteredCount = extractCount(filteredCountData);
-
-            const data = await fetchProducts(filteredCount, 0, {
-                search: searchQuery,
-                sortBy: sortColumn,
-                sortDir: sortDirection,
-            });
-
-            setProducts(data);
-            console.log('Loaded products:', data);
-        } catch (error) {
-            console.error('Error loading products:', error);
-        } finally {
-            setIsLoadingProducts(false);
-        }
-    };
+    const allProducts = productsQuery.data ?? [];
+    const visibleProducts = filterAndSortProducts(
+        allProducts,
+        searchQuery,
+        sortColumn,
+        sortDirection,
+    );
+    const isLoadingProducts =
+        productsQuery.isPending ||
+        productsQuery.isFetching ||
+        createProductMutation.isPending ||
+        updateProductMutation.isPending ||
+        deleteProductMutation.isPending;
 
     const handleSaveNewProduct = async (
         name: string,
@@ -111,23 +86,20 @@ const UpdateProducts = () => {
         priceCents: number,
     ) => {
         try {
-            const existingProductCount = extractCount(await getProductCount());
-            const existingProducts = await fetchProducts(existingProductCount, 0, {
-                sortBy: 'name',
-                sortDir: 'asc',
-            });
-
             if (
-                existingProducts.some(
-                    (product: Product) => product.name.toLowerCase() === name.toLowerCase(),
+                allProducts.some(
+                    (product) => product.name.toLowerCase() === name.toLowerCase(),
                 )
             ) {
                 showAlert(`${name} already exists. Please add a new product.`, 'error');
                 return;
             }
 
-            await createProduct(name, costCents, priceCents);
-            await loadProducts(); // Reload fresh data from backend
+            await createProductMutation.mutateAsync({
+                name,
+                costCents,
+                priceCents,
+            });
             showAlert(`${name} added successfully!`, 'success');
         } catch (error) {
             console.error('Error saving new product:', error);
@@ -135,23 +107,27 @@ const UpdateProducts = () => {
         }
     };
 
-    const handleDeleteProduct = async (productID: string) => {
+    const handleDeleteProduct = async (productId: string) => {
         try {
-            await deleteProduct(productID);
+            await deleteProductMutation.mutateAsync(productId);
             showAlert(`Product deleted successfully!`, 'success');
-            await loadProducts(); // Reload fresh data from backend
         } catch (error) {
             console.error('Error deleting product:', error);
             showAlert('Failed to delete product.', 'error');
+        } finally {
+            setConfirmationOpen(false);
+            setProductToDelete(null);
         }
     };
 
-    const getUserDecision = (confirmed: boolean) => {
-        if (confirmed && slotToDelete !== null) {
-            handleDeleteProduct(slotToDelete);
+    const handleDeleteDecision = (confirmed: boolean) => {
+        if (confirmed && productToDelete !== null) {
+            void handleDeleteProduct(productToDelete);
+            return;
         }
+
         setConfirmationOpen(false);
-        setSlotToDelete(null);
+        setProductToDelete(null);
     };
 
     const handleSaveEditedProduct = async (
@@ -160,25 +136,17 @@ const UpdateProducts = () => {
         priceCents: number,
     ) => {
         try {
-            await updateProductPrice(productId, priceCents);
-
-            await updateProductCost(productId, costCents);
-
-            await loadProducts();
+            await updateProductMutation.mutateAsync({
+                productId,
+                costCents,
+                priceCents,
+            });
             showAlert('Product updated successfully!', 'success');
         } catch (error) {
             console.error('Error updating product:', error);
             showAlert('Failed to update product.', 'error');
         }
     };
-
-    useEffect(() => {
-        loadInventory();
-    }, []);
-
-    useEffect(() => {
-        loadProducts();
-    }, [searchQuery, sortColumn, sortDirection]);
 
     const handleSearchSubmit = (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
@@ -209,8 +177,6 @@ const UpdateProducts = () => {
         <>
             <div className="grid-container">
                 <div className="update-products-grid">
-
-
                     <div className="page-card">
                         <div className="card-header">
                             <div>
@@ -219,8 +185,6 @@ const UpdateProducts = () => {
                                     View and modify all products
                                 </p>
                             </div>
-
-
                         </div>
 
                         <div className="table-toolbar">
@@ -259,13 +223,7 @@ const UpdateProducts = () => {
                                 )}
                             </form>
 
-                            {/* {searchQuery && (
-                                <p className="table-status">
-                                    Showing results for "{searchQuery}"
-                                </p>
-                            )} */}
-
-                                                        <div className="update-products-actions">
+                            <div className="update-products-actions">
                                 <button
                                     className="edit-btn"
                                     onClick={() => setIsEditMode(!isEditMode)}
@@ -289,7 +247,7 @@ const UpdateProducts = () => {
                                 isLoadingProducts ? 'loading-opacity' : ''
                             }`}
                         >
-                            {products.length > 0 ? (
+                            {visibleProducts.length > 0 ? (
                                 <table className="table">
                                     <thead>
                                         <tr>
@@ -330,13 +288,13 @@ const UpdateProducts = () => {
                                     </thead>
 
                                     <tbody>
-                                        {products.map((product, index) => (
+                                        {visibleProducts.map((product, index) => (
                                             <tr
                                                 key={product.id}
                                                 style={
                                                     {
                                                         '--row-index': index,
-                                                    } as React.CSSProperties
+                                                    } as CSSProperties
                                                 }
                                             >
                                                 <td>{product.name}</td>
@@ -373,7 +331,7 @@ const UpdateProducts = () => {
                                                                     setConfirmationOpen(
                                                                         true,
                                                                     );
-                                                                    setSlotToDelete(
+                                                                    setProductToDelete(
                                                                         product.id,
                                                                     );
                                                                 }}
@@ -404,6 +362,7 @@ const UpdateProducts = () => {
 
                 {isEditProductModalOpen && selectedProduct && (
                     <EditProductModal
+                        key={selectedProduct.id}
                         isOpen={isEditProductModalOpen}
                         onClose={() => setIsEditProductModalOpen(false)}
                         onSave={handleSaveEditedProduct}
@@ -415,7 +374,7 @@ const UpdateProducts = () => {
                     <ConfirmationModal
                         isOpen={confirmationOpen}
                         onClose={() => setConfirmationOpen(false)}
-                        onConfirm={getUserDecision}
+                        onConfirm={handleDeleteDecision}
                         title="Are you sure?"
                         message="This action cannot be undone. Please confirm if you want to proceed."
                     />

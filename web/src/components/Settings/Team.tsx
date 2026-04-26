@@ -1,80 +1,46 @@
-import { useEffect, useState, type ChangeEvent, type FormEvent } from 'react';
+import { useState, type ChangeEvent, type FormEvent } from 'react';
 import '@styles/Settings/Profile.css';
 import { useAlert } from '@contexts/SnackBarAlertContext';
 import { useAuth } from '@contexts/AuthContext';
 import ConfirmationModal from '@/components/Modals/ConfirmationModal';
 import {
-    createUser,
-    deleteUser,
-    listUsers,
-    updateUserRole,
-    type UserRecord,
-} from '@/services/usersApi';
+    useCreateUserMutation,
+    useDeleteUserMutation,
+    useUpdateUserRoleMutation,
+    useUsers,
+} from '@/hooks/useUsers';
 import {
     getPasswordValidationMessage,
     isPasswordComplexEnough,
 } from '@/utils/passwordValidation';
+import type { UserRecord } from '@/services/types';
 
 const Team = () => {
     const { session } = useAuth();
     const { showAlert } = useAlert();
-    const [users, setUsers] = useState<UserRecord[]>([]);
+    const usersQuery = useUsers();
+    const createUserMutation = useCreateUserMutation();
+    const updateRoleMutation = useUpdateUserRoleMutation();
+    const deleteUserMutation = useDeleteUserMutation();
+
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [role, setRole] = useState<'admin' | 'worker'>('worker');
-    const [isLoading, setIsLoading] = useState(true);
-    const [isSubmitting, setIsSubmitting] = useState(false);
     const [busyUserId, setBusyUserId] = useState<string | null>(null);
     const [pendingDeleteUser, setPendingDeleteUser] = useState<UserRecord | null>(null);
     const passwordValidationMessage = getPasswordValidationMessage(password);
-
-    useEffect(() => {
-        if (!session) {
-            return;
-        }
-
-        let isActive = true;
-
-        const loadUsers = async () => {
-            setIsLoading(true);
-            try {
-                const nextUsers = await listUsers(session.accessToken);
-                if (isActive) {
-                    setUsers(nextUsers);
-                }
-            } catch {
-                if (isActive) {
-                    showAlert('Failed to load users.', 'error');
-                }
-            } finally {
-                if (isActive) {
-                    setIsLoading(false);
-                }
-            }
-        };
-
-        void loadUsers();
-
-        return () => {
-            isActive = false;
-        };
-    }, [session, showAlert]);
+    const users = usersQuery.data ?? [];
+    const isLoading = usersQuery.isPending || usersQuery.isFetching;
 
     if (!session) {
         return null;
     }
 
-    const refreshUsers = async () => {
-        const nextUsers = await listUsers(session.accessToken);
-        setUsers(nextUsers);
-    };
-
     const handleCreateUser = async (event: FormEvent<HTMLFormElement>) => {
         event.preventDefault();
-        setIsSubmitting(true);
 
         try {
-            await createUser(session.accessToken, {
+            await createUserMutation.mutateAsync({
                 email: email.trim(),
                 password,
                 role,
@@ -82,15 +48,12 @@ const Team = () => {
             setEmail('');
             setPassword('');
             setRole('worker');
-            await refreshUsers();
             showAlert('User created successfully.', 'success');
         } catch (error) {
             showAlert(
                 error instanceof Error ? error.message : 'Failed to create user.',
                 'error',
             );
-        } finally {
-            setIsSubmitting(false);
         }
     };
 
@@ -102,12 +65,13 @@ const Team = () => {
         setBusyUserId(userId);
 
         try {
-            await updateUserRole(session.accessToken, userId, nextRole);
-            await refreshUsers();
+            await updateRoleMutation.mutateAsync({
+                userId,
+                role: nextRole,
+            });
             showAlert('Role updated successfully.', 'success');
         } catch {
             showAlert('Failed to update role.', 'error');
-            await refreshUsers().catch(() => undefined);
         } finally {
             setBusyUserId(null);
         }
@@ -122,10 +86,7 @@ const Team = () => {
         setBusyUserId(deletedUser.userId);
 
         try {
-            await deleteUser(session.accessToken, deletedUser.userId);
-            setUsers((currentUsers) =>
-                currentUsers.filter((user) => user.userId !== deletedUser.userId),
-            );
+            await deleteUserMutation.mutateAsync(deletedUser.userId);
             showAlert('User deleted.', 'success');
         } catch (error) {
             showAlert(
@@ -238,13 +199,13 @@ const Team = () => {
                         <button
                             className="table-control-btn"
                             disabled={
-                                isSubmitting ||
+                                createUserMutation.isPending ||
                                 !email.trim() ||
                                 !isPasswordComplexEnough(password)
                             }
                             type="submit"
                         >
-                            {isSubmitting ? 'Adding...' : 'Add User'}
+                            {createUserMutation.isPending ? 'Adding...' : 'Add User'}
                         </button>
                     </div>
                 </form>
@@ -253,9 +214,7 @@ const Team = () => {
             <section className="profile-card settings-panel settings-table-panel">
                 <div className="table-toolbar">
                     <p className="table-status">
-                        {isLoading
-                            ? 'Loading team members.'
-                            : handleVisibleRowCount()}
+                        {isLoading ? 'Loading team members.' : handleVisibleRowCount()}
                     </p>
                 </div>
 

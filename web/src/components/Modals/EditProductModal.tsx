@@ -1,12 +1,5 @@
 import { useState } from 'react';
-
-interface Product {
-    id: string;
-    name: string;
-    priceCents: number;
-    costCents: number;
-    dateCreated: string;
-}
+import type { Product } from '@/services/types';
 
 interface EditProductModalProps {
     isOpen: boolean;

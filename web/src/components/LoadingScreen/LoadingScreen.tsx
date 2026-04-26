@@ -104,9 +104,7 @@ const LoadingScreen = ({
                     <div className="dashboard-btn login-actions">
                         <button
                             className="view-inventory"
-                            disabled={
-                                auth.status === 'loading' || !email.trim() || !password
-                            }
+                            disabled={!email.trim() || !password}
                             type="submit"
                         >
                             Sign In

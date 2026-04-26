@@ -3,7 +3,10 @@ import type { ReactNode } from 'react';
 import { Snackbar, Alert as MuiAlert } from '@mui/material';
 
 interface AlertContextType {
-    showAlert: (message: string, severity: 'success' | 'error') => void;
+    showAlert: (
+        message: string,
+        severity: 'success' | 'error' | 'warning' | 'info',
+    ) => void;
 }
 
 // Create the context box
@@ -26,10 +29,13 @@ const AlertProvider = ({ children }: AlertProviderProps) => {
     const [snackbar, setSnackbar] = useState({
         open: false,
         message: '',
-        severity: 'success' as 'success' | 'error',
+        severity: 'success' as 'success' | 'error' | 'warning' | 'info',
     });
 
-    const showAlert = (message: string, severity: 'success' | 'error') => {
+    const showAlert = (
+        message: string,
+        severity: 'success' | 'error' | 'warning' | 'info',
+    ) => {
         setSnackbar({ open: true, message, severity });
     };
 

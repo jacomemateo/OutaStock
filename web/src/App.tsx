@@ -7,9 +7,9 @@ import { Navigate, Route, Routes } from 'react-router-dom';
 import LoadingScreen from '@/components/LoadingScreen/LoadingScreen';
 import ProtectedRoute from '@/components/LoadingScreen/ProtectedRoute';
 import Template from '@components/Template';
-import AlertProvider from '@contexts/SnackBarAlertContext';
 import { useTheme } from '@contexts/ThemeContext';
 import { useEffect } from 'react';
+import { WebSocketProvider } from '@/realtime/WebSocketProvider';
 
 function App() {
     const { theme } = useTheme();
@@ -19,7 +19,7 @@ function App() {
     }, [theme]);
 
     return (
-        <AlertProvider>
+        <WebSocketProvider>
             <Routes>
                 <Route path="/" element={<LoadingScreen />} />
                 <Route
@@ -32,7 +32,7 @@ function App() {
                 />
                 <Route path="*" element={<Navigate replace to="/" />} />
             </Routes>
-        </AlertProvider>
+        </WebSocketProvider>
     );
 }
 

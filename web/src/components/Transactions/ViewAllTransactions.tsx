@@ -4,61 +4,30 @@ import '@styles/Utils/Buttons.css';
 import '@styles/Utils/TableUtils.css';
 import '@styles/Utils/PageLayout.css';
 
-import { useState, useEffect } from 'react';
-import { fetchTransactions, getTransactionCount } from '@/services/api';
-
-type Transaction = {
-    id: string;
-    productName: string;
-    priceAtSaleCents: number;
-    dateSold: string;
-};
+import { useState, type CSSProperties } from 'react';
+import { useTransactions } from '@/hooks/useTransactions';
 
 type SortColumn = 'product' | 'date' | 'price';
 type SortDirection = 'asc' | 'desc';
 
 const ViewAllTransactions = () => {
-    const [transactions, setTransactions] = useState<Transaction[]>([]);
-    const [totalItems, setTotalItems] = useState(0);
     const [currentPage, setCurrentPage] = useState(1);
-    const [isLoading, setIsLoading] = useState(false);
-
     const [sortColumn, setSortColumn] = useState<SortColumn>('date');
     const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
     const [searchInput, setSearchInput] = useState('');
     const [searchQuery, setSearchQuery] = useState('');
 
     const itemsPerPage = 20;
-
-    const extractCount = (countData: unknown) =>
-        typeof countData === 'number'
-            ? countData
-            : Number((countData as { count?: number })?.count ?? 0);
-
-    const loadTransactions = async () => {
-        setIsLoading(true);
-        try {
-            const countData = await getTransactionCount(searchQuery);
-            const total = extractCount(countData);
-            setTotalItems(total);
-
-            const data = await fetchTransactions(itemsPerPage, currentPage - 1, {
-                search: searchQuery,
-                sortBy: sortColumn,
-                sortDir: sortDirection,
-            });
-
-            setTransactions(data);
-        } catch (error) {
-            console.error('Failed to load transactions', error);
-        } finally {
-            setIsLoading(false);
-        }
-    };
-
-    useEffect(() => {
-        loadTransactions();
-    }, [currentPage, sortColumn, sortDirection, searchQuery]);
+    const transactionsQuery = useTransactions({
+        numRows: itemsPerPage,
+        pageOffset: currentPage - 1,
+        search: searchQuery,
+        sortBy: sortColumn,
+        sortDir: sortDirection,
+    });
+    const transactions = transactionsQuery.data?.items ?? [];
+    const totalItems = transactionsQuery.data?.total ?? 0;
+    const isLoading = transactionsQuery.isPending || transactionsQuery.isFetching;
 
     const handleSort = (column: SortColumn) => {
         if (sortColumn !== column) {
@@ -101,56 +70,46 @@ const ViewAllTransactions = () => {
                             </p>
                         </div>
 
-                                            <div className="table-toolbar">
-                        <form
-                            className="table-search-form"
-                            onSubmit={handleSearchSubmit}
-                        >
-                            <input
-                                className="table-search-input"
-                                type="search"
-                                value={searchInput}
-                                onChange={(event) =>
-                                    setSearchInput(event.target.value)
-                                }
-                                placeholder="Search by product name"
-                                aria-label="Search transactions by product name"
-                            />
-
-                            <button
-                                className="table-control-btn"
-                                type="submit"
-                                disabled={isLoading}
+                        <div className="table-toolbar">
+                            <form
+                                className="table-search-form"
+                                onSubmit={handleSearchSubmit}
                             >
-                                Search
-                            </button>
+                                <input
+                                    className="table-search-input"
+                                    type="search"
+                                    value={searchInput}
+                                    onChange={(event) =>
+                                        setSearchInput(event.target.value)
+                                    }
+                                    placeholder="Search by product name"
+                                    aria-label="Search transactions by product name"
+                                />
 
-                            {(searchInput || searchQuery) && (
                                 <button
-                                    className="table-control-btn-secondary"
-                                    type="button"
-                                    onClick={handleClearSearch}
+                                    className="table-control-btn"
+                                    type="submit"
                                     disabled={isLoading}
                                 >
-                                    Clear
+                                    Search
                                 </button>
-                            )}
-                        </form>
 
-                        {/* {searchQuery && (
-                            <p className="table-status">
-                                Showing results for "{searchQuery}"
-                            </p>
-                        )} */}
+                                {(searchInput || searchQuery) && (
+                                    <button
+                                        className="table-control-btn-secondary"
+                                        type="button"
+                                        onClick={handleClearSearch}
+                                        disabled={isLoading}
+                                    >
+                                        Clear
+                                    </button>
+                                )}
+                            </form>
+                        </div>
                     </div>
-                    </div>
-
-
 
                     <div
-                        className={`table-list ${
-                            isLoading ? 'loading-opacity' : ''
-                        }`}
+                        className={`table-list ${isLoading ? 'loading-opacity' : ''}`}
                     >
                         {transactions.length > 0 ? (
                             <table className="table">
@@ -160,9 +119,7 @@ const ViewAllTransactions = () => {
                                             <button
                                                 className="table-sort-button"
                                                 type="button"
-                                                onClick={() =>
-                                                    handleSort('product')
-                                                }
+                                                onClick={() => handleSort('product')}
                                             >
                                                 Product {getSortIcon('product')}
                                             </button>
@@ -172,12 +129,9 @@ const ViewAllTransactions = () => {
                                             <button
                                                 className="table-sort-button"
                                                 type="button"
-                                                onClick={() =>
-                                                    handleSort('date')
-                                                }
+                                                onClick={() => handleSort('date')}
                                             >
-                                                Date & Time{' '}
-                                                {getSortIcon('date')}
+                                                Date & Time {getSortIcon('date')}
                                             </button>
                                         </th>
 
@@ -185,9 +139,7 @@ const ViewAllTransactions = () => {
                                             <button
                                                 className="table-sort-button"
                                                 type="button"
-                                                onClick={() =>
-                                                    handleSort('price')
-                                                }
+                                                onClick={() => handleSort('price')}
                                             >
                                                 Price {getSortIcon('price')}
                                             </button>
@@ -198,17 +150,16 @@ const ViewAllTransactions = () => {
                                 <tbody>
                                     {transactions.map((transaction, index) => {
                                         const dateObj = new Date(
-                                            transaction.dateSold,
+                                            transaction.dateSold ?? '',
                                         );
 
-                                        const dateTime =
-                                            dateObj.toLocaleString([], {
-                                                year: 'numeric',
-                                                month: 'short',
-                                                day: 'numeric',
-                                                hour: '2-digit',
-                                                minute: '2-digit',
-                                            });
+                                        const dateTime = dateObj.toLocaleString([], {
+                                            year: 'numeric',
+                                            month: 'short',
+                                            day: 'numeric',
+                                            hour: '2-digit',
+                                            minute: '2-digit',
+                                        });
 
                                         return (
                                             <tr
@@ -216,12 +167,10 @@ const ViewAllTransactions = () => {
                                                 style={
                                                     {
                                                         '--row-index': index,
-                                                    } as React.CSSProperties
+                                                    } as CSSProperties
                                                 }
                                             >
-                                                <td>
-                                                    {transaction.productName}
-                                                </td>
+                                                <td>{transaction.productName}</td>
 
                                                 <td>{dateTime}</td>
 
@@ -238,9 +187,7 @@ const ViewAllTransactions = () => {
                                 </tbody>
                             </table>
                         ) : (
-                            <p className="no-transactions">
-                                No transactions found
-                            </p>
+                            <p className="no-transactions">No transactions found</p>
                         )}
                     </div>
 
@@ -249,7 +196,7 @@ const ViewAllTransactions = () => {
                             <button
                                 className="pagination-btn"
                                 onClick={() =>
-                                    setCurrentPage((p) => Math.max(1, p - 1))
+                                    setCurrentPage((page) => Math.max(1, page - 1))
                                 }
                                 disabled={currentPage === 1 || isLoading}
                             >
@@ -262,12 +209,8 @@ const ViewAllTransactions = () => {
 
                             <button
                                 className="pagination-btn"
-                                onClick={() =>
-                                    setCurrentPage((p) => p + 1)
-                                }
-                                disabled={
-                                    currentPage === totalPages || isLoading
-                                }
+                                onClick={() => setCurrentPage((page) => page + 1)}
+                                disabled={currentPage === totalPages || isLoading}
                             >
                                 Next
                             </button>

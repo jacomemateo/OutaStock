@@ -1,54 +1,20 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import '@styles/Settings/Profile.css';
 import { useAlert } from '@contexts/SnackBarAlertContext';
-import { useAuth } from '@contexts/AuthContext';
-import { fetchSettings, updateLowStockThreshold } from '@/services/settingsApi';
+import { useSettings, useUpdateLowStockThresholdMutation } from '@/hooks/useSettings';
 
 const Thresholds = () => {
-    const { session } = useAuth();
     const { showAlert } = useAlert();
-    const [currentThreshold, setCurrentThreshold] = useState<number | null>(null);
-    const [draftThreshold, setDraftThreshold] = useState('');
-    const [isLoading, setIsLoading] = useState(true);
-    const [isSaving, setIsSaving] = useState(false);
+    const settingsQuery = useSettings();
+    const updateThresholdMutation = useUpdateLowStockThresholdMutation();
+    const [draftThresholdOverride, setDraftThresholdOverride] = useState<string | null>(
+        null,
+    );
 
-    useEffect(() => {
-        if (!session) {
-            return;
-        }
-
-        let isActive = true;
-
-        const loadSettings = async () => {
-            setIsLoading(true);
-            try {
-                const settings = await fetchSettings(session.accessToken);
-                if (!isActive) {
-                    return;
-                }
-                setCurrentThreshold(settings.lowStockThreshold);
-                setDraftThreshold(String(settings.lowStockThreshold));
-            } catch {
-                if (isActive) {
-                    showAlert('Failed to load settings.', 'error');
-                }
-            } finally {
-                if (isActive) {
-                    setIsLoading(false);
-                }
-            }
-        };
-
-        void loadSettings();
-
-        return () => {
-            isActive = false;
-        };
-    }, [session, showAlert]);
-
-    if (!session) {
-        return null;
-    }
+    const currentThreshold = settingsQuery.data?.lowStockThreshold ?? null;
+    const isLoading = settingsQuery.isPending;
+    const draftThreshold =
+        draftThresholdOverride ?? (currentThreshold === null ? '' : String(currentThreshold));
 
     const parsedThreshold = Number(draftThreshold);
     const isThresholdValid =
@@ -63,19 +29,12 @@ const Thresholds = () => {
             return;
         }
 
-        setIsSaving(true);
         try {
-            const nextSettings = await updateLowStockThreshold(
-                session.accessToken,
-                parsedThreshold,
-            );
-            setCurrentThreshold(nextSettings.lowStockThreshold);
-            setDraftThreshold(String(nextSettings.lowStockThreshold));
+            await updateThresholdMutation.mutateAsync(parsedThreshold);
+            setDraftThresholdOverride(null);
             showAlert('Low-stock threshold updated.', 'success');
         } catch {
             showAlert('Failed to update the threshold.', 'error');
-        } finally {
-            setIsSaving(false);
         }
     };
 
@@ -95,7 +54,9 @@ const Thresholds = () => {
                         <span>Low-stock threshold</span>
                         <input
                             min="0"
-                            onChange={(event) => setDraftThreshold(event.target.value)}
+                            onChange={(event) =>
+                                setDraftThresholdOverride(event.target.value)
+                            }
                             type="number"
                             value={draftThreshold}
                         />
@@ -112,12 +73,17 @@ const Thresholds = () => {
                     <button
                         className="table-control-btn"
                         disabled={
-                            isLoading || isSaving || !isThresholdValid || isUnchanged
+                            isLoading ||
+                            updateThresholdMutation.isPending ||
+                            !isThresholdValid ||
+                            isUnchanged
                         }
                         onClick={() => void handleSave()}
                         type="button"
                     >
-                        {isSaving ? 'Saving...' : 'Save Threshold'}
+                        {updateThresholdMutation.isPending
+                            ? 'Saving...'
+                            : 'Save Threshold'}
                     </button>
                 </div>
             </section>
