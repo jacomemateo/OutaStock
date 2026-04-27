@@ -25,7 +25,17 @@ export interface TransactionQueryParams {
     numRows: number;
 }
 
+export type AnalyticsRange = 7 | 30 | 90;
+
 export const queryKeys = {
+    analytics: {
+        all: ['analytics'] as const,
+        revenue: (range: AnalyticsRange) => ['analytics', 'revenue', range] as const,
+        topProducts: (range: AnalyticsRange) =>
+            ['analytics', 'top-products', range] as const,
+        inventoryHealth: () => ['analytics', 'inventory-health'] as const,
+        heatmap: () => ['analytics', 'heatmap'] as const,
+    },
     inventory: {
         all: ['inventory'] as const,
         list: (params: InventoryQueryParams) => ['inventory', params] as const,
@@ -53,6 +63,7 @@ export const queryKeys = {
 } as const;
 
 export const serverStateRoots = [
+    queryKeys.analytics.all[0],
     queryKeys.inventory.all[0],
     queryKeys.products.all[0],
     queryKeys.metrics.all[0],

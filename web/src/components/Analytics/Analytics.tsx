@@ -17,15 +17,10 @@ import {
 } from 'recharts';
 import { useAuth } from '@contexts/AuthContext';
 import {
-    fetchHeatmap,
-    fetchInventoryHealth,
-    fetchRevenue,
-    fetchTopProducts,
-    type DailyRevenueRow,
-    type HeatmapRow,
     type InventoryHealthResponse,
     type TopProductRow,
 } from '@/services/analyticsApi';
+import { useAnalytics } from '@/hooks/useAnalytics';
 import ChartTooltip from '@/components/Analytics/ChartTooltip';
 import './Analytics.css';
 
@@ -99,36 +94,18 @@ const Analytics = () => {
     const svgRef = useRef<SVGSVGElement>(null);
 
     const [range, setRange] = useState<7 | 30 | 90>(30);
-    const [revenueData, setRevenueData] = useState<DailyRevenueRow[]>([]);
-    const [topProducts, setTopProducts] = useState<TopProductRow[]>([]);
-    const [inventoryHealth, setInventoryHealth] = useState<InventoryHealthResponse | null>(null);
-    const [heatmapData, setHeatmapData] = useState<HeatmapRow[]>([]);
-    const [loading, setLoading] = useState(true);
     const [topProductsMode, setTopProductsMode] = useState<'units' | 'profit'>('units');
     const [marginMode, setMarginMode] = useState<'percent' | 'absolute'>('percent');
     const [selectedDate, setSelectedDate] = useState<string | null>(null);
-
-    useEffect(() => {
-        if (!session) {
-            return;
-        }
-
-        setLoading(true);
-        Promise.all([
-            fetchRevenue(session.accessToken, range),
-            fetchTopProducts(session.accessToken, range),
-            fetchInventoryHealth(session.accessToken),
-            fetchHeatmap(session.accessToken),
-        ])
-            .then(([rev, top, inv, heat]) => {
-                setRevenueData(rev);
-                setTopProducts(top);
-                setInventoryHealth(inv);
-                setHeatmapData(heat);
-            })
-            .catch(console.error)
-            .finally(() => setLoading(false));
-    }, [range, session]);
+    const {
+        revenueData,
+        topProducts,
+        inventoryHealth,
+        heatmapData,
+        isPending,
+        isFetching,
+    } = useAnalytics(range, session?.accessToken ?? null);
+    const loading = isPending || (isFetching && revenueData.length === 0 && !inventoryHealth);
 
     useEffect(() => {
         if (selectedDate && !revenueData.some((row) => row.date === selectedDate)) {
@@ -344,7 +321,7 @@ const Analytics = () => {
                     </div>
                 </div>
 
-                {loading && revenueData.length === 0 && !inventoryHealth ? (
+                {loading ? (
                     <div className="analytics-loading">Loading analytics...</div>
                 ) : null}
 
