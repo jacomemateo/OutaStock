@@ -3,7 +3,7 @@ import '@styles/Alerts/Alerts.css';
 const Alerts = () => {
     return (
         <div className="grid-container">
-            <div className="analytics-grid">
+            <div className="alerts-grid">
                 <div className="page-card">
                     <div className="card-header">
                         <div>

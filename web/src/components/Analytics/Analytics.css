@@ -1,0 +1,259 @@
+.analytics-grid-container {
+    padding-top: calc(var(--container-padding) * 0.8);
+    padding-bottom: calc(var(--container-padding) * 0.9);
+    padding-left: calc(var(--container-padding) * 1.1);
+    padding-right: calc(var(--container-padding) * 1.1);
+    overflow: auto;
+}
+
+/* ── Page layout ─────────────────────────────────────────────────────── */
+.analytics-page {
+    display: flex;
+    flex-direction: column;
+    gap: calc(var(--container-grid-gap-small) * 0.65);
+    flex: 1;
+    min-height: 0;
+}
+
+/* ── Date range selector ─────────────────────────────────────────────── */
+.analytics-range-selector {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+/* ── Chart grid ──────────────────────────────────────────────────────── */
+.analytics-charts-row {
+    display: grid;
+    gap: calc(var(--container-grid-gap-small) * 0.7);
+}
+
+.analytics-charts-row-1 {
+    grid-template-columns: 2fr 1.5fr 1fr;
+}
+
+.analytics-charts-row-2 {
+    grid-template-columns: 1.5fr 1fr;
+}
+
+/* ── Chart card (extends .page-card) ─────────────────────────────────── */
+.chart-card {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    padding: calc(var(--container-padding) * 0.75);
+}
+
+.chart-card .card-header {
+    margin-bottom: calc(var(--container-grid-gap-small) * 0.45);
+    padding-bottom: calc(var(--container-grid-gap-small) * 0.35);
+}
+
+.analytics-page .metric-card {
+    min-height: 132px;
+    padding: calc(var(--container-padding) * 0.65);
+    gap: calc(var(--container-grid-gap-small) * 0.22);
+}
+
+.analytics-page .metric-card-subtitle {
+    max-width: none;
+}
+
+.analytics-page .metric-card-value {
+    font-size: clamp(1.9rem, 3.2vw, 2.5rem);
+}
+
+.chart-fixed-region {
+    width: 100%;
+    flex: 1;
+    min-height: 0;
+}
+
+.chart-fixed-region-lg {
+    height: 220px;
+}
+
+.chart-fixed-region-md {
+    height: 210px;
+}
+
+.chart-scroll-region {
+    flex: 1;
+    min-height: 0;
+    max-height: 220px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding-right: calc(var(--container-grid-gap-small) * 0.1);
+    scrollbar-color: var(--umbc-gold) var(--darker-black);
+}
+
+.chart-scroll-region::-webkit-scrollbar {
+    width: 8px;
+}
+
+.chart-scroll-region::-webkit-scrollbar-track {
+    background: var(--darker-black);
+}
+
+.chart-scroll-region::-webkit-scrollbar-thumb {
+    background: var(--umbc-gold);
+    border-radius: var(--container-radius);
+}
+
+.chart-scroll-canvas {
+    width: 100%;
+    min-height: 180px;
+}
+
+/* ── Toggle pill for chart modes ─────────────────────────────────────── */
+.chart-toggle {
+    display: flex;
+    gap: 0.25rem;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.chart-toggle .table-control-btn,
+.chart-toggle .table-control-btn-secondary {
+    border-radius: 0;
+    padding: 0.4rem 0.75rem;
+    font-size: var(--text-xs);
+}
+
+.chart-toggle .table-control-btn:first-child,
+.chart-toggle .table-control-btn-secondary:first-child {
+    border-radius: 6px 0 0 6px;
+}
+
+.chart-toggle .table-control-btn:last-child,
+.chart-toggle .table-control-btn-secondary:last-child {
+    border-radius: 0 6px 6px 0;
+}
+
+/* ── Recharts overrides ──────────────────────────────────────────────── */
+.recharts-cartesian-grid-horizontal line,
+.recharts-cartesian-grid-vertical line {
+    stroke: var(--lighter-black);
+    stroke-opacity: 0.6;
+}
+
+.recharts-text,
+.recharts-cartesian-axis-tick-value {
+    fill: var(--text-secondary);
+    font-size: var(--text-2xs);
+}
+
+.recharts-legend-item-text {
+    color: var(--text-secondary) !important;
+    font-size: var(--text-xs);
+}
+
+/* ── Custom tooltip ──────────────────────────────────────────────────── */
+.chart-tooltip {
+    background: var(--container-bg);
+    border: var(--border-color);
+    border-radius: var(--container-radius);
+    padding: 0.65rem 0.9rem;
+    box-shadow: var(--shadow-soft);
+    font-size: var(--text-xs);
+    pointer-events: none;
+}
+
+.chart-tooltip-label {
+    font-weight: var(--weight-semibold);
+    color: var(--text-primary);
+    margin: 0 0 0.4rem;
+    font-size: var(--text-xs);
+}
+
+.chart-tooltip-row {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    margin: 0.15rem 0;
+    color: var(--text-secondary);
+}
+
+.chart-selected-date {
+    font-size: var(--text-xs);
+    color: var(--text-muted);
+    margin: calc(var(--container-grid-gap-small) * 0.2) 0 0;
+    text-align: center;
+}
+
+/* ── Heatmap ─────────────────────────────────────────────────────────── */
+.heatmap-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: calc(var(--container-grid-gap-small) * 0.2);
+    align-items: flex-start;
+    flex: 1;
+}
+
+.heatmap-day-labels {
+    display: grid;
+    grid-template-columns: repeat(7, 38px);
+    gap: 6px;
+}
+
+.heatmap-day-labels span {
+    font-size: var(--text-2xs);
+    color: var(--text-muted);
+    text-align: center;
+    font-weight: var(--weight-medium);
+}
+
+.heatmap-cell {
+    cursor: default;
+    transition: opacity 0.15s ease;
+}
+
+.heatmap-cell:hover {
+    opacity: 0.8;
+}
+
+.heatmap-legend {
+    display: flex;
+    align-items: center;
+    gap: calc(var(--container-grid-gap-small) * 0.2);
+    margin-top: calc(var(--container-grid-gap-small) * 0.1);
+}
+
+.heatmap-legend span {
+    font-size: var(--text-2xs);
+    color: var(--text-muted);
+}
+
+.heatmap-legend-bar {
+    width: 80px;
+    height: 10px;
+    border-radius: 4px;
+    background: linear-gradient(to right, var(--lighter-black), var(--umbc-gold));
+}
+
+/* ── Loading state ───────────────────────────────────────────────────── */
+.analytics-loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 200px;
+    color: var(--text-muted);
+    font-size: var(--text-sm);
+}
+
+/* ── Responsive ──────────────────────────────────────────────────────── */
+@media (max-width: 1120px) {
+    .analytics-grid-container {
+        padding-left: var(--container-padding);
+        padding-right: var(--container-padding);
+    }
+
+    .analytics-charts-row-1,
+    .analytics-charts-row-2 {
+        grid-template-columns: 1fr;
+    }
+
+    .chart-scroll-region {
+        max-height: 260px;
+    }
+}
