@@ -196,7 +196,7 @@ const Analytics = () => {
             ? right.unitsSold - left.unitsSold
             : right.profitCents - left.profitCents,
     );
-    const topProductsChartHeight = Math.max(180, sortedProducts.length * 34);
+    const topProductsChartHeight = Math.max(160, sortedProducts.length * 30);
 
     const inventorySlots =
         inventoryHealth?.slots.map((slot) => ({
@@ -226,7 +226,7 @@ const Analytics = () => {
                 ? right.marginPct - left.marginPct
                 : right.profitCents - left.profitCents,
         );
-    const marginChartHeight = Math.max(180, marginData.length * 34);
+    const marginChartHeight = Math.max(160, marginData.length * 30);
 
     const handleRevenueChartClick = (state: {
         activeLabel?: string;
@@ -310,35 +310,37 @@ const Analytics = () => {
                             </div>
                         </div>
                         <div className="chart-fixed-region chart-fixed-region-lg">
-                            <ResponsiveContainer width="100%" height="100%">
-                                <LineChart data={revenueData} onClick={handleRevenueChartClick}>
-                                    <CartesianGrid strokeDasharray="3 3" className="chart-grid" />
-                                    <XAxis dataKey="date" />
-                                    <YAxis
-                                        tickFormatter={(value: number) =>
-                                            compactCurrencyFormatter.format(value / 100)
-                                        }
-                                    />
-                                    <Tooltip content={<ChartTooltip />} />
-                                    <Legend />
-                                    <Line
-                                        dataKey="revenueCents"
-                                        name="Revenue"
-                                        stroke="var(--umbc-gold)"
-                                        type="monotone"
-                                        strokeWidth={2}
-                                        dot={false}
-                                    />
-                                    <Line
-                                        dataKey="profitCents"
-                                        name="Profit"
-                                        stroke="#4ade80"
-                                        type="monotone"
-                                        strokeWidth={2}
-                                        dot={false}
-                                    />
-                                </LineChart>
-                            </ResponsiveContainer>
+                            <div className="chart-inner-frame">
+                                <ResponsiveContainer width="100%" height="100%">
+                                    <LineChart data={revenueData} onClick={handleRevenueChartClick}>
+                                        <CartesianGrid strokeDasharray="3 3" className="chart-grid" />
+                                        <XAxis dataKey="date" />
+                                        <YAxis
+                                            tickFormatter={(value: number) =>
+                                                compactCurrencyFormatter.format(value / 100)
+                                            }
+                                        />
+                                        <Tooltip content={<ChartTooltip />} />
+                                        <Legend />
+                                        <Line
+                                            dataKey="revenueCents"
+                                            name="Revenue"
+                                            stroke="var(--umbc-gold)"
+                                            type="monotone"
+                                            strokeWidth={2}
+                                            dot={false}
+                                        />
+                                        <Line
+                                            dataKey="profitCents"
+                                            name="Profit"
+                                            stroke="#4ade80"
+                                            type="monotone"
+                                            strokeWidth={2}
+                                            dot={false}
+                                        />
+                                    </LineChart>
+                                </ResponsiveContainer>
+                            </div>
                         </div>
                         <p className="chart-selected-date">
                             {selectedDate
@@ -438,29 +440,31 @@ const Analytics = () => {
                             </div>
                         </div>
                         <div className="chart-fixed-region chart-fixed-region-md">
-                            <ResponsiveContainer width="100%" height="100%">
-                                <BarChart data={inventorySlots}>
-                                    <CartesianGrid strokeDasharray="3 3" className="chart-grid" />
-                                    <XAxis dataKey="slotId" />
-                                    <YAxis />
-                                    <Tooltip content={<ChartTooltip />} />
-                                    <Bar
-                                        dataKey="quantity"
-                                        name="Quantity"
-                                        radius={[4, 4, 0, 0]}
-                                    >
-                                        {inventorySlots.map((slot, index) => (
-                                            <Cell
-                                                key={`${slot.slotId}-${index}`}
-                                                fill={slotColor(
-                                                    slot.quantity,
-                                                    inventoryHealth?.threshold ?? 0,
-                                                )}
-                                            />
-                                        ))}
-                                    </Bar>
-                                </BarChart>
-                            </ResponsiveContainer>
+                            <div className="chart-inner-frame">
+                                <ResponsiveContainer width="100%" height="100%">
+                                    <BarChart data={inventorySlots}>
+                                        <CartesianGrid strokeDasharray="3 3" className="chart-grid" />
+                                        <XAxis dataKey="slotId" />
+                                        <YAxis />
+                                        <Tooltip content={<ChartTooltip />} />
+                                        <Bar
+                                            dataKey="quantity"
+                                            name="Quantity"
+                                            radius={[4, 4, 0, 0]}
+                                        >
+                                            {inventorySlots.map((slot, index) => (
+                                                <Cell
+                                                    key={`${slot.slotId}-${index}`}
+                                                    fill={slotColor(
+                                                        slot.quantity,
+                                                        inventoryHealth?.threshold ?? 0,
+                                                    )}
+                                                />
+                                            ))}
+                                        </Bar>
+                                    </BarChart>
+                                </ResponsiveContainer>
+                            </div>
                         </div>
                     </div>
                 </div>
