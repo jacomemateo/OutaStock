@@ -16,14 +16,15 @@ import (
 )
 
 type Router struct {
-	authHandler     *handlers.AuthHandler
-	usersHandler    *handlers.UsersHandler
-	settingsHandler *handlers.SettingsHandler
-	handlers        []handlers.Handler
-	echo            *echo.Echo
-	database        *service.Database
-	config          *config.Config
-	authService     *service.AuthService
+	authHandler      *handlers.AuthHandler
+	analyticsHandler *handlers.AnalyticsHandler
+	usersHandler     *handlers.UsersHandler
+	settingsHandler  *handlers.SettingsHandler
+	handlers         []handlers.Handler
+	echo             *echo.Echo
+	database         *service.Database
+	config           *config.Config
+	authService      *service.AuthService
 }
 
 func NewRouter(database *service.Database, config *config.Config) (*Router, error) {
@@ -76,9 +77,11 @@ func NewRouter(database *service.Database, config *config.Config) (*Router, erro
 	productsService := service.NewProductsService(database)
 	usersService := service.NewUsersService(database)
 	settingsService := service.NewSettingsService(database)
+	analyticsService := service.NewAnalyticsService(database)
 
 	r.authService = authService
 	r.authHandler = handlers.NewAuthHandler(authService)
+	r.analyticsHandler = handlers.NewAnalyticsHandler(analyticsService, settingsService)
 	r.usersHandler = handlers.NewUsersHandler(usersService, authService)
 	r.settingsHandler = handlers.NewSettingsHandler(settingsService)
 
@@ -153,6 +156,7 @@ func (r *Router) addRoutes() {
 		h.RegisterRoutes(protectedAPI)
 	}
 
+	r.analyticsHandler.RegisterRoutes(protectedAPI)
 	r.settingsHandler.RegisterRoutes(protectedAPI, adminAPI)
 	r.usersHandler.RegisterRoutes(protectedAPI, adminAPI)
 }
