@@ -1,0 +1,7 @@
+.alerts-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--container-grid-gap);
+    flex: 1;
+    min-height: 0;
+}
