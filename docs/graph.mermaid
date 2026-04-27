@@ -1,0 +1,191 @@
+mindmap
+  root((OutaStock))
+    Architecture
+      Frontend state: TanStack Query + React Context + component-local state
+      Backend pattern: cmd -> transport -> handlers -> services -> sqlc repository
+      Infra: Docker Compose + Caddy + GitHub Actions + Air + sqlc
+    Infrastructure & Ops
+      .air.toml
+      .env
+      .env.dev
+      .env.example
+      backend.env.example
+      .gitignore
+      Caddyfile
+      Caddyfile.dev
+      Taskfile.yml
+      docker-compose.yml
+      docker-compose.dev.yml
+      sqlc.yaml
+      .github/workflows/deploy.yml
+    Backend / Build
+      backend/go.mod
+      backend/go.sum
+      backend/Dockerfile
+      backend/cmd/api/main.go
+      backend/cmd/config.go
+    Backend / Repository
+      backend/internal/repository/001_inventory.sql.go
+      backend/internal/repository/002_product.sql.go
+      backend/internal/repository/003_transaction.sql.go
+      backend/internal/repository/004_users.sql.go
+      backend/internal/repository/005_settings.sql.go
+      backend/internal/repository/006_analytics.sql.go
+      backend/internal/repository/db.go
+      backend/internal/repository/models.go
+    Backend / Services
+      backend/internal/service/analytics_service.go
+      backend/internal/service/auth_service.go
+      backend/internal/service/database.go
+      backend/internal/service/file_upload_service.go
+      backend/internal/service/inventory_service.go
+      backend/internal/service/list_query.go
+      backend/internal/service/products_service.go
+      backend/internal/service/settings_service.go
+      backend/internal/service/transactions_service.go
+      backend/internal/service/users_service.go
+      backend/internal/service/utils.go
+    Backend / Transport
+      backend/internal/transport/http/dto/auth_dto.go
+      backend/internal/transport/http/dto/file_upload_dto.go
+      backend/internal/transport/http/dto/inventory_dto.go
+      backend/internal/transport/http/dto/products_dto.go
+      backend/internal/transport/http/dto/settings_dto.go
+      backend/internal/transport/http/dto/transactions_dto.go
+      backend/internal/transport/http/dto/user_dto.go
+      backend/internal/transport/http/handlers/analytics_handler.go
+      backend/internal/transport/http/handlers/auth_handler.go
+      backend/internal/transport/http/handlers/file_upload_handler.go
+      backend/internal/transport/http/handlers/handler.go
+      backend/internal/transport/http/handlers/inventory_handler.go
+      backend/internal/transport/http/handlers/products_handler.go
+      backend/internal/transport/http/handlers/settings_handler.go
+      backend/internal/transport/http/handlers/transactions_handler.go
+      backend/internal/transport/http/handlers/users_handler.go
+      backend/internal/transport/http/handlers/utils.go
+      backend/internal/transport/http/middleware/jwt_auth.go
+      backend/internal/transport/router.go
+      backend/internal/validation/validation.go
+    Database / Migrations
+      db/migrations/001_create_tables.sql
+      db/migrations/002_populate_tables.sql
+      db/migrations/003_triggers.sql
+      db/migrations/004_create_users.sql
+    Database / Queries
+      db/queries/001_inventory.sql
+      db/queries/002_product.sql
+      db/queries/003_transaction.sql
+      db/queries/004_users.sql
+      db/queries/005_settings.sql
+      db/queries/006_analytics.sql
+    Database / Seeds
+      db/seeds/000_clear.sql
+      db/seeds/001_products.sql
+      db/seeds/002_transactions.sql
+      db/seeds/003_inventory.sql
+    Frontend / Tooling
+      web/.dockerignore
+      web/.env.local
+      web/.prettierrc
+      web/Caddyfile
+      web/Dockerfile
+      web/entrypoint.sh
+      web/eslint.config.js
+      web/index.html
+      web/package.json
+      web/package-lock.json
+      web/postcss.config.js
+      web/public/env.js
+      web/tsconfig.json
+      web/tsconfig.app.json
+      web/tsconfig.node.json
+      web/vite.config.ts
+    Frontend / App Shell
+      web/src/main.tsx
+      web/src/App.tsx
+      web/src/App.css
+      web/src/index.css
+      web/src/declarations.d.ts
+      web/src/vite-env.d.ts
+    Frontend / Components
+      web/src/components/Alerts/Alerts.tsx
+      web/src/components/Analytics/Analytics.tsx
+      web/src/components/Analytics/ChartTooltip.tsx
+      web/src/components/Home/Home.tsx
+      web/src/components/Home/Inventory.tsx
+      web/src/components/Home/MetricCards.tsx
+      web/src/components/Home/RecentTransactions.tsx
+      web/src/components/LoadingScreen/AdminRoute.tsx
+      web/src/components/LoadingScreen/LoadingScreen.tsx
+      web/src/components/LoadingScreen/ProtectedRoute.tsx
+      web/src/components/Modals/AddProductModal.tsx
+      web/src/components/Modals/ConfirmationModal.tsx
+      web/src/components/Modals/EditInventoryModal.tsx
+      web/src/components/Modals/EditProductModal.tsx
+      web/src/components/Settings/Apperance.tsx
+      web/src/components/Settings/Profile.tsx
+      web/src/components/Settings/Settings.tsx
+      web/src/components/Settings/Team.tsx
+      web/src/components/Settings/Thresholds.tsx
+      web/src/components/Template.tsx
+      web/src/components/Transactions/ViewAllTransactions.tsx
+      web/src/components/UpdateProducts/UpdateProducts.tsx
+    Frontend / Contexts
+      web/src/contexts/AuthContext.tsx
+      web/src/contexts/SnackBarAlertContext.tsx
+      web/src/contexts/ThemeContext.tsx
+    Frontend / Hooks
+      web/src/hooks/useAnalytics.ts
+      web/src/hooks/useIdleSession.ts
+      web/src/hooks/useInventory.ts
+      web/src/hooks/useMetrics.ts
+      web/src/hooks/useProducts.ts
+      web/src/hooks/useSession.ts
+      web/src/hooks/useSettings.ts
+      web/src/hooks/useTransactions.ts
+      web/src/hooks/useUsers.ts
+    Frontend / Libraries
+      web/src/lib/activityBus.ts
+      web/src/lib/queryClient.ts
+      web/src/lib/queryKeys.ts
+      web/src/realtime/WebSocketProvider.tsx
+    Frontend / Services
+      web/src/services/analyticsApi.ts
+      web/src/services/auth.ts
+      web/src/services/http.ts
+      web/src/services/inventoryApi.ts
+      web/src/services/productsApi.ts
+      web/src/services/settingsApi.ts
+      web/src/services/transactionsApi.ts
+      web/src/services/types.ts
+      web/src/services/usersApi.ts
+    Frontend / Styles
+      web/src/styles/Alerts/Alerts.css
+      web/src/styles/Global.css
+      web/src/styles/Home/Home.css
+      web/src/styles/Home/Inventory.css
+      web/src/styles/Home/RecentTransactions.css
+      web/src/styles/LoadingScreen/LoadingScreen.css
+      web/src/styles/Modals/AddProductModal.css
+      web/src/styles/Modals/ConfirmationModal.css
+      web/src/styles/Modals/EditInventoryModal.css
+      web/src/styles/Settings/Apperance.css
+      web/src/styles/Settings/Profile.css
+      web/src/styles/Settings/Settings.css
+      web/src/styles/Template.css
+      web/src/styles/Transactions/ViewAllTransactions.css
+      web/src/styles/UpdateProducts/UpdateProducts.css
+      web/src/styles/Utils/Buttons.css
+      web/src/styles/Utils/PageLayout.css
+      web/src/styles/Utils/TableUtils.css
+      web/src/components/Analytics/Analytics.css
+    Frontend / Utils
+      web/src/utils/metrics.ts
+      web/src/utils/passwordValidation.ts
+    Logical Connections
+      web/src/main.tsx -> App -> Template -> pages/components
+      hooks/* -> services/* -> services/http.ts -> backend /api
+      WebSocketProvider -> query invalidation -> TanStack cache refresh
+      db/queries/*.sql -> sqlc -> backend/internal/repository/*.sql.go
+      handlers/* -> services/* -> repository/* -> PostgreSQL
+      docker-compose*.yml -> Caddy + backend Dockerfile + web Dockerfile + db migrations
