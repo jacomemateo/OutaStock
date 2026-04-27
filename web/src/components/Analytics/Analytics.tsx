@@ -419,7 +419,7 @@ const Analytics = () => {
                                             name={
                                                 topProductsMode === 'units'
                                                     ? 'Units Sold'
-                                                    : 'Profit Cents'
+                                                    : 'Profit'
                                             }
                                             fill="var(--umbc-gold)"
                                             radius={[0, 4, 4, 0]}
@@ -539,7 +539,7 @@ const Analytics = () => {
                                             name={
                                                 marginMode === 'percent'
                                                     ? 'Margin %'
-                                                    : 'Profit Cents'
+                                                    : 'Profit'
                                             }
                                             radius={[0, 4, 4, 0]}
                                         >
