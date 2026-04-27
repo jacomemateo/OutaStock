@@ -3,11 +3,13 @@ import * as d3 from 'd3';
 import {
     Bar,
     BarChart,
+    type BarShapeProps,
     CartesianGrid,
-    Cell,
     Legend,
     Line,
     LineChart,
+    type MouseHandlerDataParam,
+    Rectangle,
     ResponsiveContainer,
     Tooltip,
     XAxis,
@@ -79,6 +81,18 @@ function getAverageDailyVelocity(productName: string, topProducts: TopProductRow
     }
     return product.unitsSold / range;
 }
+
+type InventoryChartRow = NonNullable<InventoryHealthResponse['slots']>[number] & {
+    avgDailyVelocity: number;
+    tooltipLabel: string;
+};
+
+type MarginChartRow = {
+    productName: string;
+    marginPct: number;
+    profitCents: number;
+    tooltipLabel: string;
+};
 
 const Analytics = () => {
     const { session } = useAuth();
@@ -228,11 +242,46 @@ const Analytics = () => {
         );
     const marginChartHeight = Math.max(160, marginData.length * 30);
 
-    const handleRevenueChartClick = (state: {
-        activeLabel?: string;
-        activePayload?: Array<{ payload?: DailyRevenueRow }>;
-    }) => {
-        const nextDate = state.activePayload?.[0]?.payload?.date ?? state.activeLabel ?? null;
+    const renderInventoryBar = (props: BarShapeProps) => {
+        const payload = props.payload as InventoryChartRow | undefined;
+
+        if (!payload) {
+            return null;
+        }
+
+        return (
+            <Rectangle
+                {...props}
+                fill={slotColor(payload.quantity, inventoryHealth?.threshold ?? 0)}
+                radius={[4, 4, 0, 0]}
+            />
+        );
+    };
+
+    const renderMarginBar = (props: BarShapeProps) => {
+        const payload = props.payload as MarginChartRow | undefined;
+
+        if (!payload) {
+            return null;
+        }
+
+        return (
+            <Rectangle
+                {...props}
+                fill={marginColor(payload.marginPct)}
+                radius={[0, 4, 4, 0]}
+            />
+        );
+    };
+
+    const handleRevenueChartClick = (state: MouseHandlerDataParam) => {
+        const nextDate =
+            typeof state.activeTooltipIndex === 'number'
+                ? revenueData[state.activeTooltipIndex]?.date ?? null
+                : typeof state.activeLabel === 'string'
+                  ? state.activeLabel
+                  : null;
+
         if (nextDate) {
             setSelectedDate(nextDate);
         }
@@ -450,18 +499,8 @@ const Analytics = () => {
                                         <Bar
                                             dataKey="quantity"
                                             name="Quantity"
-                                            radius={[4, 4, 0, 0]}
-                                        >
-                                            {inventorySlots.map((slot, index) => (
-                                                <Cell
-                                                    key={`${slot.slotId}-${index}`}
-                                                    fill={slotColor(
-                                                        slot.quantity,
-                                                        inventoryHealth?.threshold ?? 0,
-                                                    )}
-                                                />
-                                            ))}
-                                        </Bar>
+                                            shape={renderInventoryBar}
+                                        />
                                     </BarChart>
                                 </ResponsiveContainer>
                             </div>
@@ -541,15 +580,8 @@ const Analytics = () => {
                                                     ? 'Margin %'
                                                     : 'Profit'
                                             }
-                                            radius={[0, 4, 4, 0]}
-                                        >
-                                            {marginData.map((product, index) => (
-                                                <Cell
-                                                    key={`${product.productName}-${index}`}
-                                                    fill={marginColor(product.marginPct)}
-                                                />
-                                            ))}
-                                        </Bar>
+                                            shape={renderMarginBar}
+                                        />
                                     </BarChart>
                                 </ResponsiveContainer>
                             </div>
