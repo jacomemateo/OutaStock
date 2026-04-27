@@ -16,15 +16,11 @@ import (
 )
 
 type Router struct {
-	authHandler      *handlers.AuthHandler
-	analyticsHandler *handlers.AnalyticsHandler
-	usersHandler     *handlers.UsersHandler
-	settingsHandler  *handlers.SettingsHandler
-	handlers         []handlers.Handler
-	echo             *echo.Echo
-	database         *service.Database
-	config           *config.Config
-	authService      *service.AuthService
+	handlers    []handlers.Handler
+	echo        *echo.Echo
+	database    *service.Database
+	config      *config.Config
+	authService *service.AuthService
 }
 
 func NewRouter(database *service.Database, config *config.Config) (*Router, error) {
@@ -36,9 +32,6 @@ func NewRouter(database *service.Database, config *config.Config) (*Router, erro
 	r.echo.Use(middleware.RequestLogger())
 
 	// Conditional CORS (Only for Development)
-	// We check the environment variable we already have in .env.dev
-	//
-	// God i wish Go had macros this would be a lot nicer!
 	if config.LogLevel == "debug" {
 		log.Info().
 			Str("CORS", "ENABLED").
@@ -71,6 +64,7 @@ func NewRouter(database *service.Database, config *config.Config) (*Router, erro
 		log.Info().Str("CORS", "DISABLED").Msg("CORS Config")
 	}
 
+	// Initialize Services
 	authService := service.NewAuthService(database, config)
 	transactionsService := service.NewTransactionsService(database)
 	inventoryService := service.NewInventoryService(database)
@@ -80,12 +74,13 @@ func NewRouter(database *service.Database, config *config.Config) (*Router, erro
 	analyticsService := service.NewAnalyticsService(database)
 
 	r.authService = authService
-	r.authHandler = handlers.NewAuthHandler(authService)
-	r.analyticsHandler = handlers.NewAnalyticsHandler(analyticsService, settingsService)
-	r.usersHandler = handlers.NewUsersHandler(usersService, authService)
-	r.settingsHandler = handlers.NewSettingsHandler(settingsService)
 
+	// Initialize all handlers into the slice
 	r.handlers = []handlers.Handler{
+		handlers.NewAuthHandler(authService),
+		handlers.NewAnalyticsHandler(analyticsService, settingsService),
+		handlers.NewUsersHandler(usersService, authService),
+		handlers.NewSettingsHandler(settingsService),
 		handlers.NewTransactionsHandler(transactionsService),
 		handlers.NewInventoryHandler(inventoryService),
 		handlers.NewProductsHandler(productsService),
@@ -114,7 +109,6 @@ func (r *Router) addRoutes() {
 
 	// Health check endpoint
 	api.GET("/health", func(c *echo.Context) error {
-		// Check if database is connected
 		ctx := c.Request().Context()
 		if err := r.database.Ping(ctx); err != nil {
 			return c.JSON(http.StatusServiceUnavailable, map[string]string{
@@ -123,7 +117,6 @@ func (r *Router) addRoutes() {
 				"error":  err.Error(),
 			})
 		}
-
 		return c.JSON(http.StatusOK, map[string]string{
 			"status": "healthy",
 			"db":     "connected",
@@ -131,32 +124,41 @@ func (r *Router) addRoutes() {
 		})
 	})
 
-	r.authHandler.RegisterRoutes(api)
+	// 1. Register Public Routes (Auth specifically needs the base api group)
+	for _, h := range r.handlers {
+		if auth, ok := h.(*handlers.AuthHandler); ok {
+			auth.RegisterRoutes(api)
+		}
+	}
 
+	// 2. Setup Protected Groups
 	protectedAPI := api.Group("")
-	var adminAPI *echo.Group
-
 	if r.config.AuthEnabled {
-		log.Info().
-			Str("service", "auth").
-			Msg("JWT bearer token protection enabled")
-
+		log.Info().Str("service", "auth").Msg("JWT bearer token protection enabled")
 		protectedAPI.Use(httpmiddleware.NewJWTAuthMiddleware(r.authService))
 	} else {
-		log.Warn().
-			Str("service", "auth").
-			Msg("JWT bearer token protection is disabled")
+		log.Warn().Str("service", "auth").Msg("JWT bearer token protection is disabled")
 	}
 
-	adminAPI = protectedAPI.Group("")
+	adminAPI := protectedAPI.Group("")
 	adminAPI.Use(httpmiddleware.RequireAdmin)
-	r.authHandler.RegisterProtectedRoutes(protectedAPI)
 
+	// 3. Register Protected and Admin Routes
 	for _, h := range r.handlers {
-		h.RegisterRoutes(protectedAPI)
-	}
+		// All handlers register their standard protected routes
+		// For AuthHandler, this calls RegisterProtectedRoutes specifically
+		if auth, ok := h.(*handlers.AuthHandler); ok {
+			auth.RegisterProtectedRoutes(protectedAPI)
+			continue
+		}
 
-	r.analyticsHandler.RegisterRoutes(protectedAPI)
-	r.settingsHandler.RegisterRoutes(protectedAPI, adminAPI)
-	r.usersHandler.RegisterRoutes(protectedAPI, adminAPI)
+		// Register standard protected routes for everyone else
+		h.RegisterRoutes(protectedAPI)
+
+		// Check if the handler has admin routes (Users and Settings)
+		// We use an inline interface check to see if it supports RegisterAdminRoutes
+		if adminHand, ok := h.(interface{ RegisterAdminRoutes(*echo.Group) }); ok {
+			adminHand.RegisterAdminRoutes(adminAPI)
+		}
+	}
 }

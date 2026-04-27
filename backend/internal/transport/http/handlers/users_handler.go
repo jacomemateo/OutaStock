@@ -1,32 +1,37 @@
 package handlers
 
 import (
-	"net/http"
+    "net/http"
 
-	"github.com/google/uuid"
-	"github.com/jacomemateo/OutaStock/backend/internal/service"
-	"github.com/jacomemateo/OutaStock/backend/internal/transport/http/dto"
-	httpmiddleware "github.com/jacomemateo/OutaStock/backend/internal/transport/http/middleware"
-	"github.com/labstack/echo/v5"
-	"github.com/rs/zerolog/log"
+    "github.com/google/uuid"
+    "github.com/jacomemateo/OutaStock/backend/internal/service"
+    "github.com/jacomemateo/OutaStock/backend/internal/transport/http/dto"
+    httpmiddleware "github.com/jacomemateo/OutaStock/backend/internal/transport/http/middleware"
+    "github.com/labstack/echo/v5"
+    "github.com/rs/zerolog/log"
 )
 
 type UsersHandler struct {
-	BinderValidator
-	usersService *service.UsersService
-	authService  *service.AuthService
+    BinderValidator
+    usersService *service.UsersService
+    authService  *service.AuthService
 }
 
 func NewUsersHandler(usersService *service.UsersService, authService *service.AuthService) *UsersHandler {
-	return &UsersHandler{usersService: usersService, authService: authService}
+    return &UsersHandler{usersService: usersService, authService: authService}
 }
 
-func (h *UsersHandler) RegisterRoutes(authGroup *echo.Group, adminGroup *echo.Group) {
-	authGroup.PATCH("/users/me/password", h.ChangePassword)
-	adminGroup.GET("/users", h.ListUsers)
-	adminGroup.POST("/users", h.CreateUser)
-	adminGroup.PATCH("/users/:id/role", h.UpdateRole)
-	adminGroup.DELETE("/users/:id", h.DeleteUser)
+// RegisterRoutes now matches the Handler interface (one argument)
+func (h *UsersHandler) RegisterRoutes(protectedGroup *echo.Group) {
+    protectedGroup.PATCH("/users/me/password", h.ChangePassword)
+}
+
+// RegisterAdminRoutes is a specialized method for higher-privilege routes
+func (h *UsersHandler) RegisterAdminRoutes(adminGroup *echo.Group) {
+    adminGroup.GET("/users", h.ListUsers)
+    adminGroup.POST("/users", h.CreateUser)
+    adminGroup.PATCH("/users/:id/role", h.UpdateRole)
+    adminGroup.DELETE("/users/:id", h.DeleteUser)
 }
 
 func (h *UsersHandler) ListUsers(c *echo.Context) error {

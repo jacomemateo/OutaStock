@@ -17,8 +17,13 @@ func NewSettingsHandler(s *service.SettingsService) *SettingsHandler {
 	return &SettingsHandler{settingsService: s}
 }
 
-func (h *SettingsHandler) RegisterRoutes(authGroup *echo.Group, adminGroup *echo.Group) {
+// RegisterRoutes now implements the Handler interface with a single group
+func (h *SettingsHandler) RegisterRoutes(authGroup *echo.Group) {
 	authGroup.GET("/settings", h.GetSettings)
+}
+
+// RegisterAdminRoutes handles the elevated privilege settings
+func (h *SettingsHandler) RegisterAdminRoutes(adminGroup *echo.Group) {
 	adminGroup.PATCH("/settings", h.UpdateSettings)
 }
 
