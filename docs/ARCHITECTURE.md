@@ -1,419 +1,279 @@
-# System Architecture
-
-This document is the technical source of truth for OutaStock as of April 2026. It describes the system that is currently implemented, how the pieces fit together locally, and the likely cloud deployment direction.
-
-## 1. System Goals
-
-OutaStock is a vending machine inventory tracking system designed to:
+# OutaStock Architecture Audit
+
+Generated from the in-scope repository files on 2026-04-27T20:35:57.175Z. Scope includes 160 source/config files and excludes documentation, static assets, node_modules, vendor trees, and generated dist output.
+
+## Step 1: Architecture Analysis
+
+### Frontend State Management and Data Fetching
+- The frontend is a React 19 + Vite SPA bootstrapped in `web/src/main.tsx` with `BrowserRouter`, `QueryClientProvider`, and custom providers for auth, theme, and alert UX.
+- Server state is managed with TanStack Query via `web/src/lib/queryClient.ts`, centralized query keys in `web/src/lib/queryKeys.ts`, and domain hooks such as `useInventory`, `useProducts`, `useTransactions`, `useSettings`, `useUsers`, and `useAnalytics`.
+- UI state remains local to components (`useState` in pages, modals, and settings panels), while cross-cutting session/theme/alert state is handled through React Context (`AuthContext`, `ThemeContext`, `SnackBarAlertContext`).
+- Data access is split into thin service clients (`web/src/services/*.ts`) layered over the shared authenticated `requestJson` helper in `web/src/services/http.ts`. Realtime websocket events invalidate TanStack Query caches through `web/src/realtime/WebSocketProvider.tsx`.
+
+### Backend Design Patterns
+- The Go backend follows a layered separation of concerns: `cmd` bootstraps configuration and process lifecycle, `internal/transport` owns HTTP routing/middleware, `internal/transport/http/handlers` maps requests to service calls, `internal/service` contains business logic, and `internal/repository` is sqlc-generated persistence code over PostgreSQL.
+- DTOs in `backend/internal/transport/http/dto` define the transport boundary, while validation helpers in `handlers/utils.go` and `internal/validation/validation.go` centralize request binding and validation rules.
+- Persistence is query-first. SQL lives in `db/queries/*.sql`, `sqlc.yaml` generates typed Go accessors into `backend/internal/repository/*.sql.go`, and services call those generated methods through the `Database` wrapper.
+- Routing in `backend/internal/transport/router.go` acts as the backend composition root, instantiating services and handlers, applying JWT middleware conditionally, and splitting public, protected, and admin route registration.
+
+### Infrastructure and Orchestration
+- Container orchestration is defined with `docker-compose.yml` (production topology) and `docker-compose.dev.yml` (development topology). PostgreSQL is initialized from `db/migrations`, the frontend and backend are containerized separately, and Swagger UI is hosted as a sidecar using an excluded OpenAPI document.
+- Caddy terminates HTTP traffic and dispatches requests either to the backend API or the frontend SPA. `Caddyfile.dev` redirects UI traffic to the Vite dev server, while `Caddyfile` targets production service containers.
+- Developer automation is encoded in `Taskfile.yml` and `.air.toml`; backend query generation is handled by sqlc, and local backend live reload is handled by Air.
+- CI/CD is currently a GitHub Actions workflow that merges `master` into a deployment branch and remotely rebuilds the Raspberry Pi Docker stack over Cloudflare-backed SSH access.
+
+## Step 2: File Catalog
+
+> Import/dependent data combines static import analysis for the frontend with package-level/runtime wiring for Go and infrastructure files. Go imports are package-based by language design, so service/handler/repository relationships are described at the package or constructor-consumer level where file-level imports do not exist.
+
+### Root / Ops
+
+| File Path | Role | Imports/Dependencies | Dependents |
+| --- | --- | --- | --- |
+| `/Users/mateo/Code/School/CMSC447/OutaStock/.air.toml` | Air live-reload configuration for local Go backend development. | None inside the included scope. | `backend/cmd/api/main.go` local Air dev loop |
+| `/Users/mateo/Code/School/CMSC447/OutaStock/.env` | Production-oriented root environment file consumed by Docker Compose and runtime services. | None inside the included scope. | No in-scope dependents detected. |
+| `/Users/mateo/Code/School/CMSC447/OutaStock/.env.dev` | Development environment file for local Compose, Air, and frontend/backend tasks. | None inside the included scope. | `Taskfile.yml`<br>`.air.toml`<br>`docker-compose.dev.yml` |
+| `/Users/mateo/Code/School/CMSC447/OutaStock/.env.example` | Template root environment file used to bootstrap a production/staging env. | None inside the included scope. | `Taskfile.yml` |
+| `/Users/mateo/Code/School/CMSC447/OutaStock/backend.env.example` | Example backend-specific environment variable reference. | None inside the included scope. | `docker-compose.yml` operators and backend runtime setup |
+| `/Users/mateo/Code/School/CMSC447/OutaStock/.gitignore` | Repository-wide ignore rules for generated, local, and secret-adjacent files. | None inside the included scope. | No in-scope dependents detected. |
+| `/Users/mateo/Code/School/CMSC447/OutaStock/Caddyfile` | Production reverse-proxy routing for frontend, backend API, and Swagger UI. | None inside the included scope. | `docker-compose.yml` |
+| `/Users/mateo/Code/School/CMSC447/OutaStock/Caddyfile.dev` | Development reverse-proxy routing that forwards the SPA to the Vite dev server. | None inside the included scope. | `docker-compose.dev.yml` |
+| `/Users/mateo/Code/School/CMSC447/OutaStock/Taskfile.yml` | Task runner entry point for dev environment setup, sqlc generation, seeding, and stack lifecycle commands. | `.env.dev`<br>`.env.example`<br>`docker-compose.dev.yml`<br>`docker-compose.yml`<br>`db/seeds/*.sql`<br>`sqlc.yaml` | Developer CLI workflows. |
+| `/Users/mateo/Code/School/CMSC447/OutaStock/docker-compose.yml` | Production Docker Compose topology for Caddy, PostgreSQL, backend, frontend, and Swagger. | `Caddyfile`<br>`backend/Dockerfile`<br>`web/Dockerfile`<br>`db/migrations/*.sql`<br>`docs/openapi.yaml` (excluded doc) | Operational production deployment flow and local `task prod`. |
+| `/Users/mateo/Code/School/CMSC447/OutaStock/docker-compose.dev.yml` | Development Compose topology for PostgreSQL, Caddy dev proxy, and Swagger. | `Caddyfile.dev`<br>`db/migrations/*.sql`<br>`docs/openapi.yaml` (excluded doc) | `Taskfile.yml` development tasks. |
+| `/Users/mateo/Code/School/CMSC447/OutaStock/sqlc.yaml` | sqlc code-generation configuration mapping SQL files to Go repository code. | `db/migrations/*.sql`<br>`db/queries/*.sql` | `Taskfile.yml generate_sqlc` and repository generation. |
+| `/Users/mateo/Code/School/CMSC447/OutaStock/.github/workflows/deploy.yml` | GitHub Actions deployment workflow targeting the Raspberry Pi environment. | None inside the included scope. | No in-scope dependents detected. |
+
+### Backend / Build
+
+| File Path | Role | Imports/Dependencies | Dependents |
+| --- | --- | --- | --- |
+| `/Users/mateo/Code/School/CMSC447/OutaStock/backend/go.mod` | Go module definition and primary backend dependency manifest. | `echo/v5`<br>`pgx/v5`<br>`zerolog`<br>`validator/v10`<br>`golang-jwt/jwt/v5` | No in-scope dependents detected. |
+| `/Users/mateo/Code/School/CMSC447/OutaStock/backend/go.sum` | Locked Go dependency checksums for reproducible backend builds. | None inside the included scope. | No in-scope dependents detected. |
+| `/Users/mateo/Code/School/CMSC447/OutaStock/backend/Dockerfile` | Backend container build recipe that compiles and packages the Go API server. | `backend/go.mod`<br>`backend/go.sum`<br>`backend/cmd/api/main.go` | `docker-compose.yml` |
+| `/Users/mateo/Code/School/CMSC447/OutaStock/backend/cmd/api/main.go` | Backend executable entry point: loads config, initializes services, and starts Echo. | `pkg:/Users/mateo/Code/School/CMSC447/OutaStock/backend/cmd`<br>`pkg:/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/service`<br>`pkg:/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/transport`<br>`context`<br>`errors`<br>`github.com/jackc/pgx/v5/pgconn`<br>`github.com/rs/zerolog`<br>`github.com/rs/zerolog/log`<br>`os`<br>`os/signal`<br>`syscall`<br>`time` | `backend/Dockerfile` |
+| `/Users/mateo/Code/School/CMSC447/OutaStock/backend/cmd/config.go` | Environment-driven backend configuration loader and parsing helpers. | `fmt`<br>`os`<br>`strconv`<br>`strings` | `backend/cmd/api/main.go`<br>`backend/internal/service/auth_service.go`<br>`backend/internal/transport/router.go`<br>Package consumers: `/Users/mateo/Code/School/CMSC447/OutaStock/backend/cmd/api/main.go`, `/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/service/auth_service.go`, `/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/transport/router.go` |
+
+### Backend / Repository
+
+| File Path | Role | Imports/Dependencies | Dependents |
+| --- | --- | --- | --- |
+| `/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/repository/001_inventory.sql.go` | sqlc-generated Go query bindings for a specific SQL source file. | `db/queries/001_inventory.sql`<br>`sqlc.yaml`<br>`github.com/jackc/pgx/v5`<br>`context`<br>`github.com/jackc/pgx/v5/pgtype` | `backend/internal/service/inventory_service.go`<br>`backend/internal/service/database.go`<br>Package consumers: `/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/service/auth_service.go`, `/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/service/database.go`, `/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/service/inventory_service.go`, `/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/service/products_service.go`, `/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/service/transactions_service.go`, `/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/service/users_service.go` |
+| `/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/repository/002_product.sql.go` | sqlc-generated Go query bindings for a specific SQL source file. | `db/queries/002_product.sql`<br>`sqlc.yaml`<br>`github.com/jackc/pgx/v5`<br>`context`<br>`github.com/jackc/pgx/v5/pgtype` | `backend/internal/service/products_service.go`<br>`backend/internal/service/database.go`<br>Package consumers: `/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/service/auth_service.go`, `/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/service/database.go`, `/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/service/inventory_service.go`, `/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/service/products_service.go`, `/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/service/transactions_service.go`, `/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/service/users_service.go` |
+| `/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/repository/003_transaction.sql.go` | sqlc-generated Go query bindings for a specific SQL source file. | `db/queries/003_transaction.sql`<br>`sqlc.yaml`<br>`github.com/jackc/pgx/v5`<br>`context`<br>`github.com/jackc/pgx/v5/pgtype` | `backend/internal/service/transactions_service.go`<br>`backend/internal/service/database.go`<br>Package consumers: `/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/service/auth_service.go`, `/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/service/database.go`, `/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/service/inventory_service.go`, `/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/service/products_service.go`, `/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/service/transactions_service.go`, `/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/service/users_service.go` |
+| `/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/repository/004_users.sql.go` | sqlc-generated Go query bindings for a specific SQL source file. | `db/queries/004_users.sql`<br>`sqlc.yaml`<br>`github.com/jackc/pgx/v5`<br>`context`<br>`github.com/jackc/pgx/v5/pgtype` | `backend/internal/service/auth_service.go`<br>`backend/internal/service/users_service.go`<br>`backend/internal/service/database.go`<br>Package consumers: `/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/service/auth_service.go`, `/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/service/database.go`, `/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/service/inventory_service.go`, `/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/service/products_service.go`, `/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/service/transactions_service.go`, `/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/service/users_service.go` |
+| `/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/repository/005_settings.sql.go` | sqlc-generated Go query bindings for a specific SQL source file. | `db/queries/005_settings.sql`<br>`sqlc.yaml`<br>`github.com/jackc/pgx/v5`<br>`context` | `backend/internal/service/settings_service.go`<br>`backend/internal/service/database.go`<br>Package consumers: `/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/service/auth_service.go`, `/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/service/database.go`, `/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/service/inventory_service.go`, `/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/service/products_service.go`, `/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/service/transactions_service.go`, `/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/service/users_service.go` |
+| `/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/repository/006_analytics.sql.go` | sqlc-generated Go query bindings for a specific SQL source file. | `db/queries/006_analytics.sql`<br>`sqlc.yaml`<br>`github.com/jackc/pgx/v5`<br>`context` | `backend/internal/service/analytics_service.go`<br>`backend/internal/service/database.go`<br>Package consumers: `/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/service/auth_service.go`, `/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/service/database.go`, `/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/service/inventory_service.go`, `/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/service/products_service.go`, `/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/service/transactions_service.go`, `/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/service/users_service.go` |
+| `/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/repository/db.go` | sqlc-generated repository bootstrap and shared query runner definitions. | `sqlc.yaml`<br>`github.com/jackc/pgx/v5`<br>`context`<br>`github.com/jackc/pgx/v5/pgconn` | `backend/internal/service/database.go`<br>Package consumers: `/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/service/auth_service.go`, `/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/service/database.go`, `/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/service/inventory_service.go`, `/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/service/products_service.go`, `/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/service/transactions_service.go`, `/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/service/users_service.go` |
+| `/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/repository/models.go` | sqlc-generated Go representations of database tables and row models. | `db/migrations/*.sql`<br>`sqlc.yaml`<br>`github.com/jackc/pgx/v5/pgtype` | Repository peers and all service-layer consumers through the `repository` package.<br>Package consumers: `/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/service/auth_service.go`, `/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/service/database.go`, `/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/service/inventory_service.go`, `/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/service/products_service.go`, `/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/service/transactions_service.go`, `/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/service/users_service.go` |
+
+### Backend / Services
+
+| File Path | Role | Imports/Dependencies | Dependents |
+| --- | --- | --- | --- |
+| `/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/service/analytics_service.go` | Backend service-layer implementation containing business logic and repository orchestration. | `context` | `backend/internal/transport/http/handlers/analytics_handler.go`<br>`backend/internal/transport/router.go`<br>Package consumers: `/Users/mateo/Code/School/CMSC447/OutaStock/backend/cmd/api/main.go`, `/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/transport/http/handlers/analytics_handler.go`, `/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/transport/http/handlers/auth_handler.go`, `/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/transport/http/handlers/inventory_handler.go`, `/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/transport/http/handlers/products_handler.go`, `/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/transport/http/handlers/settings_handler.go`, `/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/transport/http/handlers/transactions_handler.go`, `/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/transport/http/handlers/users_handler.go`, `/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/transport/http/middleware/jwt_auth.go`, `/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/transport/router.go` |
+| `/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/service/auth_service.go` | Backend service-layer implementation containing business logic and repository orchestration. | `pkg:/Users/mateo/Code/School/CMSC447/OutaStock/backend/cmd`<br>`pkg:/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/repository`<br>`context`<br>`errors`<br>`fmt`<br>`github.com/golang-jwt/jwt/v5`<br>`github.com/google/uuid`<br>`github.com/jackc/pgx/v5/pgtype`<br>`golang.org/x/crypto/bcrypt`<br>`time`<br>`unicode` | `backend/internal/transport/http/handlers/auth_handler.go`<br>`backend/internal/transport/http/handlers/users_handler.go`<br>`backend/internal/transport/http/middleware/jwt_auth.go`<br>`backend/internal/transport/router.go`<br>`backend/cmd/api/main.go`<br>Package consumers: `/Users/mateo/Code/School/CMSC447/OutaStock/backend/cmd/api/main.go`, `/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/transport/http/handlers/analytics_handler.go`, `/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/transport/http/handlers/auth_handler.go`, `/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/transport/http/handlers/inventory_handler.go`, `/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/transport/http/handlers/products_handler.go`, `/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/transport/http/handlers/settings_handler.go`, `/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/transport/http/handlers/transactions_handler.go`, `/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/transport/http/handlers/users_handler.go`, `/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/transport/http/middleware/jwt_auth.go`, `/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/transport/router.go` |
+| `/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/service/database.go` | Database wrapper around pgx pool and sqlc query set. | `pkg:/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/repository`<br>`context`<br>`fmt`<br>`github.com/jackc/pgx/v5/pgxpool` | All backend services and `backend/cmd/api/main.go`.<br>Package consumers: `/Users/mateo/Code/School/CMSC447/OutaStock/backend/cmd/api/main.go`, `/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/transport/http/handlers/analytics_handler.go`, `/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/transport/http/handlers/auth_handler.go`, `/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/transport/http/handlers/inventory_handler.go`, `/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/transport/http/handlers/products_handler.go`, `/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/transport/http/handlers/settings_handler.go`, `/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/transport/http/handlers/transactions_handler.go`, `/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/transport/http/handlers/users_handler.go`, `/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/transport/http/middleware/jwt_auth.go`, `/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/transport/router.go` |
+| `/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/service/file_upload_service.go` | Backend service-layer implementation containing business logic and repository orchestration. | None inside the included scope. | Currently unused inside the included source scope.<br>Package consumers: `/Users/mateo/Code/School/CMSC447/OutaStock/backend/cmd/api/main.go`, `/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/transport/http/handlers/analytics_handler.go`, `/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/transport/http/handlers/auth_handler.go`, `/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/transport/http/handlers/inventory_handler.go`, `/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/transport/http/handlers/products_handler.go`, `/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/transport/http/handlers/settings_handler.go`, `/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/transport/http/handlers/transactions_handler.go`, `/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/transport/http/handlers/users_handler.go`, `/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/transport/http/middleware/jwt_auth.go`, `/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/transport/router.go` |
+| `/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/service/inventory_service.go` | Backend service-layer implementation containing business logic and repository orchestration. | `pkg:/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/repository`<br>`pkg:/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/transport/http/dto`<br>`context`<br>`github.com/jackc/pgx/v5/pgtype`<br>`github.com/rs/zerolog/log` | `backend/internal/transport/http/handlers/inventory_handler.go`<br>`backend/internal/transport/router.go`<br>Package consumers: `/Users/mateo/Code/School/CMSC447/OutaStock/backend/cmd/api/main.go`, `/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/transport/http/handlers/analytics_handler.go`, `/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/transport/http/handlers/auth_handler.go`, `/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/transport/http/handlers/inventory_handler.go`, `/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/transport/http/handlers/products_handler.go`, `/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/transport/http/handlers/settings_handler.go`, `/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/transport/http/handlers/transactions_handler.go`, `/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/transport/http/handlers/users_handler.go`, `/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/transport/http/middleware/jwt_auth.go`, `/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/transport/router.go` |
+| `/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/service/list_query.go` | Shared pagination/sorting query model used by list-oriented backend endpoints. | None inside the included scope. | List-oriented services and handler query parsing flows.<br>Package consumers: `/Users/mateo/Code/School/CMSC447/OutaStock/backend/cmd/api/main.go`, `/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/transport/http/handlers/analytics_handler.go`, `/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/transport/http/handlers/auth_handler.go`, `/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/transport/http/handlers/inventory_handler.go`, `/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/transport/http/handlers/products_handler.go`, `/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/transport/http/handlers/settings_handler.go`, `/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/transport/http/handlers/transactions_handler.go`, `/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/transport/http/handlers/users_handler.go`, `/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/transport/http/middleware/jwt_auth.go`, `/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/transport/router.go` |
+| `/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/service/products_service.go` | Backend service-layer implementation containing business logic and repository orchestration. | `pkg:/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/repository`<br>`pkg:/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/transport/http/dto`<br>`context`<br>`fmt`<br>`github.com/google/uuid`<br>`github.com/jackc/pgx/v5/pgtype`<br>`github.com/rs/zerolog/log` | `backend/internal/transport/http/handlers/products_handler.go`<br>`backend/internal/transport/router.go`<br>Package consumers: `/Users/mateo/Code/School/CMSC447/OutaStock/backend/cmd/api/main.go`, `/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/transport/http/handlers/analytics_handler.go`, `/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/transport/http/handlers/auth_handler.go`, `/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/transport/http/handlers/inventory_handler.go`, `/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/transport/http/handlers/products_handler.go`, `/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/transport/http/handlers/settings_handler.go`, `/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/transport/http/handlers/transactions_handler.go`, `/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/transport/http/handlers/users_handler.go`, `/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/transport/http/middleware/jwt_auth.go`, `/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/transport/router.go` |
+| `/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/service/settings_service.go` | Backend service-layer implementation containing business logic and repository orchestration. | `context` | `backend/internal/transport/http/handlers/settings_handler.go`<br>`backend/internal/transport/http/handlers/analytics_handler.go`<br>`backend/internal/transport/router.go`<br>Package consumers: `/Users/mateo/Code/School/CMSC447/OutaStock/backend/cmd/api/main.go`, `/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/transport/http/handlers/analytics_handler.go`, `/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/transport/http/handlers/auth_handler.go`, `/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/transport/http/handlers/inventory_handler.go`, `/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/transport/http/handlers/products_handler.go`, `/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/transport/http/handlers/settings_handler.go`, `/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/transport/http/handlers/transactions_handler.go`, `/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/transport/http/handlers/users_handler.go`, `/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/transport/http/middleware/jwt_auth.go`, `/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/transport/router.go` |
+| `/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/service/transactions_service.go` | Backend service-layer implementation containing business logic and repository orchestration. | `pkg:/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/repository`<br>`pkg:/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/transport/http/dto`<br>`context`<br>`github.com/rs/zerolog/log` | `backend/internal/transport/http/handlers/transactions_handler.go`<br>`backend/internal/transport/router.go`<br>Package consumers: `/Users/mateo/Code/School/CMSC447/OutaStock/backend/cmd/api/main.go`, `/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/transport/http/handlers/analytics_handler.go`, `/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/transport/http/handlers/auth_handler.go`, `/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/transport/http/handlers/inventory_handler.go`, `/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/transport/http/handlers/products_handler.go`, `/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/transport/http/handlers/settings_handler.go`, `/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/transport/http/handlers/transactions_handler.go`, `/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/transport/http/handlers/users_handler.go`, `/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/transport/http/middleware/jwt_auth.go`, `/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/transport/router.go` |
+| `/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/service/users_service.go` | Backend service-layer implementation containing business logic and repository orchestration. | `pkg:/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/repository`<br>`context`<br>`fmt`<br>`github.com/google/uuid` | `backend/internal/transport/http/handlers/users_handler.go`<br>`backend/internal/transport/router.go`<br>Package consumers: `/Users/mateo/Code/School/CMSC447/OutaStock/backend/cmd/api/main.go`, `/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/transport/http/handlers/analytics_handler.go`, `/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/transport/http/handlers/auth_handler.go`, `/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/transport/http/handlers/inventory_handler.go`, `/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/transport/http/handlers/products_handler.go`, `/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/transport/http/handlers/settings_handler.go`, `/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/transport/http/handlers/transactions_handler.go`, `/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/transport/http/handlers/users_handler.go`, `/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/transport/http/middleware/jwt_auth.go`, `/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/transport/router.go` |
+| `/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/service/utils.go` | Internal backend service helpers, primarily for pgtype and conversion utilities. | `fmt`<br>`github.com/google/uuid`<br>`github.com/jackc/pgx/v5/pgtype`<br>`time` | Service-layer peers.<br>Package consumers: `/Users/mateo/Code/School/CMSC447/OutaStock/backend/cmd/api/main.go`, `/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/transport/http/handlers/analytics_handler.go`, `/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/transport/http/handlers/auth_handler.go`, `/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/transport/http/handlers/inventory_handler.go`, `/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/transport/http/handlers/products_handler.go`, `/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/transport/http/handlers/settings_handler.go`, `/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/transport/http/handlers/transactions_handler.go`, `/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/transport/http/handlers/users_handler.go`, `/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/transport/http/middleware/jwt_auth.go`, `/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/transport/router.go` |
+
+### Backend / HTTP DTOs
+
+| File Path | Role | Imports/Dependencies | Dependents |
+| --- | --- | --- | --- |
+| `/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/transport/http/dto/auth_dto.go` | HTTP DTO definitions for request binding and response shaping at the transport boundary. | None inside the included scope. | `backend/internal/transport/http/handlers/auth_handler.go`<br>Package consumers: `/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/service/inventory_service.go`, `/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/service/products_service.go`, `/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/service/transactions_service.go`, `/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/transport/http/handlers/auth_handler.go`, `/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/transport/http/handlers/inventory_handler.go`, `/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/transport/http/handlers/products_handler.go`, `/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/transport/http/handlers/settings_handler.go`, `/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/transport/http/handlers/users_handler.go` |
+| `/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/transport/http/dto/file_upload_dto.go` | HTTP DTO definitions for request binding and response shaping at the transport boundary. | `mime/multipart` | Potential future file-upload handler/service flows; currently no in-scope importer.<br>Package consumers: `/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/service/inventory_service.go`, `/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/service/products_service.go`, `/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/service/transactions_service.go`, `/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/transport/http/handlers/auth_handler.go`, `/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/transport/http/handlers/inventory_handler.go`, `/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/transport/http/handlers/products_handler.go`, `/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/transport/http/handlers/settings_handler.go`, `/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/transport/http/handlers/users_handler.go` |
+| `/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/transport/http/dto/inventory_dto.go` | HTTP DTO definitions for request binding and response shaping at the transport boundary. | `time` | `backend/internal/transport/http/handlers/inventory_handler.go`<br>`backend/internal/service/inventory_service.go`<br>Package consumers: `/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/service/inventory_service.go`, `/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/service/products_service.go`, `/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/service/transactions_service.go`, `/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/transport/http/handlers/auth_handler.go`, `/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/transport/http/handlers/inventory_handler.go`, `/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/transport/http/handlers/products_handler.go`, `/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/transport/http/handlers/settings_handler.go`, `/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/transport/http/handlers/users_handler.go` |
+| `/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/transport/http/dto/products_dto.go` | HTTP DTO definitions for request binding and response shaping at the transport boundary. | `time` | `backend/internal/transport/http/handlers/products_handler.go`<br>`backend/internal/service/products_service.go`<br>Package consumers: `/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/service/inventory_service.go`, `/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/service/products_service.go`, `/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/service/transactions_service.go`, `/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/transport/http/handlers/auth_handler.go`, `/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/transport/http/handlers/inventory_handler.go`, `/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/transport/http/handlers/products_handler.go`, `/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/transport/http/handlers/settings_handler.go`, `/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/transport/http/handlers/users_handler.go` |
+| `/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/transport/http/dto/settings_dto.go` | HTTP DTO definitions for request binding and response shaping at the transport boundary. | None inside the included scope. | `backend/internal/transport/http/handlers/settings_handler.go`<br>Package consumers: `/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/service/inventory_service.go`, `/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/service/products_service.go`, `/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/service/transactions_service.go`, `/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/transport/http/handlers/auth_handler.go`, `/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/transport/http/handlers/inventory_handler.go`, `/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/transport/http/handlers/products_handler.go`, `/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/transport/http/handlers/settings_handler.go`, `/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/transport/http/handlers/users_handler.go` |
+| `/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/transport/http/dto/transactions_dto.go` | HTTP DTO definitions for request binding and response shaping at the transport boundary. | `github.com/google/uuid`<br>`time` | `backend/internal/service/transactions_service.go`<br>Package consumers: `/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/service/inventory_service.go`, `/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/service/products_service.go`, `/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/service/transactions_service.go`, `/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/transport/http/handlers/auth_handler.go`, `/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/transport/http/handlers/inventory_handler.go`, `/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/transport/http/handlers/products_handler.go`, `/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/transport/http/handlers/settings_handler.go`, `/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/transport/http/handlers/users_handler.go` |
+| `/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/transport/http/dto/user_dto.go` | HTTP DTO definitions for request binding and response shaping at the transport boundary. | None inside the included scope. | `backend/internal/transport/http/handlers/users_handler.go`<br>Package consumers: `/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/service/inventory_service.go`, `/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/service/products_service.go`, `/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/service/transactions_service.go`, `/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/transport/http/handlers/auth_handler.go`, `/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/transport/http/handlers/inventory_handler.go`, `/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/transport/http/handlers/products_handler.go`, `/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/transport/http/handlers/settings_handler.go`, `/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/transport/http/handlers/users_handler.go` |
+
+### Backend / HTTP Handlers
+
+| File Path | Role | Imports/Dependencies | Dependents |
+| --- | --- | --- | --- |
+| `/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/transport/http/handlers/analytics_handler.go` | Echo handler/controller for a bounded backend capability area. | `pkg:/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/service`<br>`github.com/labstack/echo/v5`<br>`github.com/rs/zerolog/log`<br>`net/http`<br>`strconv` | Package consumers: `/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/transport/router.go` |
+| `/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/transport/http/handlers/auth_handler.go` | Echo handler/controller for a bounded backend capability area. | `pkg:/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/service`<br>`pkg:/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/transport/http/dto`<br>`pkg:/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/transport/http/middleware`<br>`errors`<br>`github.com/google/uuid`<br>`github.com/labstack/echo/v5`<br>`github.com/rs/zerolog/log`<br>`net/http` | Package consumers: `/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/transport/router.go` |
+| `/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/transport/http/handlers/file_upload_handler.go` | Echo handler/controller for a bounded backend capability area. | None inside the included scope. | Package consumers: `/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/transport/router.go` |
+| `/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/transport/http/handlers/handler.go` | Common handler interface for route registration within the transport layer. | `github.com/labstack/echo/v5` | `backend/internal/transport/router.go` and all concrete handlers.<br>Package consumers: `/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/transport/router.go` |
+| `/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/transport/http/handlers/inventory_handler.go` | Echo handler/controller for a bounded backend capability area. | `pkg:/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/service`<br>`pkg:/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/transport/http/dto`<br>`github.com/labstack/echo/v5`<br>`github.com/rs/zerolog/log`<br>`net/http`<br>`strconv` | Package consumers: `/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/transport/router.go` |
+| `/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/transport/http/handlers/products_handler.go` | Echo handler/controller for a bounded backend capability area. | `pkg:/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/service`<br>`pkg:/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/transport/http/dto`<br>`github.com/google/uuid`<br>`github.com/labstack/echo/v5`<br>`github.com/rs/zerolog/log`<br>`net/http` | Package consumers: `/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/transport/router.go` |
+| `/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/transport/http/handlers/settings_handler.go` | Echo handler/controller for a bounded backend capability area. | `pkg:/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/service`<br>`pkg:/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/transport/http/dto`<br>`github.com/labstack/echo/v5`<br>`net/http` | Package consumers: `/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/transport/router.go` |
+| `/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/transport/http/handlers/transactions_handler.go` | Echo handler/controller for a bounded backend capability area. | `pkg:/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/service`<br>`github.com/labstack/echo/v5`<br>`github.com/rs/zerolog/log`<br>`net/http` | Package consumers: `/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/transport/router.go` |
+| `/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/transport/http/handlers/users_handler.go` | Echo handler/controller for a bounded backend capability area. | `pkg:/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/service`<br>`pkg:/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/transport/http/dto`<br>`pkg:/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/transport/http/middleware`<br>`github.com/google/uuid`<br>`github.com/labstack/echo/v5`<br>`github.com/rs/zerolog/log`<br>`net/http` | Package consumers: `/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/transport/router.go` |
+| `/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/transport/http/handlers/utils.go` | Shared handler-layer binding, validation, and list-query helper utilities. | `pkg:/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/validation`<br>`encoding/json`<br>`github.com/go-playground/validator/v10`<br>`github.com/labstack/echo/v5`<br>`github.com/rs/zerolog/log`<br>`net/http`<br>`strconv`<br>`strings` | Handlers that embed `BinderValidator` or call query parsing helpers.<br>Package consumers: `/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/transport/router.go` |
+| `/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/transport/http/middleware/jwt_auth.go` | Echo middleware enforcing JWT bearer authentication and request context hydration. | `pkg:/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/service`<br>`github.com/labstack/echo/v5`<br>`net/http`<br>`strings` | `backend/internal/transport/router.go`<br>`backend/internal/transport/http/handlers/auth_handler.go`<br>`backend/internal/transport/http/handlers/users_handler.go`<br>Package consumers: `/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/transport/http/handlers/auth_handler.go`, `/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/transport/http/handlers/users_handler.go`, `/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/transport/router.go` |
+| `/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/transport/router.go` | Backend composition root that wires services, handlers, middleware, and HTTP routes. | `pkg:/Users/mateo/Code/School/CMSC447/OutaStock/backend/cmd`<br>`pkg:/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/service`<br>`pkg:/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/transport/http/handlers`<br>`pkg:/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/transport/http/middleware`<br>`context`<br>`github.com/labstack/echo/v5`<br>`github.com/labstack/echo/v5/middleware`<br>`github.com/rs/zerolog/log`<br>`net/http`<br>`time` | `backend/cmd/api/main.go`<br>Package consumers: `/Users/mateo/Code/School/CMSC447/OutaStock/backend/cmd/api/main.go` |
+| `/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/validation/validation.go` | Shared backend validator initialization and validation helper logic. | `github.com/go-playground/validator/v10` | `backend/internal/transport/http/handlers/utils.go`<br>Package consumers: `/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/transport/http/handlers/utils.go` |
+
+### Database / Migrations
+
+| File Path | Role | Imports/Dependencies | Dependents |
+| --- | --- | --- | --- |
+| `/Users/mateo/Code/School/CMSC447/OutaStock/db/migrations/001_create_tables.sql` | Primary PostgreSQL schema migration defining core product, inventory, and transaction tables. | None inside the included scope. | `sqlc.yaml` query generation context<br>`docker-compose*.yml` database initialization<br>query and seed scripts |
+| `/Users/mateo/Code/School/CMSC447/OutaStock/db/migrations/002_populate_tables.sql` | Bootstrap migration that pre-populates baseline inventory slot rows. | None inside the included scope. | `docker-compose*.yml` database initialization |
+| `/Users/mateo/Code/School/CMSC447/OutaStock/db/migrations/003_triggers.sql` | Trigger migration that keeps inventory counts synchronized with transactions. | None inside the included scope. | `docker-compose*.yml` database initialization<br>`db/queries/006_analytics.sql` semantics |
+| `/Users/mateo/Code/School/CMSC447/OutaStock/db/migrations/004_create_users.sql` | Authentication/authorization migration defining user-related tables. | None inside the included scope. | `docker-compose*.yml` database initialization<br>`db/queries/004_users.sql`<br>`db/queries/005_settings.sql` |
+
+### Database / Queries
+
+| File Path | Role | Imports/Dependencies | Dependents |
+| --- | --- | --- | --- |
+| `/Users/mateo/Code/School/CMSC447/OutaStock/db/queries/001_inventory.sql` | Handwritten SQL query source consumed by sqlc for type-safe Go data access. | `db/migrations/001_create_tables.sql` | `backend/internal/repository/001_inventory.sql.go` |
+| `/Users/mateo/Code/School/CMSC447/OutaStock/db/queries/002_product.sql` | Handwritten SQL query source consumed by sqlc for type-safe Go data access. | `db/migrations/001_create_tables.sql` | `backend/internal/repository/002_product.sql.go` |
+| `/Users/mateo/Code/School/CMSC447/OutaStock/db/queries/003_transaction.sql` | Handwritten SQL query source consumed by sqlc for type-safe Go data access. | `db/migrations/001_create_tables.sql` | `backend/internal/repository/003_transaction.sql.go` |
+| `/Users/mateo/Code/School/CMSC447/OutaStock/db/queries/004_users.sql` | Handwritten SQL query source consumed by sqlc for type-safe Go data access. | `db/migrations/004_create_users.sql` | `backend/internal/repository/004_users.sql.go` |
+| `/Users/mateo/Code/School/CMSC447/OutaStock/db/queries/005_settings.sql` | Handwritten SQL query source consumed by sqlc for type-safe Go data access. | `db/migrations/004_create_users.sql`<br>`db/migrations/001_create_tables.sql` | `backend/internal/repository/005_settings.sql.go` |
+| `/Users/mateo/Code/School/CMSC447/OutaStock/db/queries/006_analytics.sql` | Handwritten SQL query source consumed by sqlc for type-safe Go data access. | `db/migrations/001_create_tables.sql`<br>`db/migrations/003_triggers.sql` | `backend/internal/repository/006_analytics.sql.go` |
+
+### Database / Seeds
+
+| File Path | Role | Imports/Dependencies | Dependents |
+| --- | --- | --- | --- |
+| `/Users/mateo/Code/School/CMSC447/OutaStock/db/seeds/000_clear.sql` | Optional SQL seed script for clearing or populating development/demo data. | None inside the included scope. | `Taskfile.yml` clear tasks |
+| `/Users/mateo/Code/School/CMSC447/OutaStock/db/seeds/001_products.sql` | Optional SQL seed script for clearing or populating development/demo data. | None inside the included scope. | `Taskfile.yml` seed tasks |
+| `/Users/mateo/Code/School/CMSC447/OutaStock/db/seeds/002_transactions.sql` | Optional SQL seed script for clearing or populating development/demo data. | None inside the included scope. | `Taskfile.yml` seed tasks |
+| `/Users/mateo/Code/School/CMSC447/OutaStock/db/seeds/003_inventory.sql` | Optional SQL seed script for clearing or populating development/demo data. | None inside the included scope. | `Taskfile.yml` seed tasks |
+
+### Frontend / Tooling
+
+| File Path | Role | Imports/Dependencies | Dependents |
+| --- | --- | --- | --- |
+| `/Users/mateo/Code/School/CMSC447/OutaStock/web/.dockerignore` | Ignore rules for frontend Docker build context pruning. | None inside the included scope. | `web/Dockerfile` build context. |
+| `/Users/mateo/Code/School/CMSC447/OutaStock/web/.env.local` | Local-only frontend environment overrides for developer machines. | None inside the included scope. | Frontend Vite dev/runtime resolution. |
+| `/Users/mateo/Code/School/CMSC447/OutaStock/web/.prettierrc` | Frontend formatting preferences used by Prettier. | None inside the included scope. | `web/package.json` formatting scripts. |
+| `/Users/mateo/Code/School/CMSC447/OutaStock/web/Caddyfile` | Static file server configuration for the built frontend SPA. | `web/index.html`<br>`web/dist` output at build time | `web/Dockerfile`<br>`docker-compose.yml`<br>`docker-compose.dev.yml` |
+| `/Users/mateo/Code/School/CMSC447/OutaStock/web/Dockerfile` | Frontend multi-stage container build recipe for the Vite app served by Caddy. | `web/package.json`<br>`web/package-lock.json`<br>`web/entrypoint.sh`<br>`web/Caddyfile` | `docker-compose.yml` |
+| `/Users/mateo/Code/School/CMSC447/OutaStock/web/entrypoint.sh` | Frontend container entrypoint that writes runtime env config before Caddy starts. | `web/public/env.js` | `web/Dockerfile` |
+| `/Users/mateo/Code/School/CMSC447/OutaStock/web/eslint.config.js` | ESLint flat-config for frontend linting rules and TypeScript/React integration. | `@eslint/js`<br>`eslint-plugin-react-hooks`<br>`eslint-plugin-react-refresh`<br>`eslint/config`<br>`globals`<br>`typescript-eslint` | `web/package.json` lint script. |
+| `/Users/mateo/Code/School/CMSC447/OutaStock/web/index.html` | Vite HTML entry document that boots the React application. | `web/public/env.js`<br>`web/src/main.tsx` | Vite dev server and production static hosting. |
+| `/Users/mateo/Code/School/CMSC447/OutaStock/web/package.json` | Frontend dependency and script manifest for React/Vite development. | `react`<br>`react-router-dom`<br>`@tanstack/react-query`<br>`d3`<br>`recharts`<br>`vite`<br>`typescript` | npm scripts, Vite, and container builds. |
+| `/Users/mateo/Code/School/CMSC447/OutaStock/web/package-lock.json` | Resolved frontend dependency lockfile for reproducible npm installs. | None inside the included scope. | `web/Dockerfile` and npm installs. |
+| `/Users/mateo/Code/School/CMSC447/OutaStock/web/postcss.config.js` | PostCSS configuration used during frontend builds. | `@fullhuman/postcss-purgecss` | Vite CSS pipeline. |
+| `/Users/mateo/Code/School/CMSC447/OutaStock/web/public/env.js` | Runtime-injected browser environment shim consumed by the frontend auth/network layer. | None inside the included scope. | `web/index.html` and `web/entrypoint.sh` |
+| `/Users/mateo/Code/School/CMSC447/OutaStock/web/tsconfig.json` | Top-level TypeScript project reference config for the frontend workspace. | None inside the included scope. | No in-scope dependents detected. |
+| `/Users/mateo/Code/School/CMSC447/OutaStock/web/tsconfig.app.json` | Browser-targeted TypeScript compiler configuration for app source. | None inside the included scope. | `web/tsconfig.json` |
+| `/Users/mateo/Code/School/CMSC447/OutaStock/web/tsconfig.node.json` | Node-targeted TypeScript compiler configuration for tooling files like Vite config. | None inside the included scope. | `web/tsconfig.json` |
+| `/Users/mateo/Code/School/CMSC447/OutaStock/web/vite.config.ts` | Vite build configuration, including React plugin and path aliases. | `@vitejs/plugin-react`<br>`path`<br>`vite` | Vite CLI and TS node config. |
+
+### Frontend / App Shell
+
+| File Path | Role | Imports/Dependencies | Dependents |
+| --- | --- | --- | --- |
+| `/Users/mateo/Code/School/CMSC447/OutaStock/web/src/main.tsx` | Frontend runtime entry point that mounts React and global providers. | `/Users/mateo/Code/School/CMSC447/OutaStock/web/src/App.tsx`<br>`/Users/mateo/Code/School/CMSC447/OutaStock/web/src/contexts/AuthContext.tsx`<br>`/Users/mateo/Code/School/CMSC447/OutaStock/web/src/contexts/SnackBarAlertContext.tsx`<br>`/Users/mateo/Code/School/CMSC447/OutaStock/web/src/contexts/ThemeContext.tsx`<br>`/Users/mateo/Code/School/CMSC447/OutaStock/web/src/index.css`<br>`/Users/mateo/Code/School/CMSC447/OutaStock/web/src/lib/queryClient.ts`<br>`@tanstack/react-query`<br>`react`<br>`react-dom/client`<br>`react-router-dom` | No in-scope dependents detected. |
+| `/Users/mateo/Code/School/CMSC447/OutaStock/web/src/App.tsx` | Frontend top-level route tree for the authenticated dashboard application. | `/Users/mateo/Code/School/CMSC447/OutaStock/web/src/App.css`<br>`/Users/mateo/Code/School/CMSC447/OutaStock/web/src/components/LoadingScreen/LoadingScreen.tsx`<br>`/Users/mateo/Code/School/CMSC447/OutaStock/web/src/components/LoadingScreen/ProtectedRoute.tsx`<br>`/Users/mateo/Code/School/CMSC447/OutaStock/web/src/components/Template.tsx`<br>`/Users/mateo/Code/School/CMSC447/OutaStock/web/src/contexts/ThemeContext.tsx`<br>`/Users/mateo/Code/School/CMSC447/OutaStock/web/src/realtime/WebSocketProvider.tsx`<br>`/Users/mateo/Code/School/CMSC447/OutaStock/web/src/styles/Global.css`<br>`/Users/mateo/Code/School/CMSC447/OutaStock/web/src/styles/Utils/Buttons.css`<br>`/Users/mateo/Code/School/CMSC447/OutaStock/web/src/styles/Utils/PageLayout.css`<br>`/Users/mateo/Code/School/CMSC447/OutaStock/web/src/styles/Utils/TableUtils.css`<br>`react`<br>`react-router-dom` | `/Users/mateo/Code/School/CMSC447/OutaStock/web/src/main.tsx` |
+| `/Users/mateo/Code/School/CMSC447/OutaStock/web/src/App.css` | App-level CSS imported at the root application shell. | None inside the included scope. | `/Users/mateo/Code/School/CMSC447/OutaStock/web/src/App.tsx` |
+| `/Users/mateo/Code/School/CMSC447/OutaStock/web/src/index.css` | Global browser baseline styles loaded before component-specific styling. | None inside the included scope. | `/Users/mateo/Code/School/CMSC447/OutaStock/web/src/main.tsx` |
+| `/Users/mateo/Code/School/CMSC447/OutaStock/web/src/declarations.d.ts` | Custom ambient TypeScript declarations for project-specific module shapes. | None inside the included scope. | No in-scope dependents detected. |
+| `/Users/mateo/Code/School/CMSC447/OutaStock/web/src/vite-env.d.ts` | Vite ambient type definitions injected into the frontend TypeScript build. | None inside the included scope. | No in-scope dependents detected. |
+
+### Frontend / Components
+
+| File Path | Role | Imports/Dependencies | Dependents |
+| --- | --- | --- | --- |
+| `/Users/mateo/Code/School/CMSC447/OutaStock/web/src/components/Alerts/Alerts.tsx` | Alerts page placeholder/shell for future alert-management UX. | `/Users/mateo/Code/School/CMSC447/OutaStock/web/src/styles/Alerts/Alerts.css` | `/Users/mateo/Code/School/CMSC447/OutaStock/web/src/components/Template.tsx` |
+| `/Users/mateo/Code/School/CMSC447/OutaStock/web/src/components/Analytics/Analytics.tsx` | Analytics dashboard page that renders KPI summaries, Recharts visualizations, and a D3 heatmap. | `/Users/mateo/Code/School/CMSC447/OutaStock/web/src/components/Analytics/Analytics.css`<br>`/Users/mateo/Code/School/CMSC447/OutaStock/web/src/components/Analytics/ChartTooltip.tsx`<br>`/Users/mateo/Code/School/CMSC447/OutaStock/web/src/contexts/AuthContext.tsx`<br>`/Users/mateo/Code/School/CMSC447/OutaStock/web/src/hooks/useAnalytics.ts`<br>`/Users/mateo/Code/School/CMSC447/OutaStock/web/src/services/analyticsApi.ts`<br>`d3`<br>`react`<br>`recharts` | `/Users/mateo/Code/School/CMSC447/OutaStock/web/src/components/Template.tsx` |
+| `/Users/mateo/Code/School/CMSC447/OutaStock/web/src/components/Analytics/ChartTooltip.tsx` | Shared custom tooltip renderer for Recharts analytics visualizations. | None inside the included scope. | `/Users/mateo/Code/School/CMSC447/OutaStock/web/src/components/Analytics/Analytics.tsx` |
+| `/Users/mateo/Code/School/CMSC447/OutaStock/web/src/components/Home/Home.tsx` | Home dashboard page that composes core inventory and transaction overview widgets. | `/Users/mateo/Code/School/CMSC447/OutaStock/web/src/components/Home/Inventory.tsx`<br>`/Users/mateo/Code/School/CMSC447/OutaStock/web/src/components/Home/MetricCards.tsx`<br>`/Users/mateo/Code/School/CMSC447/OutaStock/web/src/components/Home/RecentTransactions.tsx`<br>`/Users/mateo/Code/School/CMSC447/OutaStock/web/src/styles/Home/Home.css` | `/Users/mateo/Code/School/CMSC447/OutaStock/web/src/components/Template.tsx` |
+| `/Users/mateo/Code/School/CMSC447/OutaStock/web/src/components/Home/Inventory.tsx` | Inventory dashboard card with inline editing and stock-management actions. | `/Users/mateo/Code/School/CMSC447/OutaStock/web/src/components/Modals/ConfirmationModal.tsx`<br>`/Users/mateo/Code/School/CMSC447/OutaStock/web/src/components/Modals/EditInventoryModal.tsx`<br>`/Users/mateo/Code/School/CMSC447/OutaStock/web/src/contexts/SnackBarAlertContext.tsx`<br>`/Users/mateo/Code/School/CMSC447/OutaStock/web/src/hooks/useInventory.ts`<br>`/Users/mateo/Code/School/CMSC447/OutaStock/web/src/hooks/useProducts.ts`<br>`/Users/mateo/Code/School/CMSC447/OutaStock/web/src/services/types.ts`<br>`/Users/mateo/Code/School/CMSC447/OutaStock/web/src/styles/Home/Inventory.css`<br>`/Users/mateo/Code/School/CMSC447/OutaStock/web/src/styles/Utils/Buttons.css`<br>`/Users/mateo/Code/School/CMSC447/OutaStock/web/src/styles/Utils/TableUtils.css`<br>`@mui/icons-material/Delete`<br>`@mui/icons-material/Edit`<br>`react` | `/Users/mateo/Code/School/CMSC447/OutaStock/web/src/components/Home/Home.tsx` |
+| `/Users/mateo/Code/School/CMSC447/OutaStock/web/src/components/Home/MetricCards.tsx` | Dashboard KPI card row summarizing inventory health metrics. | `/Users/mateo/Code/School/CMSC447/OutaStock/web/src/hooks/useMetrics.ts`<br>`@mui/icons-material/BatteryCharging20`<br>`@mui/icons-material/HourglassDisabled`<br>`@mui/icons-material/Inventory` | `/Users/mateo/Code/School/CMSC447/OutaStock/web/src/components/Home/Home.tsx` |
+| `/Users/mateo/Code/School/CMSC447/OutaStock/web/src/components/Home/RecentTransactions.tsx` | Dashboard card showing the most recent transaction activity. | `/Users/mateo/Code/School/CMSC447/OutaStock/web/src/hooks/useTransactions.ts`<br>`/Users/mateo/Code/School/CMSC447/OutaStock/web/src/styles/Home/RecentTransactions.css`<br>`react` | `/Users/mateo/Code/School/CMSC447/OutaStock/web/src/components/Home/Home.tsx` |
+| `/Users/mateo/Code/School/CMSC447/OutaStock/web/src/components/LoadingScreen/AdminRoute.tsx` | Route guard that restricts child routes to admin users. | `/Users/mateo/Code/School/CMSC447/OutaStock/web/src/components/LoadingScreen/LoadingScreen.tsx`<br>`/Users/mateo/Code/School/CMSC447/OutaStock/web/src/contexts/AuthContext.tsx`<br>`react`<br>`react-router-dom` | `/Users/mateo/Code/School/CMSC447/OutaStock/web/src/components/Settings/Settings.tsx` |
+| `/Users/mateo/Code/School/CMSC447/OutaStock/web/src/components/LoadingScreen/LoadingScreen.tsx` | Initial splash/loading gate used during session bootstrap. | `/Users/mateo/Code/School/CMSC447/OutaStock/web/src/contexts/AuthContext.tsx`<br>`/Users/mateo/Code/School/CMSC447/OutaStock/web/src/styles/LoadingScreen/LoadingScreen.css`<br>`react`<br>`react-router-dom` | `/Users/mateo/Code/School/CMSC447/OutaStock/web/src/App.tsx`<br>`/Users/mateo/Code/School/CMSC447/OutaStock/web/src/components/LoadingScreen/AdminRoute.tsx`<br>`/Users/mateo/Code/School/CMSC447/OutaStock/web/src/components/LoadingScreen/ProtectedRoute.tsx` |
+| `/Users/mateo/Code/School/CMSC447/OutaStock/web/src/components/LoadingScreen/ProtectedRoute.tsx` | Authenticated route guard for the main dashboard shell. | `/Users/mateo/Code/School/CMSC447/OutaStock/web/src/components/LoadingScreen/LoadingScreen.tsx`<br>`/Users/mateo/Code/School/CMSC447/OutaStock/web/src/contexts/AuthContext.tsx`<br>`react`<br>`react-router-dom` | `/Users/mateo/Code/School/CMSC447/OutaStock/web/src/App.tsx` |
+| `/Users/mateo/Code/School/CMSC447/OutaStock/web/src/components/Modals/AddProductModal.tsx` | Modal form for creating a product with cost and price inputs. | `/Users/mateo/Code/School/CMSC447/OutaStock/web/src/styles/Modals/AddProductModal.css`<br>`react` | `/Users/mateo/Code/School/CMSC447/OutaStock/web/src/components/UpdateProducts/UpdateProducts.tsx` |
+| `/Users/mateo/Code/School/CMSC447/OutaStock/web/src/components/Modals/ConfirmationModal.tsx` | Reusable confirmation dialog component for destructive or commit actions. | `/Users/mateo/Code/School/CMSC447/OutaStock/web/src/styles/Modals/ConfirmationModal.css`<br>`@mui/icons-material/Warning` | `/Users/mateo/Code/School/CMSC447/OutaStock/web/src/components/Home/Inventory.tsx`<br>`/Users/mateo/Code/School/CMSC447/OutaStock/web/src/components/Settings/Team.tsx`<br>`/Users/mateo/Code/School/CMSC447/OutaStock/web/src/components/UpdateProducts/UpdateProducts.tsx` |
+| `/Users/mateo/Code/School/CMSC447/OutaStock/web/src/components/Modals/EditInventoryModal.tsx` | Modal form for editing inventory slot assignment and quantity. | `/Users/mateo/Code/School/CMSC447/OutaStock/web/src/services/types.ts`<br>`/Users/mateo/Code/School/CMSC447/OutaStock/web/src/styles/Modals/EditInventoryModal.css`<br>`@mui/material`<br>`react` | `/Users/mateo/Code/School/CMSC447/OutaStock/web/src/components/Home/Inventory.tsx` |
+| `/Users/mateo/Code/School/CMSC447/OutaStock/web/src/components/Modals/EditProductModal.tsx` | Modal form for editing an existing product’s mutable fields. | `/Users/mateo/Code/School/CMSC447/OutaStock/web/src/services/types.ts`<br>`react` | `/Users/mateo/Code/School/CMSC447/OutaStock/web/src/components/UpdateProducts/UpdateProducts.tsx` |
+| `/Users/mateo/Code/School/CMSC447/OutaStock/web/src/components/Settings/Apperance.tsx` | Settings subpage for application theme/appearance controls. | `/Users/mateo/Code/School/CMSC447/OutaStock/web/src/contexts/ThemeContext.tsx`<br>`/Users/mateo/Code/School/CMSC447/OutaStock/web/src/styles/Settings/Apperance.css`<br>`@mui/icons-material/DarkMode`<br>`@mui/icons-material/LightMode` | `/Users/mateo/Code/School/CMSC447/OutaStock/web/src/components/Settings/Settings.tsx` |
+| `/Users/mateo/Code/School/CMSC447/OutaStock/web/src/components/Settings/Profile.tsx` | Settings subpage for current-user profile and credential management. | `/Users/mateo/Code/School/CMSC447/OutaStock/web/src/contexts/AuthContext.tsx`<br>`/Users/mateo/Code/School/CMSC447/OutaStock/web/src/contexts/SnackBarAlertContext.tsx`<br>`/Users/mateo/Code/School/CMSC447/OutaStock/web/src/hooks/useUsers.ts`<br>`/Users/mateo/Code/School/CMSC447/OutaStock/web/src/styles/Settings/Profile.css`<br>`/Users/mateo/Code/School/CMSC447/OutaStock/web/src/utils/passwordValidation.ts`<br>`react` | `/Users/mateo/Code/School/CMSC447/OutaStock/web/src/components/Settings/Settings.tsx` |
+| `/Users/mateo/Code/School/CMSC447/OutaStock/web/src/components/Settings/Settings.tsx` | Settings section shell that composes profile, team, threshold, and appearance panels. | `/Users/mateo/Code/School/CMSC447/OutaStock/web/src/components/LoadingScreen/AdminRoute.tsx`<br>`/Users/mateo/Code/School/CMSC447/OutaStock/web/src/components/Settings/Apperance.tsx`<br>`/Users/mateo/Code/School/CMSC447/OutaStock/web/src/components/Settings/Profile.tsx`<br>`/Users/mateo/Code/School/CMSC447/OutaStock/web/src/components/Settings/Team.tsx`<br>`/Users/mateo/Code/School/CMSC447/OutaStock/web/src/components/Settings/Thresholds.tsx`<br>`/Users/mateo/Code/School/CMSC447/OutaStock/web/src/contexts/AuthContext.tsx`<br>`/Users/mateo/Code/School/CMSC447/OutaStock/web/src/styles/Settings/Settings.css`<br>`@mui/icons-material/Bedtime`<br>`@mui/icons-material/Groups`<br>`@mui/icons-material/Person`<br>`@mui/icons-material/Tune`<br>`react`<br>`react-router-dom` | `/Users/mateo/Code/School/CMSC447/OutaStock/web/src/components/Template.tsx` |
+| `/Users/mateo/Code/School/CMSC447/OutaStock/web/src/components/Settings/Team.tsx` | Settings subpage for team/user administration workflows. | `/Users/mateo/Code/School/CMSC447/OutaStock/web/src/components/Modals/ConfirmationModal.tsx`<br>`/Users/mateo/Code/School/CMSC447/OutaStock/web/src/contexts/AuthContext.tsx`<br>`/Users/mateo/Code/School/CMSC447/OutaStock/web/src/contexts/SnackBarAlertContext.tsx`<br>`/Users/mateo/Code/School/CMSC447/OutaStock/web/src/hooks/useUsers.ts`<br>`/Users/mateo/Code/School/CMSC447/OutaStock/web/src/services/types.ts`<br>`/Users/mateo/Code/School/CMSC447/OutaStock/web/src/styles/Settings/Profile.css`<br>`/Users/mateo/Code/School/CMSC447/OutaStock/web/src/utils/passwordValidation.ts`<br>`react` | `/Users/mateo/Code/School/CMSC447/OutaStock/web/src/components/Settings/Settings.tsx` |
+| `/Users/mateo/Code/School/CMSC447/OutaStock/web/src/components/Settings/Thresholds.tsx` | Settings subpage for low-stock threshold configuration. | `/Users/mateo/Code/School/CMSC447/OutaStock/web/src/contexts/SnackBarAlertContext.tsx`<br>`/Users/mateo/Code/School/CMSC447/OutaStock/web/src/hooks/useSettings.ts`<br>`/Users/mateo/Code/School/CMSC447/OutaStock/web/src/styles/Settings/Profile.css`<br>`react` | `/Users/mateo/Code/School/CMSC447/OutaStock/web/src/components/Settings/Settings.tsx` |
+| `/Users/mateo/Code/School/CMSC447/OutaStock/web/src/components/Template.tsx` | Primary dashboard shell with sidebar navigation, nested routes, and chrome. | `/Users/mateo/Code/School/CMSC447/OutaStock/web/src/components/Alerts/Alerts.tsx`<br>`/Users/mateo/Code/School/CMSC447/OutaStock/web/src/components/Analytics/Analytics.tsx`<br>`/Users/mateo/Code/School/CMSC447/OutaStock/web/src/components/Home/Home.tsx`<br>`/Users/mateo/Code/School/CMSC447/OutaStock/web/src/components/Settings/Settings.tsx`<br>`/Users/mateo/Code/School/CMSC447/OutaStock/web/src/components/Transactions/ViewAllTransactions.tsx`<br>`/Users/mateo/Code/School/CMSC447/OutaStock/web/src/components/UpdateProducts/UpdateProducts.tsx`<br>`/Users/mateo/Code/School/CMSC447/OutaStock/web/src/contexts/AuthContext.tsx`<br>`/Users/mateo/Code/School/CMSC447/OutaStock/web/src/styles/Template.css`<br>`@mui/icons-material/AddAlert`<br>`@mui/icons-material/Home`<br>`@mui/icons-material/ReceiptLong`<br>`@mui/icons-material/Settings`<br>`@mui/icons-material/SystemUpdate`<br>`@mui/icons-material/TrendingUp`<br>`@mui/icons-material/UploadFile`<br>`react`<br>`react-router-dom`<br>`react-tooltip`<br>`react-tooltip/dist/react-tooltip.css` | `/Users/mateo/Code/School/CMSC447/OutaStock/web/src/App.tsx` |
+| `/Users/mateo/Code/School/CMSC447/OutaStock/web/src/components/Transactions/ViewAllTransactions.tsx` | Transactions page with searchable, sortable transaction listing UI. | `/Users/mateo/Code/School/CMSC447/OutaStock/web/src/hooks/useTransactions.ts`<br>`/Users/mateo/Code/School/CMSC447/OutaStock/web/src/styles/Transactions/ViewAllTransactions.css`<br>`/Users/mateo/Code/School/CMSC447/OutaStock/web/src/styles/UpdateProducts/UpdateProducts.css`<br>`/Users/mateo/Code/School/CMSC447/OutaStock/web/src/styles/Utils/Buttons.css`<br>`/Users/mateo/Code/School/CMSC447/OutaStock/web/src/styles/Utils/PageLayout.css`<br>`/Users/mateo/Code/School/CMSC447/OutaStock/web/src/styles/Utils/TableUtils.css`<br>`react` | `/Users/mateo/Code/School/CMSC447/OutaStock/web/src/components/Template.tsx` |
+| `/Users/mateo/Code/School/CMSC447/OutaStock/web/src/components/UpdateProducts/UpdateProducts.tsx` | Product management page for listing, creating, editing, and deleting catalog entries. | `/Users/mateo/Code/School/CMSC447/OutaStock/web/src/components/Modals/AddProductModal.tsx`<br>`/Users/mateo/Code/School/CMSC447/OutaStock/web/src/components/Modals/ConfirmationModal.tsx`<br>`/Users/mateo/Code/School/CMSC447/OutaStock/web/src/components/Modals/EditProductModal.tsx`<br>`/Users/mateo/Code/School/CMSC447/OutaStock/web/src/contexts/SnackBarAlertContext.tsx`<br>`/Users/mateo/Code/School/CMSC447/OutaStock/web/src/hooks/useProducts.ts`<br>`/Users/mateo/Code/School/CMSC447/OutaStock/web/src/services/types.ts`<br>`/Users/mateo/Code/School/CMSC447/OutaStock/web/src/styles/UpdateProducts/UpdateProducts.css`<br>`/Users/mateo/Code/School/CMSC447/OutaStock/web/src/styles/Utils/Buttons.css`<br>`/Users/mateo/Code/School/CMSC447/OutaStock/web/src/styles/Utils/PageLayout.css`<br>`/Users/mateo/Code/School/CMSC447/OutaStock/web/src/styles/Utils/TableUtils.css`<br>`@mui/icons-material/Add`<br>`@mui/icons-material/Delete`<br>`@mui/icons-material/Edit`<br>`react` | `/Users/mateo/Code/School/CMSC447/OutaStock/web/src/components/Template.tsx` |
+
+### Frontend / Contexts
+
+| File Path | Role | Imports/Dependencies | Dependents |
+| --- | --- | --- | --- |
+| `/Users/mateo/Code/School/CMSC447/OutaStock/web/src/contexts/AuthContext.tsx` | React context that exposes session state and auth actions to the frontend. | `/Users/mateo/Code/School/CMSC447/OutaStock/web/src/hooks/useIdleSession.ts`<br>`/Users/mateo/Code/School/CMSC447/OutaStock/web/src/hooks/useSession.ts`<br>`/Users/mateo/Code/School/CMSC447/OutaStock/web/src/lib/queryKeys.ts`<br>`/Users/mateo/Code/School/CMSC447/OutaStock/web/src/services/auth.ts`<br>`@tanstack/react-query`<br>`react` | `/Users/mateo/Code/School/CMSC447/OutaStock/web/src/components/Analytics/Analytics.tsx`<br>`/Users/mateo/Code/School/CMSC447/OutaStock/web/src/components/LoadingScreen/AdminRoute.tsx`<br>`/Users/mateo/Code/School/CMSC447/OutaStock/web/src/components/LoadingScreen/LoadingScreen.tsx`<br>`/Users/mateo/Code/School/CMSC447/OutaStock/web/src/components/LoadingScreen/ProtectedRoute.tsx`<br>`/Users/mateo/Code/School/CMSC447/OutaStock/web/src/components/Settings/Profile.tsx`<br>`/Users/mateo/Code/School/CMSC447/OutaStock/web/src/components/Settings/Settings.tsx`<br>`/Users/mateo/Code/School/CMSC447/OutaStock/web/src/components/Settings/Team.tsx`<br>`/Users/mateo/Code/School/CMSC447/OutaStock/web/src/components/Template.tsx`<br>`/Users/mateo/Code/School/CMSC447/OutaStock/web/src/main.tsx` |
+| `/Users/mateo/Code/School/CMSC447/OutaStock/web/src/contexts/SnackBarAlertContext.tsx` | React context/provider for transient user-facing alerts and snackbars. | `@mui/material`<br>`react` | `/Users/mateo/Code/School/CMSC447/OutaStock/web/src/components/Home/Inventory.tsx`<br>`/Users/mateo/Code/School/CMSC447/OutaStock/web/src/components/Settings/Profile.tsx`<br>`/Users/mateo/Code/School/CMSC447/OutaStock/web/src/components/Settings/Team.tsx`<br>`/Users/mateo/Code/School/CMSC447/OutaStock/web/src/components/Settings/Thresholds.tsx`<br>`/Users/mateo/Code/School/CMSC447/OutaStock/web/src/components/UpdateProducts/UpdateProducts.tsx`<br>`/Users/mateo/Code/School/CMSC447/OutaStock/web/src/hooks/useIdleSession.ts`<br>`/Users/mateo/Code/School/CMSC447/OutaStock/web/src/main.tsx` |
+| `/Users/mateo/Code/School/CMSC447/OutaStock/web/src/contexts/ThemeContext.tsx` | React context/provider for theme state and persistence. | `react` | `/Users/mateo/Code/School/CMSC447/OutaStock/web/src/App.tsx`<br>`/Users/mateo/Code/School/CMSC447/OutaStock/web/src/components/Settings/Apperance.tsx`<br>`/Users/mateo/Code/School/CMSC447/OutaStock/web/src/main.tsx` |
+
+### Frontend / Hooks
+
+| File Path | Role | Imports/Dependencies | Dependents |
+| --- | --- | --- | --- |
+| `/Users/mateo/Code/School/CMSC447/OutaStock/web/src/hooks/useAnalytics.ts` | TanStack Query hook bundle for analytics API endpoints. | `/Users/mateo/Code/School/CMSC447/OutaStock/web/src/lib/queryKeys.ts`<br>`/Users/mateo/Code/School/CMSC447/OutaStock/web/src/services/analyticsApi.ts`<br>`@tanstack/react-query` | `/Users/mateo/Code/School/CMSC447/OutaStock/web/src/components/Analytics/Analytics.tsx` |
+| `/Users/mateo/Code/School/CMSC447/OutaStock/web/src/hooks/useIdleSession.ts` | Session idle-time hook that logs users out after inactivity. | `/Users/mateo/Code/School/CMSC447/OutaStock/web/src/contexts/SnackBarAlertContext.tsx`<br>`/Users/mateo/Code/School/CMSC447/OutaStock/web/src/lib/activityBus.ts`<br>`/Users/mateo/Code/School/CMSC447/OutaStock/web/src/lib/queryKeys.ts`<br>`/Users/mateo/Code/School/CMSC447/OutaStock/web/src/services/auth.ts`<br>`@tanstack/react-query`<br>`react` | `/Users/mateo/Code/School/CMSC447/OutaStock/web/src/contexts/AuthContext.tsx` |
+| `/Users/mateo/Code/School/CMSC447/OutaStock/web/src/hooks/useInventory.ts` | TanStack Query hook and mutations for inventory data. | `/Users/mateo/Code/School/CMSC447/OutaStock/web/src/lib/queryKeys.ts`<br>`/Users/mateo/Code/School/CMSC447/OutaStock/web/src/services/inventoryApi.ts`<br>`/Users/mateo/Code/School/CMSC447/OutaStock/web/src/services/types.ts`<br>`@tanstack/react-query` | `/Users/mateo/Code/School/CMSC447/OutaStock/web/src/components/Home/Inventory.tsx`<br>`/Users/mateo/Code/School/CMSC447/OutaStock/web/src/hooks/useMetrics.ts` |
+| `/Users/mateo/Code/School/CMSC447/OutaStock/web/src/hooks/useMetrics.ts` | Derived-query hook that computes dashboard metrics from inventory, products, and settings. | `/Users/mateo/Code/School/CMSC447/OutaStock/web/src/hooks/useInventory.ts`<br>`/Users/mateo/Code/School/CMSC447/OutaStock/web/src/hooks/useProducts.ts`<br>`/Users/mateo/Code/School/CMSC447/OutaStock/web/src/hooks/useSettings.ts`<br>`/Users/mateo/Code/School/CMSC447/OutaStock/web/src/lib/queryKeys.ts`<br>`/Users/mateo/Code/School/CMSC447/OutaStock/web/src/utils/metrics.ts`<br>`@tanstack/react-query` | `/Users/mateo/Code/School/CMSC447/OutaStock/web/src/components/Home/MetricCards.tsx` |
+| `/Users/mateo/Code/School/CMSC447/OutaStock/web/src/hooks/useProducts.ts` | TanStack Query hook and mutations for product catalog data. | `/Users/mateo/Code/School/CMSC447/OutaStock/web/src/lib/queryKeys.ts`<br>`/Users/mateo/Code/School/CMSC447/OutaStock/web/src/services/productsApi.ts`<br>`/Users/mateo/Code/School/CMSC447/OutaStock/web/src/services/types.ts`<br>`@tanstack/react-query` | `/Users/mateo/Code/School/CMSC447/OutaStock/web/src/components/Home/Inventory.tsx`<br>`/Users/mateo/Code/School/CMSC447/OutaStock/web/src/components/UpdateProducts/UpdateProducts.tsx`<br>`/Users/mateo/Code/School/CMSC447/OutaStock/web/src/hooks/useMetrics.ts` |
+| `/Users/mateo/Code/School/CMSC447/OutaStock/web/src/hooks/useSession.ts` | TanStack Query hook set for session bootstrap, sign-in, and revalidation. | `/Users/mateo/Code/School/CMSC447/OutaStock/web/src/lib/queryKeys.ts`<br>`/Users/mateo/Code/School/CMSC447/OutaStock/web/src/services/auth.ts`<br>`@tanstack/react-query` | `/Users/mateo/Code/School/CMSC447/OutaStock/web/src/contexts/AuthContext.tsx`<br>`/Users/mateo/Code/School/CMSC447/OutaStock/web/src/realtime/WebSocketProvider.tsx` |
+| `/Users/mateo/Code/School/CMSC447/OutaStock/web/src/hooks/useSettings.ts` | TanStack Query hook and mutation for app settings. | `/Users/mateo/Code/School/CMSC447/OutaStock/web/src/lib/queryKeys.ts`<br>`/Users/mateo/Code/School/CMSC447/OutaStock/web/src/services/settingsApi.ts`<br>`@tanstack/react-query` | `/Users/mateo/Code/School/CMSC447/OutaStock/web/src/components/Settings/Thresholds.tsx`<br>`/Users/mateo/Code/School/CMSC447/OutaStock/web/src/hooks/useMetrics.ts` |
+| `/Users/mateo/Code/School/CMSC447/OutaStock/web/src/hooks/useTransactions.ts` | TanStack Query hook for transaction list retrieval and counts. | `/Users/mateo/Code/School/CMSC447/OutaStock/web/src/lib/queryKeys.ts`<br>`/Users/mateo/Code/School/CMSC447/OutaStock/web/src/services/transactionsApi.ts`<br>`@tanstack/react-query` | `/Users/mateo/Code/School/CMSC447/OutaStock/web/src/components/Home/RecentTransactions.tsx`<br>`/Users/mateo/Code/School/CMSC447/OutaStock/web/src/components/Transactions/ViewAllTransactions.tsx` |
+| `/Users/mateo/Code/School/CMSC447/OutaStock/web/src/hooks/useUsers.ts` | TanStack Query hooks and mutations for user administration. | `/Users/mateo/Code/School/CMSC447/OutaStock/web/src/lib/queryKeys.ts`<br>`/Users/mateo/Code/School/CMSC447/OutaStock/web/src/services/auth.ts`<br>`/Users/mateo/Code/School/CMSC447/OutaStock/web/src/services/types.ts`<br>`/Users/mateo/Code/School/CMSC447/OutaStock/web/src/services/usersApi.ts`<br>`@tanstack/react-query` | `/Users/mateo/Code/School/CMSC447/OutaStock/web/src/components/Settings/Profile.tsx`<br>`/Users/mateo/Code/School/CMSC447/OutaStock/web/src/components/Settings/Team.tsx` |
+
+### Frontend / Libraries
+
+| File Path | Role | Imports/Dependencies | Dependents |
+| --- | --- | --- | --- |
+| `/Users/mateo/Code/School/CMSC447/OutaStock/web/src/lib/activityBus.ts` | Frontend in-memory activity event bus used by idle and realtime flows. | None inside the included scope. | `/Users/mateo/Code/School/CMSC447/OutaStock/web/src/hooks/useIdleSession.ts`<br>`/Users/mateo/Code/School/CMSC447/OutaStock/web/src/realtime/WebSocketProvider.tsx` |
+| `/Users/mateo/Code/School/CMSC447/OutaStock/web/src/lib/queryClient.ts` | Shared TanStack Query client configuration and retry policy. | `/Users/mateo/Code/School/CMSC447/OutaStock/web/src/services/http.ts`<br>`@tanstack/react-query` | `/Users/mateo/Code/School/CMSC447/OutaStock/web/src/main.tsx` |
+| `/Users/mateo/Code/School/CMSC447/OutaStock/web/src/lib/queryKeys.ts` | Centralized query-key registry for all server-state domains. | `/Users/mateo/Code/School/CMSC447/OutaStock/web/src/services/inventoryApi.ts`<br>`/Users/mateo/Code/School/CMSC447/OutaStock/web/src/services/productsApi.ts`<br>`/Users/mateo/Code/School/CMSC447/OutaStock/web/src/services/transactionsApi.ts`<br>`/Users/mateo/Code/School/CMSC447/OutaStock/web/src/services/types.ts` | `/Users/mateo/Code/School/CMSC447/OutaStock/web/src/contexts/AuthContext.tsx`<br>`/Users/mateo/Code/School/CMSC447/OutaStock/web/src/hooks/useAnalytics.ts`<br>`/Users/mateo/Code/School/CMSC447/OutaStock/web/src/hooks/useIdleSession.ts`<br>`/Users/mateo/Code/School/CMSC447/OutaStock/web/src/hooks/useInventory.ts`<br>`/Users/mateo/Code/School/CMSC447/OutaStock/web/src/hooks/useMetrics.ts`<br>`/Users/mateo/Code/School/CMSC447/OutaStock/web/src/hooks/useProducts.ts`<br>`/Users/mateo/Code/School/CMSC447/OutaStock/web/src/hooks/useSession.ts`<br>`/Users/mateo/Code/School/CMSC447/OutaStock/web/src/hooks/useSettings.ts`<br>`/Users/mateo/Code/School/CMSC447/OutaStock/web/src/hooks/useTransactions.ts`<br>`/Users/mateo/Code/School/CMSC447/OutaStock/web/src/hooks/useUsers.ts`<br>`/Users/mateo/Code/School/CMSC447/OutaStock/web/src/realtime/WebSocketProvider.tsx` |
+| `/Users/mateo/Code/School/CMSC447/OutaStock/web/src/realtime/WebSocketProvider.tsx` | Realtime invalidation bridge that maps websocket events to TanStack Query cache refreshes. | `/Users/mateo/Code/School/CMSC447/OutaStock/web/src/hooks/useSession.ts`<br>`/Users/mateo/Code/School/CMSC447/OutaStock/web/src/lib/activityBus.ts`<br>`/Users/mateo/Code/School/CMSC447/OutaStock/web/src/lib/queryKeys.ts`<br>`/Users/mateo/Code/School/CMSC447/OutaStock/web/src/services/auth.ts`<br>`@tanstack/react-query`<br>`react` | `/Users/mateo/Code/School/CMSC447/OutaStock/web/src/App.tsx` |
+
+### Frontend / Services
+
+| File Path | Role | Imports/Dependencies | Dependents |
+| --- | --- | --- | --- |
+| `/Users/mateo/Code/School/CMSC447/OutaStock/web/src/services/analyticsApi.ts` | Frontend analytics API client wrapping protected analytics endpoints. | `/Users/mateo/Code/School/CMSC447/OutaStock/web/src/services/auth.ts` | `/Users/mateo/Code/School/CMSC447/OutaStock/web/src/components/Analytics/Analytics.tsx`<br>`/Users/mateo/Code/School/CMSC447/OutaStock/web/src/hooks/useAnalytics.ts` |
+| `/Users/mateo/Code/School/CMSC447/OutaStock/web/src/services/auth.ts` | Frontend auth/session service for token storage, login, and runtime URL resolution. | `/Users/mateo/Code/School/CMSC447/OutaStock/web/src/services/types.ts` | `/Users/mateo/Code/School/CMSC447/OutaStock/web/src/contexts/AuthContext.tsx`<br>`/Users/mateo/Code/School/CMSC447/OutaStock/web/src/hooks/useIdleSession.ts`<br>`/Users/mateo/Code/School/CMSC447/OutaStock/web/src/hooks/useSession.ts`<br>`/Users/mateo/Code/School/CMSC447/OutaStock/web/src/hooks/useUsers.ts`<br>`/Users/mateo/Code/School/CMSC447/OutaStock/web/src/realtime/WebSocketProvider.tsx`<br>`/Users/mateo/Code/School/CMSC447/OutaStock/web/src/services/analyticsApi.ts`<br>`/Users/mateo/Code/School/CMSC447/OutaStock/web/src/services/http.ts` |
+| `/Users/mateo/Code/School/CMSC447/OutaStock/web/src/services/http.ts` | Shared authenticated HTTP wrapper and API error utilities. | `/Users/mateo/Code/School/CMSC447/OutaStock/web/src/services/auth.ts` | `/Users/mateo/Code/School/CMSC447/OutaStock/web/src/lib/queryClient.ts`<br>`/Users/mateo/Code/School/CMSC447/OutaStock/web/src/services/inventoryApi.ts`<br>`/Users/mateo/Code/School/CMSC447/OutaStock/web/src/services/productsApi.ts`<br>`/Users/mateo/Code/School/CMSC447/OutaStock/web/src/services/settingsApi.ts`<br>`/Users/mateo/Code/School/CMSC447/OutaStock/web/src/services/transactionsApi.ts`<br>`/Users/mateo/Code/School/CMSC447/OutaStock/web/src/services/usersApi.ts` |
+| `/Users/mateo/Code/School/CMSC447/OutaStock/web/src/services/inventoryApi.ts` | Inventory-focused frontend API client functions. | `/Users/mateo/Code/School/CMSC447/OutaStock/web/src/services/http.ts`<br>`/Users/mateo/Code/School/CMSC447/OutaStock/web/src/services/types.ts` | `/Users/mateo/Code/School/CMSC447/OutaStock/web/src/hooks/useInventory.ts`<br>`/Users/mateo/Code/School/CMSC447/OutaStock/web/src/lib/queryKeys.ts` |
+| `/Users/mateo/Code/School/CMSC447/OutaStock/web/src/services/productsApi.ts` | Product-focused frontend API client functions. | `/Users/mateo/Code/School/CMSC447/OutaStock/web/src/services/http.ts`<br>`/Users/mateo/Code/School/CMSC447/OutaStock/web/src/services/types.ts` | `/Users/mateo/Code/School/CMSC447/OutaStock/web/src/hooks/useProducts.ts`<br>`/Users/mateo/Code/School/CMSC447/OutaStock/web/src/lib/queryKeys.ts` |
+| `/Users/mateo/Code/School/CMSC447/OutaStock/web/src/services/settingsApi.ts` | Settings-focused frontend API client functions. | `/Users/mateo/Code/School/CMSC447/OutaStock/web/src/services/http.ts`<br>`/Users/mateo/Code/School/CMSC447/OutaStock/web/src/services/types.ts` | `/Users/mateo/Code/School/CMSC447/OutaStock/web/src/hooks/useSettings.ts` |
+| `/Users/mateo/Code/School/CMSC447/OutaStock/web/src/services/transactionsApi.ts` | Transactions-focused frontend API client functions. | `/Users/mateo/Code/School/CMSC447/OutaStock/web/src/services/http.ts`<br>`/Users/mateo/Code/School/CMSC447/OutaStock/web/src/services/types.ts` | `/Users/mateo/Code/School/CMSC447/OutaStock/web/src/hooks/useTransactions.ts`<br>`/Users/mateo/Code/School/CMSC447/OutaStock/web/src/lib/queryKeys.ts` |
+| `/Users/mateo/Code/School/CMSC447/OutaStock/web/src/services/types.ts` | Shared frontend domain types mirrored from backend API responses. | None inside the included scope. | `/Users/mateo/Code/School/CMSC447/OutaStock/web/src/components/Home/Inventory.tsx`<br>`/Users/mateo/Code/School/CMSC447/OutaStock/web/src/components/Modals/EditInventoryModal.tsx`<br>`/Users/mateo/Code/School/CMSC447/OutaStock/web/src/components/Modals/EditProductModal.tsx`<br>`/Users/mateo/Code/School/CMSC447/OutaStock/web/src/components/Settings/Team.tsx`<br>`/Users/mateo/Code/School/CMSC447/OutaStock/web/src/components/UpdateProducts/UpdateProducts.tsx`<br>`/Users/mateo/Code/School/CMSC447/OutaStock/web/src/hooks/useInventory.ts`<br>`/Users/mateo/Code/School/CMSC447/OutaStock/web/src/hooks/useProducts.ts`<br>`/Users/mateo/Code/School/CMSC447/OutaStock/web/src/hooks/useUsers.ts`<br>`/Users/mateo/Code/School/CMSC447/OutaStock/web/src/lib/queryKeys.ts`<br>`/Users/mateo/Code/School/CMSC447/OutaStock/web/src/services/auth.ts`<br>`/Users/mateo/Code/School/CMSC447/OutaStock/web/src/services/inventoryApi.ts`<br>`/Users/mateo/Code/School/CMSC447/OutaStock/web/src/services/productsApi.ts`<br>`/Users/mateo/Code/School/CMSC447/OutaStock/web/src/services/settingsApi.ts`<br>`/Users/mateo/Code/School/CMSC447/OutaStock/web/src/services/transactionsApi.ts`<br>`/Users/mateo/Code/School/CMSC447/OutaStock/web/src/services/usersApi.ts`<br>`/Users/mateo/Code/School/CMSC447/OutaStock/web/src/utils/metrics.ts` |
+| `/Users/mateo/Code/School/CMSC447/OutaStock/web/src/services/usersApi.ts` | User-admin frontend API client functions. | `/Users/mateo/Code/School/CMSC447/OutaStock/web/src/services/http.ts`<br>`/Users/mateo/Code/School/CMSC447/OutaStock/web/src/services/types.ts` | `/Users/mateo/Code/School/CMSC447/OutaStock/web/src/hooks/useUsers.ts` |
+
+### Frontend / Styles
+
+| File Path | Role | Imports/Dependencies | Dependents |
+| --- | --- | --- | --- |
+| `/Users/mateo/Code/School/CMSC447/OutaStock/web/src/styles/Alerts/Alerts.css` | Shared stylesheet module for a specific frontend feature or utility layer. | None inside the included scope. | `/Users/mateo/Code/School/CMSC447/OutaStock/web/src/components/Alerts/Alerts.tsx` |
+| `/Users/mateo/Code/School/CMSC447/OutaStock/web/src/styles/Global.css` | Shared stylesheet module for a specific frontend feature or utility layer. | None inside the included scope. | `/Users/mateo/Code/School/CMSC447/OutaStock/web/src/App.tsx` |
+| `/Users/mateo/Code/School/CMSC447/OutaStock/web/src/styles/Home/Home.css` | Shared stylesheet module for a specific frontend feature or utility layer. | None inside the included scope. | `/Users/mateo/Code/School/CMSC447/OutaStock/web/src/components/Home/Home.tsx` |
+| `/Users/mateo/Code/School/CMSC447/OutaStock/web/src/styles/Home/Inventory.css` | Shared stylesheet module for a specific frontend feature or utility layer. | None inside the included scope. | `/Users/mateo/Code/School/CMSC447/OutaStock/web/src/components/Home/Inventory.tsx` |
+| `/Users/mateo/Code/School/CMSC447/OutaStock/web/src/styles/Home/RecentTransactions.css` | Shared stylesheet module for a specific frontend feature or utility layer. | None inside the included scope. | `/Users/mateo/Code/School/CMSC447/OutaStock/web/src/components/Home/RecentTransactions.tsx` |
+| `/Users/mateo/Code/School/CMSC447/OutaStock/web/src/styles/LoadingScreen/LoadingScreen.css` | Shared stylesheet module for a specific frontend feature or utility layer. | None inside the included scope. | `/Users/mateo/Code/School/CMSC447/OutaStock/web/src/components/LoadingScreen/LoadingScreen.tsx` |
+| `/Users/mateo/Code/School/CMSC447/OutaStock/web/src/styles/Modals/AddProductModal.css` | Shared stylesheet module for a specific frontend feature or utility layer. | None inside the included scope. | `/Users/mateo/Code/School/CMSC447/OutaStock/web/src/components/Modals/AddProductModal.tsx` |
+| `/Users/mateo/Code/School/CMSC447/OutaStock/web/src/styles/Modals/ConfirmationModal.css` | Shared stylesheet module for a specific frontend feature or utility layer. | None inside the included scope. | `/Users/mateo/Code/School/CMSC447/OutaStock/web/src/components/Modals/ConfirmationModal.tsx` |
+| `/Users/mateo/Code/School/CMSC447/OutaStock/web/src/styles/Modals/EditInventoryModal.css` | Shared stylesheet module for a specific frontend feature or utility layer. | None inside the included scope. | `/Users/mateo/Code/School/CMSC447/OutaStock/web/src/components/Modals/EditInventoryModal.tsx` |
+| `/Users/mateo/Code/School/CMSC447/OutaStock/web/src/styles/Settings/Apperance.css` | Shared stylesheet module for a specific frontend feature or utility layer. | None inside the included scope. | `/Users/mateo/Code/School/CMSC447/OutaStock/web/src/components/Settings/Apperance.tsx` |
+| `/Users/mateo/Code/School/CMSC447/OutaStock/web/src/styles/Settings/Profile.css` | Shared stylesheet module for a specific frontend feature or utility layer. | None inside the included scope. | `/Users/mateo/Code/School/CMSC447/OutaStock/web/src/components/Settings/Profile.tsx`<br>`/Users/mateo/Code/School/CMSC447/OutaStock/web/src/components/Settings/Team.tsx`<br>`/Users/mateo/Code/School/CMSC447/OutaStock/web/src/components/Settings/Thresholds.tsx` |
+| `/Users/mateo/Code/School/CMSC447/OutaStock/web/src/styles/Settings/Settings.css` | Shared stylesheet module for a specific frontend feature or utility layer. | None inside the included scope. | `/Users/mateo/Code/School/CMSC447/OutaStock/web/src/components/Settings/Settings.tsx` |
+| `/Users/mateo/Code/School/CMSC447/OutaStock/web/src/styles/Template.css` | Shared stylesheet module for a specific frontend feature or utility layer. | None inside the included scope. | `/Users/mateo/Code/School/CMSC447/OutaStock/web/src/components/Template.tsx` |
+| `/Users/mateo/Code/School/CMSC447/OutaStock/web/src/styles/Transactions/ViewAllTransactions.css` | Shared stylesheet module for a specific frontend feature or utility layer. | None inside the included scope. | `/Users/mateo/Code/School/CMSC447/OutaStock/web/src/components/Transactions/ViewAllTransactions.tsx` |
+| `/Users/mateo/Code/School/CMSC447/OutaStock/web/src/styles/UpdateProducts/UpdateProducts.css` | Shared stylesheet module for a specific frontend feature or utility layer. | None inside the included scope. | `/Users/mateo/Code/School/CMSC447/OutaStock/web/src/components/Transactions/ViewAllTransactions.tsx`<br>`/Users/mateo/Code/School/CMSC447/OutaStock/web/src/components/UpdateProducts/UpdateProducts.tsx` |
+| `/Users/mateo/Code/School/CMSC447/OutaStock/web/src/styles/Utils/Buttons.css` | Shared stylesheet module for a specific frontend feature or utility layer. | None inside the included scope. | `/Users/mateo/Code/School/CMSC447/OutaStock/web/src/App.tsx`<br>`/Users/mateo/Code/School/CMSC447/OutaStock/web/src/components/Home/Inventory.tsx`<br>`/Users/mateo/Code/School/CMSC447/OutaStock/web/src/components/Transactions/ViewAllTransactions.tsx`<br>`/Users/mateo/Code/School/CMSC447/OutaStock/web/src/components/UpdateProducts/UpdateProducts.tsx` |
+| `/Users/mateo/Code/School/CMSC447/OutaStock/web/src/styles/Utils/PageLayout.css` | Shared stylesheet module for a specific frontend feature or utility layer. | None inside the included scope. | `/Users/mateo/Code/School/CMSC447/OutaStock/web/src/App.tsx`<br>`/Users/mateo/Code/School/CMSC447/OutaStock/web/src/components/Transactions/ViewAllTransactions.tsx`<br>`/Users/mateo/Code/School/CMSC447/OutaStock/web/src/components/UpdateProducts/UpdateProducts.tsx` |
+| `/Users/mateo/Code/School/CMSC447/OutaStock/web/src/styles/Utils/TableUtils.css` | Shared stylesheet module for a specific frontend feature or utility layer. | None inside the included scope. | `/Users/mateo/Code/School/CMSC447/OutaStock/web/src/App.tsx`<br>`/Users/mateo/Code/School/CMSC447/OutaStock/web/src/components/Home/Inventory.tsx`<br>`/Users/mateo/Code/School/CMSC447/OutaStock/web/src/components/Transactions/ViewAllTransactions.tsx`<br>`/Users/mateo/Code/School/CMSC447/OutaStock/web/src/components/UpdateProducts/UpdateProducts.tsx` |
+| `/Users/mateo/Code/School/CMSC447/OutaStock/web/src/components/Analytics/Analytics.css` | Page-local stylesheet for the analytics dashboard layout and chart presentation. | None inside the included scope. | `/Users/mateo/Code/School/CMSC447/OutaStock/web/src/components/Analytics/Analytics.tsx` |
+
+### Frontend / Utils
+
+| File Path | Role | Imports/Dependencies | Dependents |
+| --- | --- | --- | --- |
+| `/Users/mateo/Code/School/CMSC447/OutaStock/web/src/utils/metrics.ts` | Pure utility functions for deriving dashboard metrics from fetched data. | `/Users/mateo/Code/School/CMSC447/OutaStock/web/src/services/types.ts` | `/Users/mateo/Code/School/CMSC447/OutaStock/web/src/hooks/useMetrics.ts` |
+| `/Users/mateo/Code/School/CMSC447/OutaStock/web/src/utils/passwordValidation.ts` | Password rule helper utilities reused by profile and team forms. | None inside the included scope. | `/Users/mateo/Code/School/CMSC447/OutaStock/web/src/components/Settings/Profile.tsx`<br>`/Users/mateo/Code/School/CMSC447/OutaStock/web/src/components/Settings/Team.tsx` |
 
-* manage products and prices
-* track inventory counts
-* record transactions
-* support dashboard-driven admin workflows
-* secure the dashboard and API with authentication
-
-The system is built to separate concerns cleanly between UI, API, persistence, and authentication.
-
-## 2. Core Stack
-
-| Layer | Technology | Notes |
-| --- | --- | --- |
-| Frontend | React + TypeScript + Vite | Dashboard UI, OIDC login flow, local HMR in development |
-| Backend | Go | REST API, business logic, auth enforcement |
-| HTTP Framework | Echo | Routing, middleware, JSON responses, CORS |
-| Database | PostgreSQL | Stores products, inventory, and transaction data |
-| Auth | ZITADEL | OIDC login for frontend, token validation for backend |
-| IaC | Terraform | Bootstraps local ZITADEL org/project/apps/user state |
-| Reverse Proxy | Caddy | Routes `localhost`, `api.localhost`, and `auth.localhost` |
-| Codegen | sqlc | Generates type-safe Go database access from SQL |
-| Dev Reload | Air + Vite | Hot reload for backend and frontend during development |
-
-## 3. Repository Structure
-
-The project uses a monorepo layout so the frontend, backend, Docker config, and Terraform config evolve together.
-
-```text
-.
-├── backend/              # Go API, services, repositories, router, config
-├── db/                   # SQL schema, queries, and seed data
-├── docs/                 # Architecture and API documentation
-├── terraform/            # Local ZITADEL bootstrap and env export scripts
-├── web/                  # React + Vite frontend
-├── docker-compose.yml    # Production-style local stack
-├── docker-compose.dev.yml
-├── Caddyfile
-├── Caddyfile.dev
-├── Taskfile.yml
-└── README.md
-```
-
-## 4. Runtime Architecture
-
-### Production-style local runtime
-
-The production workflow is fully containerized and is intended to behave like a realistic integrated deployment.
-
-Main runtime components:
-
-* `frontend`
-  * serves the built React app
-  * reads auth settings from generated env
-* `backend`
-  * serves the API
-  * validates access tokens with ZITADEL
-* `db`
-  * stores application data
-* `zitadel-api`
-  * core identity service
-* `zitadel-login`
-  * hosted login UI
-* `zitadel-db`
-  * dedicated PostgreSQL instance for ZITADEL
-* `caddy`
-  * public entrypoint and reverse proxy
-
-Public local endpoints:
-
-* `http://localhost` -> frontend
-* `http://localhost/api/*` -> backend
-* `http://api.localhost` -> backend / Swagger access
-* `http://auth.localhost` -> ZITADEL
-
-### Development runtime
-
-Development uses a hybrid setup to preserve fast feedback loops:
-
-Docker runs:
-
-* app database
-* Swagger
-* Caddy
-* ZITADEL services
-
-Local processes run:
-
-* Go backend via `air`
-* React frontend via Vite
-
-This gives the team:
-
-* real auth integration
-* real database access
-* hot reload for backend and frontend
-* no Docker rebuild on every code change
-
-## 5. Request Flow
-
-### Authenticated dashboard flow
-
-1. A user opens the frontend.
-2. The frontend checks whether a valid local session exists.
-3. If not authenticated, the user is sent to ZITADEL using OIDC + PKCE.
-4. ZITADEL redirects back to the frontend callback route.
-5. The frontend exchanges the authorization code for tokens.
-6. The frontend stores the session and attaches the bearer token to API requests.
-7. The backend middleware introspects the token with ZITADEL.
-8. If valid, the backend serves the protected API response.
-
-### API request flow
-
-1. The React client calls `/api/...`.
-2. Caddy forwards the request to the backend.
-3. The backend router applies auth middleware to protected routes.
-4. The handler calls the appropriate service.
-5. The service uses repository/sqlc code to query or mutate PostgreSQL.
-6. The backend returns JSON to the frontend.
-
-## 6. Backend Architecture
-
-The Go backend follows a layered design.
-
-### Entry and configuration
-
-Key files:
-
-* [backend/cmd/api/main.go](/Users/mateo/Code/School/CMSC447/OutaStock/backend/cmd/api/main.go)
-* [backend/cmd/config.go](/Users/mateo/Code/School/CMSC447/OutaStock/backend/cmd/config.go)
-
-Responsibilities:
-
-* load environment/config
-* initialize services
-* initialize database access
-* start the Echo server
-
-### Transport layer
-
-Key file:
-
-* [backend/internal/transport/router.go](/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/transport/router.go)
-
-Responsibilities:
-
-* define routes
-* configure middleware
-* apply CORS
-* expose public and protected API groups
-
-Auth middleware lives under the transport layer and enforces bearer token validation before protected endpoints run.
-
-### Service layer
-
-Key files:
-
-* [backend/internal/service/products_service.go](/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/service/products_service.go)
-* [backend/internal/service/inventory_service.go](/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/service/inventory_service.go)
-* [backend/internal/service/transactions_service.go](/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/service/transactions_service.go)
-
-Responsibilities:
-
-* business logic
-* validation orchestration
-* shaping repository data into app-level behavior
-
-### Repository layer
-
-Key files:
-
-* [backend/internal/repository/db.go](/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/repository/db.go)
-* sqlc-generated files in [backend/internal/repository](/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/repository)
-
-Responsibilities:
-
-* execute SQL queries
-* map rows to typed Go structs
-* keep database access strongly typed
-
-### Domain layer
-
-Key files:
-
-* [backend/internal/domain/product.go](/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/domain/product.go)
-* [backend/internal/domain/inventory.go](/Users/mateo/Code/School/CMSC447/OutaStock/backend/internal/domain/inventory.go)
-
-Responsibilities:
-
-* define core domain models
-* keep service contracts explicit
-
-## 7. Frontend Architecture
-
-The frontend is a React single-page application built with TypeScript and Vite.
-
-### App shell and routing
-
-Key files:
-
-* [web/src/main.tsx](/Users/mateo/Code/School/CMSC447/OutaStock/web/src/main.tsx)
-* [web/src/App.tsx](/Users/mateo/Code/School/CMSC447/OutaStock/web/src/App.tsx)
-
-Responsibilities:
-
-* boot the React app
-* provide global contexts
-* define routes
-* protect dashboard routes
-
-### Auth state and OIDC logic
-
-Key files:
-
-* [web/src/contexts/AuthContext.tsx](/Users/mateo/Code/School/CMSC447/OutaStock/web/src/contexts/AuthContext.tsx)
-* [web/src/services/auth.ts](/Users/mateo/Code/School/CMSC447/OutaStock/web/src/services/auth.ts)
-* [web/src/components/AuthCallback.tsx](/Users/mateo/Code/School/CMSC447/OutaStock/web/src/components/AuthCallback.tsx)
-* [web/src/components/ProtectedRoute.tsx](/Users/mateo/Code/School/CMSC447/OutaStock/web/src/components/ProtectedRoute.tsx)
-
-Responsibilities:
-
-* discover ZITADEL OIDC endpoints
-* start login with PKCE
-* complete the auth callback
-* persist session data
-* expose auth state to the rest of the app
-
-### API access
-
-Key file:
-
-* [web/src/services/api.tsx](/Users/mateo/Code/School/CMSC447/OutaStock/web/src/services/api.tsx)
-
-Responsibilities:
-
-* call backend endpoints
-* attach the bearer token when present
-* normalize frontend API access patterns
-
-### Dashboard UI
-
-Representative files:
-
-* [web/src/components/Dashboard.tsx](/Users/mateo/Code/School/CMSC447/OutaStock/web/src/components/Dashboard.tsx)
-* [web/src/components/Inventory.tsx](/Users/mateo/Code/School/CMSC447/OutaStock/web/src/components/Inventory.tsx)
-* [web/src/components/UpdateProducts.tsx](/Users/mateo/Code/School/CMSC447/OutaStock/web/src/components/UpdateProducts.tsx)
-* [web/src/components/RecentTransactions.tsx](/Users/mateo/Code/School/CMSC447/OutaStock/web/src/components/RecentTransactions.tsx)
-* [web/src/components/Profile.tsx](/Users/mateo/Code/School/CMSC447/OutaStock/web/src/components/Profile.tsx)
-
-Responsibilities:
-
-* render inventory and transaction views
-* show authenticated user context
-* provide management actions for products and inventory
-
-## 8. Authentication Architecture
-
-Authentication is one of the most important recent additions to the system.
-
-### ZITADEL responsibilities
-
-ZITADEL handles:
-
-* user sign-in
-* organization/project/application management
-* token issuance
-* token introspection
-* the admin console
-
-### Terraform responsibilities
-
-Terraform bootstraps local auth configuration by creating or managing:
-
-* the application organization context
-* the local project
-* the frontend OIDC application
-* the backend API application
-* the admin human user
-* org membership
-
-Terraform also exports runtime values consumed by Docker and dev tooling.
-
-### Frontend auth model
-
-The frontend uses:
-
-* OIDC Authorization Code Flow with PKCE
-* browser-local session persistence
-* runtime-configured issuer/client settings
-
-### Backend auth model
-
-The backend uses:
-
-* bearer token middleware
-* ZITADEL token introspection
-* issuer and audience checks
-
-Protected API routes fail closed when auth is missing or invalid.
-
-## 9. Infrastructure as Code and Environment Generation
-
-The `terraform/` directory is used for local auth automation.
-
-Important files:
-
-* [terraform/main.tf](/Users/mateo/Code/School/CMSC447/OutaStock/terraform/main.tf)
-* [terraform/variables.tf](/Users/mateo/Code/School/CMSC447/OutaStock/terraform/variables.tf)
-* [terraform/outputs.tf](/Users/mateo/Code/School/CMSC447/OutaStock/terraform/outputs.tf)
-* [terraform/export-web-env.sh](/Users/mateo/Code/School/CMSC447/OutaStock/terraform/export-web-env.sh)
-* [terraform/export-backend-env.sh](/Users/mateo/Code/School/CMSC447/OutaStock/terraform/export-backend-env.sh)
-* [terraform/export-dev-env.sh](/Users/mateo/Code/School/CMSC447/OutaStock/terraform/export-dev-env.sh)
-
-Generated artifacts include:
-
-* `terraform/zitadel-web.env`
-* `terraform/zitadel-backend.env`
-* `.env.dev.local`
-* `web/.env.local`
-
-These files bridge Terraform outputs into runtime application config.
-
-## 10. Local Operations Model
-
-The project currently supports two main local workflows.
-
-### Production-style integration workflow
-
-Used when the team wants to test the full stack exactly as containers run together.
-
-Primary command:
-
-```bash
-task prod
-```
-
-### Fast development workflow
-
-Used when the team wants hot reload while keeping real infrastructure dependencies.
-
-Primary commands:
-
-```bash
-task dev
-task dev-back
-task dev-front
-```
-
-This split keeps development fast without giving up real auth and database integration.
-
-## 11. Cloud Deployment Direction
-
-This section is intentionally flexible because the team has not finalized the AWS deployment plan yet.
-
-### What is decided
-
-The application will likely remain split into these logical pieces:
-
-* frontend
-* backend API
-* PostgreSQL database
-* authentication provider
-* reverse proxy / ingress layer
-
-### What is not finalized yet
-
-The exact AWS services are still under discussion. Possible directions include:
-
-* frontend on S3 + CloudFront
-* backend on ECS, App Runner, EC2, or Elastic Beanstalk
-* PostgreSQL on RDS
-* auth remaining on self-hosted ZITADEL or moving behind a managed deployment strategy
-* ingress via ALB, CloudFront, Nginx, or Caddy depending on the final hosting model
-
-### Current recommendation
-
-Until the team decides on AWS services, treat the Docker + Caddy + Terraform local stack as the authoritative reference architecture. The cloud deployment should preserve the same logical boundaries even if the concrete AWS services change.
-
-## 12. Data and Schema Tooling
-
-Database access is generated from SQL using `sqlc`.
-
-Typical workflow:
-
-1. update schema or queries
-2. regenerate code
-3. update services/handlers as needed
-
-Command:
-
-```bash
-task generate_sqlc
-```
-
-## 13. Documentation References
-
-Additional project docs:
-
-* [README.md](/Users/mateo/Code/School/CMSC447/OutaStock/README.md)
-* [API.md](/Users/mateo/Code/School/CMSC447/OutaStock/docs/API.md)
-* [terraform/README.md](/Users/mateo/Code/School/CMSC447/OutaStock/terraform/README.md)
-
-## 14. Summary
-
-The current system is no longer just a basic Go + React + Postgres app. It is now a multi-service local platform with:
-
-* authenticated frontend access
-* protected backend APIs
-* Terraform-managed local identity configuration
-* containerized integration workflows
-* hot-reload development workflows
-
-That is the architecture future deployment decisions should build on.
