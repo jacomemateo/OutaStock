@@ -79,6 +79,13 @@ tasks:
           echo "Seeding $file..."
           docker exec -i vending-db-dev psql -U $APP_DB_USER -d $APP_DB_NAME < $file
         done
+      
+  bench:
+    desc: Run k6 load tests against the local Go backend
+    dotenv: [.env.dev]
+    dir: web
+    cmds:
+      - k6 run -e EMAIL="admin@example.com" -e PASSWORD="SecurePassword123!" ./src/benchmarks/transactions.ts
 
   dev-clear:
     desc: Clear all data from the development database

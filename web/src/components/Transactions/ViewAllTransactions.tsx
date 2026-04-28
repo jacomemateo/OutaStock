@@ -1,33 +1,86 @@
+// web/src/comonents/Transactions/ViewAllTransactions
 import '@styles/Transactions/ViewAllTransactions.css';
 import '@styles/UpdateProducts/UpdateProducts.css';
 import '@styles/Utils/Buttons.css';
 import '@styles/Utils/TableUtils.css';
 import '@styles/Utils/PageLayout.css';
 
-import { useState, type CSSProperties } from 'react';
+import { useEffect, useState, type CSSProperties } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { useTransactions } from '@/hooks/useTransactions';
+import { queryKeys } from '@/lib/queryKeys';
+import { fetchTransactions } from '@/services/transactionsApi';
 
 type SortColumn = 'product' | 'date' | 'price';
 type SortDirection = 'asc' | 'desc';
 
+const ITEMS_PER_PAGE = 20;
+
 const ViewAllTransactions = () => {
+    const queryClient = useQueryClient();
+
     const [currentPage, setCurrentPage] = useState(1);
     const [sortColumn, setSortColumn] = useState<SortColumn>('date');
     const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
     const [searchInput, setSearchInput] = useState('');
     const [searchQuery, setSearchQuery] = useState('');
 
-    const itemsPerPage = 20;
     const transactionsQuery = useTransactions({
-        numRows: itemsPerPage,
+        numRows: ITEMS_PER_PAGE,
         pageOffset: currentPage - 1,
         search: searchQuery,
         sortBy: sortColumn,
         sortDir: sortDirection,
     });
+
     const transactions = transactionsQuery.data?.items ?? [];
     const totalItems = transactionsQuery.data?.total ?? 0;
-    const isLoading = transactionsQuery.isPending || transactionsQuery.isFetching;
+    const isLoading =
+        transactionsQuery.isPending || transactionsQuery.isFetching;
+
+    const totalPages = Math.ceil(totalItems / ITEMS_PER_PAGE) || 1;
+
+    /**
+     * SMART PREFETCH:
+     * Only prefetch currentPage - 1 and currentPage + 1
+     * (so max 2 pages worth of extra data)
+     */
+    useEffect(() => {
+        const prefetchPage = async (page: number) => {
+            if (page < 1 || page > totalPages) return;
+
+            const params = {
+                numRows: ITEMS_PER_PAGE,
+                pageOffset: page - 1,
+                search: searchQuery,
+                sortBy: sortColumn,
+                sortDir: sortDirection,
+            };
+
+            const queryKey = queryKeys.transactions.list(params);
+
+            // already cached → skip
+            const existing = queryClient.getQueryData(queryKey);
+            if (existing) return;
+
+            await queryClient.prefetchQuery({
+                queryKey,
+                queryFn: () => fetchTransactions(params),
+                staleTime: 60 * 1000, // 1 min cache freshness
+            });
+        };
+
+        // prefetch only 2 neighbors
+        void prefetchPage(currentPage - 1);
+        void prefetchPage(currentPage + 1);
+    }, [
+        currentPage,
+        searchQuery,
+        sortColumn,
+        sortDirection,
+        totalPages,
+        queryClient,
+    ]);
 
     const handleSort = (column: SortColumn) => {
         if (sortColumn !== column) {
@@ -35,7 +88,6 @@ const ViewAllTransactions = () => {
             setSortDirection('asc');
             return;
         }
-
         setSortDirection((prev) => (prev === 'asc' ? 'desc' : 'asc'));
     };
 
@@ -55,8 +107,6 @@ const ViewAllTransactions = () => {
         setSearchQuery('');
         setCurrentPage(1);
     };
-
-    const totalPages = Math.ceil(totalItems / itemsPerPage) || 1;
 
     return (
         <div className="grid-container">
@@ -79,11 +129,10 @@ const ViewAllTransactions = () => {
                                     className="table-search-input"
                                     type="search"
                                     value={searchInput}
-                                    onChange={(event) =>
-                                        setSearchInput(event.target.value)
+                                    onChange={(e) =>
+                                        setSearchInput(e.target.value)
                                     }
                                     placeholder="Search by product name"
-                                    aria-label="Search transactions by product name"
                                 />
 
                                 <button
@@ -109,37 +158,42 @@ const ViewAllTransactions = () => {
                     </div>
 
                     <div
-                        className={`table-list ${isLoading ? 'loading-opacity' : ''}`}
+                        className={`table-list ${
+                            isLoading ? 'loading-opacity' : ''
+                        }`}
                     >
                         {transactions.length > 0 ? (
                             <table className="table">
                                 <thead>
                                     <tr>
-                                        <th className="col-product">
+                                        <th>
                                             <button
                                                 className="table-sort-button"
-                                                type="button"
-                                                onClick={() => handleSort('product')}
+                                                onClick={() =>
+                                                    handleSort('product')
+                                                }
                                             >
                                                 Product {getSortIcon('product')}
                                             </button>
                                         </th>
 
-                                        <th className="col-cost">
+                                        <th>
                                             <button
                                                 className="table-sort-button"
-                                                type="button"
-                                                onClick={() => handleSort('date')}
+                                                onClick={() =>
+                                                    handleSort('date')
+                                                }
                                             >
                                                 Date & Time {getSortIcon('date')}
                                             </button>
                                         </th>
 
-                                        <th className="col-price">
+                                        <th>
                                             <button
                                                 className="table-sort-button"
-                                                type="button"
-                                                onClick={() => handleSort('price')}
+                                                onClick={() =>
+                                                    handleSort('price')
+                                                }
                                             >
                                                 Price {getSortIcon('price')}
                                             </button>
@@ -153,13 +207,14 @@ const ViewAllTransactions = () => {
                                             transaction.dateSold ?? '',
                                         );
 
-                                        const dateTime = dateObj.toLocaleString([], {
-                                            year: 'numeric',
-                                            month: 'short',
-                                            day: 'numeric',
-                                            hour: '2-digit',
-                                            minute: '2-digit',
-                                        });
+                                        const dateTime =
+                                            dateObj.toLocaleString([], {
+                                                year: 'numeric',
+                                                month: 'short',
+                                                day: 'numeric',
+                                                hour: '2-digit',
+                                                minute: '2-digit',
+                                            });
 
                                         return (
                                             <tr
@@ -170,7 +225,9 @@ const ViewAllTransactions = () => {
                                                     } as CSSProperties
                                                 }
                                             >
-                                                <td>{transaction.productName}</td>
+                                                <td>
+                                                    {transaction.productName}
+                                                </td>
 
                                                 <td>{dateTime}</td>
 
@@ -187,7 +244,9 @@ const ViewAllTransactions = () => {
                                 </tbody>
                             </table>
                         ) : (
-                            <p className="no-transactions">No transactions found</p>
+                            <p className="no-transactions">
+                                No transactions found
+                            </p>
                         )}
                     </div>
 
@@ -196,7 +255,7 @@ const ViewAllTransactions = () => {
                             <button
                                 className="pagination-btn"
                                 onClick={() =>
-                                    setCurrentPage((page) => Math.max(1, page - 1))
+                                    setCurrentPage((p) => Math.max(1, p - 1))
                                 }
                                 disabled={currentPage === 1 || isLoading}
                             >
@@ -209,8 +268,14 @@ const ViewAllTransactions = () => {
 
                             <button
                                 className="pagination-btn"
-                                onClick={() => setCurrentPage((page) => page + 1)}
-                                disabled={currentPage === totalPages || isLoading}
+                                onClick={() =>
+                                    setCurrentPage((p) =>
+                                        Math.min(totalPages, p + 1),
+                                    )
+                                }
+                                disabled={
+                                    currentPage === totalPages || isLoading
+                                }
                             >
                                 Next
                             </button>

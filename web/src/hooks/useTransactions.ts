@@ -1,3 +1,4 @@
+// web/src/hooks/useTransactions.ts
 import { useQuery } from '@tanstack/react-query';
 import { queryKeys, type TransactionQueryParams } from '@/lib/queryKeys';
 import { fetchTransactions, listTransactions } from '@/services/transactionsApi';
