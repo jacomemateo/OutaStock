@@ -1,3 +1,4 @@
+-- db/queries/003_transactions.sql
 -- code: language=postgres
 
 -- name: GetTransactions :many

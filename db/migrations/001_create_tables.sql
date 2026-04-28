@@ -1,3 +1,4 @@
+-- db/migrations/001_create_tables.sql
 -- code: language=postgres
 
 CREATE TABLE product_info (

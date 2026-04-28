@@ -1,7 +1,7 @@
 DO $$
 DECLARE
     counter INTEGER := 0;
-    max_attempts INTEGER := 2000000;
+    max_attempts INTEGER := 20000000;
     attempts INTEGER := 0;
 
     rand_product RECORD;
@@ -12,7 +12,7 @@ DECLARE
     day_weight FLOAT;
     time_weight FLOAT;
 BEGIN
-    WHILE counter < 100000 AND attempts < max_attempts LOOP
+    WHILE counter < 10000000 AND attempts < max_attempts LOOP
         attempts := attempts + 1;
 
         -- Random product
