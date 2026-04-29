@@ -16,6 +16,13 @@ type TransactionResponse struct {
 	DateSold         *time.Time `json:"dateSold"`
 }
 
+// PaginatedTransactions is the unified response envelope.
+// The frontend receives items + total in a single request.
+type PaginatedTransactions struct {
+	Items []TransactionResponse `json:"items"`
+	Total int                   `json:"total"`
+}
+
 // CreateTransactionRequest is the "Input" DTO.
 // Even though you're using CSVs, your Service layer will eventually
 // map CSV rows into a slice of these to send to the Repository.

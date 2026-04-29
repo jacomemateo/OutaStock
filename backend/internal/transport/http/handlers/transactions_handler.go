@@ -3,7 +3,10 @@ package handlers
 
 import (
 	"net/http"
+	"strings"
+	"time"
 
+	"github.com/google/uuid"
 	"github.com/jacomemateo/OutaStock/backend/internal/service"
 	"github.com/labstack/echo/v5"
 	"github.com/rs/zerolog/log"
@@ -44,12 +47,19 @@ func (h *TransactionsHandler) GetTransactions(c *echo.Context) error {
 		return err
 	}
 
+	cursorDate, cursorID, err := parseTransactionCursor(c)
+	if err != nil {
+		return err
+	}
+
 	transactions, err := h.transactionsService.GetTransactions(c.Request().Context(), service.ListQuery{
 		PageOffset: listQuery.PageOffset,
 		NumRows:    listQuery.NumRows,
 		Search:     listQuery.Search,
 		SortBy:     listQuery.SortBy,
 		SortDir:    listQuery.SortDir,
+		CursorDate: cursorDate,
+		CursorID:   cursorID,
 	})
 	if err != nil {
 		log.Error().Err(err).Msg("Failed to fetch transactions from service")
@@ -71,4 +81,37 @@ func (h *TransactionsHandler) GetTransactionsCount(c *echo.Context) error {
 	}
 
 	return c.JSON(http.StatusOK, count)
+}
+
+func parseTransactionCursor(c *echo.Context) (*time.Time, *uuid.UUID, error) {
+	cursorDateRaw := strings.TrimSpace(c.QueryParam("cursor_date"))
+	cursorIDRaw := strings.TrimSpace(c.QueryParam("cursor_id"))
+
+	if cursorDateRaw == "" && cursorIDRaw == "" {
+		return nil, nil, nil
+	}
+
+	if cursorDateRaw == "" || cursorIDRaw == "" {
+		return nil, nil, c.JSON(http.StatusBadRequest, map[string]string{
+			"error": "cursor_date and cursor_id must be provided together",
+		})
+	}
+
+	cursorDate, err := time.Parse(time.RFC3339Nano, cursorDateRaw)
+	if err != nil {
+		log.Warn().Str("cursor_date", cursorDateRaw).Msg("Failed to parse cursor_date parameter")
+		return nil, nil, c.JSON(http.StatusBadRequest, map[string]string{
+			"error": "Invalid cursor_date parameter",
+		})
+	}
+
+	cursorID, err := uuid.Parse(cursorIDRaw)
+	if err != nil {
+		log.Warn().Str("cursor_id", cursorIDRaw).Msg("Failed to parse cursor_id parameter")
+		return nil, nil, c.JSON(http.StatusBadRequest, map[string]string{
+			"error": "Invalid cursor_id parameter",
+		})
+	}
+
+	return &cursorDate, &cursorID, nil
 }

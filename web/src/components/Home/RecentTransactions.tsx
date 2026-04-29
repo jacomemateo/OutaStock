@@ -18,7 +18,6 @@ const RecentTransactions = () => {
         },
         {
             enabled: itemsPerPage > 0,
-            includeCount: false,
         },
     );
     const transactions = transactionsQuery.data?.items ?? [];
@@ -80,7 +79,8 @@ const RecentTransactions = () => {
         });
     }, [transactions.length]);
 
-    const isLoading = itemsPerPage > 0 && (transactionsQuery.isPending || transactionsQuery.isFetching);
+    const isLoading =
+        itemsPerPage > 0 && (transactionsQuery.isPending || transactionsQuery.isFetching);
 
     return (
         <div

@@ -1,25 +1,17 @@
 // web/src/hooks/useTransactions.ts
-import { useQuery } from '@tanstack/react-query';
+import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import { queryKeys, type TransactionQueryParams } from '@/lib/queryKeys';
-import { fetchTransactions, listTransactions } from '@/services/transactionsApi';
+import { fetchTransactions } from '@/services/transactionsApi';
 
 export function useTransactions(
     params: TransactionQueryParams,
-    options: { enabled?: boolean; includeCount?: boolean } = {},
+    options: { enabled?: boolean } = {},
 ) {
-    const enabled = options.enabled ?? true;
-    const includeCount = options.includeCount ?? true;
-
     return useQuery({
-        enabled,
+        enabled: options.enabled ?? true,
         queryKey: queryKeys.transactions.list(params),
-        queryFn: async () => {
-            if (!includeCount) {
-                const items = await listTransactions(params);
-                return { items, total: items.length };
-            }
-
-            return fetchTransactions(params);
-        },
+        queryFn: () => fetchTransactions(params),
+        placeholderData: keepPreviousData,
+        staleTime: 60 * 1000,
     });
 }

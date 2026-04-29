@@ -24,6 +24,25 @@ func uuidToPgtype(id uuid.UUID) pgtype.UUID {
 	}
 }
 
+func nullableUUIDToPgtype(id *uuid.UUID) pgtype.UUID {
+	if id == nil {
+		return pgtype.UUID{Valid: false}
+	}
+
+	return uuidToPgtype(*id)
+}
+
+func timeToPgtypeTimestamptz(timestamp *time.Time) pgtype.Timestamptz {
+	if timestamp == nil {
+		return pgtype.Timestamptz{Valid: false}
+	}
+
+	return pgtype.Timestamptz{
+		Time:  *timestamp,
+		Valid: true,
+	}
+}
+
 func formatPgTimestamp(timestamp pgtype.Timestamptz) string {
 	if !timestamp.Valid {
 		return ""

@@ -5,11 +5,9 @@ import '@styles/Utils/Buttons.css';
 import '@styles/Utils/TableUtils.css';
 import '@styles/Utils/PageLayout.css';
 
-import { useEffect, useState, type CSSProperties } from 'react';
-import { useQueryClient } from '@tanstack/react-query';
+import { useState, type CSSProperties } from 'react';
 import { useTransactions } from '@/hooks/useTransactions';
-import { queryKeys } from '@/lib/queryKeys';
-import { fetchTransactions } from '@/services/transactionsApi';
+import type { TransactionCursor } from '@/services/transactionsApi';
 
 type SortColumn = 'product' | 'date' | 'price';
 type SortDirection = 'asc' | 'desc';
@@ -17,78 +15,63 @@ type SortDirection = 'asc' | 'desc';
 const ITEMS_PER_PAGE = 20;
 
 const ViewAllTransactions = () => {
-    const queryClient = useQueryClient();
-
-    const [currentPage, setCurrentPage] = useState(1);
+    const [cursorStack, setCursorStack] = useState<Array<TransactionCursor | null>>([
+        null,
+    ]);
+    const [stackIndex, setStackIndex] = useState(0);
     const [sortColumn, setSortColumn] = useState<SortColumn>('date');
     const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
     const [searchInput, setSearchInput] = useState('');
     const [searchQuery, setSearchQuery] = useState('');
 
+    const currentCursor = cursorStack[stackIndex] ?? null;
+    const usesDateKeyset = sortColumn === 'date' && sortDirection === 'desc';
+
     const transactionsQuery = useTransactions({
         numRows: ITEMS_PER_PAGE,
-        pageOffset: currentPage - 1,
+        pageOffset: stackIndex,
+        cursor: usesDateKeyset ? currentCursor : null,
         search: searchQuery,
         sortBy: sortColumn,
         sortDir: sortDirection,
     });
 
     const transactions = transactionsQuery.data?.items ?? [];
-    const totalItems = transactionsQuery.data?.total ?? 0;
-    const isLoading =
-        transactionsQuery.isPending || transactionsQuery.isFetching;
+    const isLoading = transactionsQuery.isPending || transactionsQuery.isFetching;
 
-    const totalPages = Math.ceil(totalItems / ITEMS_PER_PAGE) || 1;
+    const hasPrev = stackIndex > 0;
+    const hasNext = transactions.length === ITEMS_PER_PAGE;
 
-    /**
-     * SMART PREFETCH:
-     * Only prefetch currentPage - 1 and currentPage + 1
-     * (so max 2 pages worth of extra data)
-     */
-    useEffect(() => {
-        const prefetchPage = async (page: number) => {
-            if (page < 1 || page > totalPages) return;
-
-            const params = {
-                numRows: ITEMS_PER_PAGE,
-                pageOffset: page - 1,
-                search: searchQuery,
-                sortBy: sortColumn,
-                sortDir: sortDirection,
-            };
-
-            const queryKey = queryKeys.transactions.list(params);
-
-            // already cached → skip
-            const existing = queryClient.getQueryData(queryKey);
-            if (existing) return;
-
-            await queryClient.prefetchQuery({
-                queryKey,
-                queryFn: () => fetchTransactions(params),
-                staleTime: 60 * 1000, // 1 min cache freshness
-            });
-        };
-
-        // prefetch only 2 neighbors
-        void prefetchPage(currentPage - 1);
-        void prefetchPage(currentPage + 1);
-    }, [
-        currentPage,
-        searchQuery,
-        sortColumn,
-        sortDirection,
-        totalPages,
-        queryClient,
-    ]);
+    const resetCursor = () => {
+        setCursorStack([null]);
+        setStackIndex(0);
+    };
 
     const handleSort = (column: SortColumn) => {
+        resetCursor();
         if (sortColumn !== column) {
             setSortColumn(column);
             setSortDirection('asc');
             return;
         }
         setSortDirection((prev) => (prev === 'asc' ? 'desc' : 'asc'));
+    };
+
+    const handleNext = () => {
+        if (transactions.length === 0) return;
+
+        const last = transactions[transactions.length - 1];
+        const newCursor = last.dateSold
+            ? { date: last.dateSold, id: last.id }
+            : currentCursor;
+
+        setCursorStack((prev) => [...prev.slice(0, stackIndex + 1), newCursor]);
+        setStackIndex((prev) => prev + 1);
+    };
+
+    const handlePrev = () => {
+        if (stackIndex === 0) return;
+        setStackIndex((prev) => prev - 1);
     };
 
     const getSortIcon = (column: SortColumn) => {
@@ -98,14 +81,14 @@ const ViewAllTransactions = () => {
 
     const handleSearchSubmit = (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
-        setCurrentPage(1);
+        resetCursor();
         setSearchQuery(searchInput.trim());
     };
 
     const handleClearSearch = () => {
         setSearchInput('');
         setSearchQuery('');
-        setCurrentPage(1);
+        resetCursor();
     };
 
     return (
@@ -129,9 +112,7 @@ const ViewAllTransactions = () => {
                                     className="table-search-input"
                                     type="search"
                                     value={searchInput}
-                                    onChange={(e) =>
-                                        setSearchInput(e.target.value)
-                                    }
+                                    onChange={(e) => setSearchInput(e.target.value)}
                                     placeholder="Search by product name"
                                 />
 
@@ -157,11 +138,7 @@ const ViewAllTransactions = () => {
                         </div>
                     </div>
 
-                    <div
-                        className={`table-list ${
-                            isLoading ? 'loading-opacity' : ''
-                        }`}
-                    >
+                    <div className={`table-list ${isLoading ? 'loading-opacity' : ''}`}>
                         {transactions.length > 0 ? (
                             <table className="table">
                                 <thead>
@@ -169,9 +146,7 @@ const ViewAllTransactions = () => {
                                         <th>
                                             <button
                                                 className="table-sort-button"
-                                                onClick={() =>
-                                                    handleSort('product')
-                                                }
+                                                onClick={() => handleSort('product')}
                                             >
                                                 Product {getSortIcon('product')}
                                             </button>
@@ -180,9 +155,7 @@ const ViewAllTransactions = () => {
                                         <th>
                                             <button
                                                 className="table-sort-button"
-                                                onClick={() =>
-                                                    handleSort('date')
-                                                }
+                                                onClick={() => handleSort('date')}
                                             >
                                                 Date & Time {getSortIcon('date')}
                                             </button>
@@ -191,9 +164,7 @@ const ViewAllTransactions = () => {
                                         <th>
                                             <button
                                                 className="table-sort-button"
-                                                onClick={() =>
-                                                    handleSort('price')
-                                                }
+                                                onClick={() => handleSort('price')}
                                             >
                                                 Price {getSortIcon('price')}
                                             </button>
@@ -207,14 +178,13 @@ const ViewAllTransactions = () => {
                                             transaction.dateSold ?? '',
                                         );
 
-                                        const dateTime =
-                                            dateObj.toLocaleString([], {
-                                                year: 'numeric',
-                                                month: 'short',
-                                                day: 'numeric',
-                                                hour: '2-digit',
-                                                minute: '2-digit',
-                                            });
+                                        const dateTime = dateObj.toLocaleString([], {
+                                            year: 'numeric',
+                                            month: 'short',
+                                            day: 'numeric',
+                                            hour: '2-digit',
+                                            minute: '2-digit',
+                                        });
 
                                         return (
                                             <tr
@@ -225,17 +195,14 @@ const ViewAllTransactions = () => {
                                                     } as CSSProperties
                                                 }
                                             >
-                                                <td>
-                                                    {transaction.productName}
-                                                </td>
+                                                <td>{transaction.productName}</td>
 
                                                 <td>{dateTime}</td>
 
                                                 <td>
                                                     $
                                                     {(
-                                                        transaction.priceAtSaleCents /
-                                                        100
+                                                        transaction.priceAtSaleCents / 100
                                                     ).toFixed(2)}
                                                 </td>
                                             </tr>
@@ -244,38 +211,24 @@ const ViewAllTransactions = () => {
                                 </tbody>
                             </table>
                         ) : (
-                            <p className="no-transactions">
-                                No transactions found
-                            </p>
+                            <p className="no-transactions">No transactions found</p>
                         )}
                     </div>
 
-                    {totalPages > 1 && (
+                    {(hasPrev || hasNext) && (
                         <div className="pagination">
                             <button
                                 className="pagination-btn"
-                                onClick={() =>
-                                    setCurrentPage((p) => Math.max(1, p - 1))
-                                }
-                                disabled={currentPage === 1 || isLoading}
+                                onClick={handlePrev}
+                                disabled={!hasPrev || isLoading}
                             >
                                 Previous
                             </button>
 
-                            <span className="pagination-info">
-                                Page {currentPage} of {totalPages}
-                            </span>
-
                             <button
                                 className="pagination-btn"
-                                onClick={() =>
-                                    setCurrentPage((p) =>
-                                        Math.min(totalPages, p + 1),
-                                    )
-                                }
-                                disabled={
-                                    currentPage === totalPages || isLoading
-                                }
+                                onClick={handleNext}
+                                disabled={!hasNext || isLoading}
                             >
                                 Next
                             </button>

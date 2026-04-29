@@ -1,8 +1,6 @@
-import type {
-    InventorySortField,
-} from '@/services/inventoryApi';
+import type { InventorySortField } from '@/services/inventoryApi';
 import type { ProductSortField } from '@/services/productsApi';
-import type { TransactionSortField } from '@/services/transactionsApi';
+import type { TransactionCursor, TransactionSortField } from '@/services/transactionsApi';
 import type { SortDirection } from '@/services/types';
 
 export interface InventoryQueryParams {
@@ -22,6 +20,7 @@ export interface TransactionQueryParams {
     sortBy?: TransactionSortField;
     sortDir?: SortDirection;
     pageOffset?: number;
+    cursor?: TransactionCursor | null;
     numRows: number;
 }
 

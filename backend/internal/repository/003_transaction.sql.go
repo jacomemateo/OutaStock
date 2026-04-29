@@ -13,61 +13,70 @@ import (
 
 const countTransactionRows = `-- name: CountTransactionRows :one
 SELECT COUNT(*)
-FROM transactions as t
+FROM transactions t
 JOIN product_info p ON t.product_id = p.product_id
-WHERE $1 = '' OR p.name ILIKE '%' || $1 || '%'
+WHERE $1::text = '' OR p.name ILIKE '%' || $1 || '%'
 `
 
-func (q *Queries) CountTransactionRows(ctx context.Context, search interface{}) (int64, error) {
+func (q *Queries) CountTransactionRows(ctx context.Context, search string) (int64, error) {
 	row := q.db.QueryRow(ctx, countTransactionRows, search)
 	var count int64
 	err := row.Scan(&count)
 	return count, err
 }
 
-const getTransactions = `-- name: GetTransactions :many
+const countTransactionRowsApprox = `-- name: CountTransactionRowsApprox :one
+SELECT reltuples::BIGINT AS estimate
+FROM pg_catalog.pg_class
+WHERE relname = 'transactions'
+`
+
+// Reads from PostgreSQL stats catalog. Returns in ~0.014ms vs 285ms for COUNT(*).
+// Slightly stale (autovacuum updates it) but fine for pagination UI display.
+func (q *Queries) CountTransactionRowsApprox(ctx context.Context) (int64, error) {
+	row := q.db.QueryRow(ctx, countTransactionRowsApprox)
+	var estimate int64
+	err := row.Scan(&estimate)
+	return estimate, err
+}
+
+const getTransactionsByDate = `-- name: GetTransactionsByDate :many
 
 SELECT
     t.transaction_id,
     t.price_at_sale_cents,
     t.date_sold,
     p.name
-FROM transactions as t
+FROM transactions t
 JOIN product_info p ON t.product_id = p.product_id
-WHERE $1 = '' OR p.name ILIKE '%' || $1 || '%'
+WHERE $1::text = '' OR p.name ILIKE '%' || $1 || '%'
 ORDER BY
-    CASE WHEN $2 = 'product' AND $3 = 'asc' THEN LOWER(p.name) END ASC,
-    CASE WHEN $2 = 'product' AND $3 = 'desc' THEN LOWER(p.name) END DESC,
-    CASE WHEN $2 = 'date' AND $3 = 'asc' THEN t.date_sold END ASC,
-    CASE WHEN $2 = 'date' AND $3 = 'desc' THEN t.date_sold END DESC,
-    CASE WHEN $2 = 'price' AND $3 = 'asc' THEN t.price_at_sale_cents END ASC,
-    CASE WHEN $2 = 'price' AND $3 = 'desc' THEN t.price_at_sale_cents END DESC,
-    t.date_sold DESC,
+    CASE WHEN $2::text = 'asc' THEN t.date_sold END ASC,
+    CASE WHEN $2::text = 'desc' THEN t.date_sold END DESC,
     t.transaction_id ASC
-LIMIT $5
-OFFSET $4
+LIMIT $4::int
+OFFSET $3::int
 `
 
-type GetTransactionsParams struct {
-	Search     interface{}
-	SortBy     interface{}
-	SortDir    interface{}
+type GetTransactionsByDateParams struct {
+	Search     string
+	SortDir    string
 	PageOffset int32
 	NumRows    int32
 }
 
-type GetTransactionsRow struct {
+type GetTransactionsByDateRow struct {
 	TransactionID    pgtype.UUID
 	PriceAtSaleCents int32
 	DateSold         pgtype.Timestamptz
 	Name             string
 }
 
+// db/queries/003_transaction.sql
 // code: language=postgres
-func (q *Queries) GetTransactions(ctx context.Context, arg GetTransactionsParams) ([]GetTransactionsRow, error) {
-	rows, err := q.db.Query(ctx, getTransactions,
+func (q *Queries) GetTransactionsByDate(ctx context.Context, arg GetTransactionsByDateParams) ([]GetTransactionsByDateRow, error) {
+	rows, err := q.db.Query(ctx, getTransactionsByDate,
 		arg.Search,
-		arg.SortBy,
 		arg.SortDir,
 		arg.PageOffset,
 		arg.NumRows,
@@ -76,9 +85,197 @@ func (q *Queries) GetTransactions(ctx context.Context, arg GetTransactionsParams
 		return nil, err
 	}
 	defer rows.Close()
-	var items []GetTransactionsRow
+	var items []GetTransactionsByDateRow
 	for rows.Next() {
-		var i GetTransactionsRow
+		var i GetTransactionsByDateRow
+		if err := rows.Scan(
+			&i.TransactionID,
+			&i.PriceAtSaleCents,
+			&i.DateSold,
+			&i.Name,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getTransactionsByDateKeyset = `-- name: GetTransactionsByDateKeyset :many
+SELECT
+    t.transaction_id,
+    t.price_at_sale_cents,
+    t.date_sold,
+    p.name
+FROM transactions t
+JOIN product_info p ON t.product_id = p.product_id
+WHERE
+    ($1::text = '' OR p.name ILIKE '%' || $1 || '%')
+    AND (
+        $2::timestamptz IS NULL
+        OR (t.date_sold, t.transaction_id) < ($2::timestamptz, $3::uuid)
+    )
+ORDER BY t.date_sold DESC, t.transaction_id ASC
+LIMIT $4::int
+`
+
+type GetTransactionsByDateKeysetParams struct {
+	Search     string
+	CursorDate pgtype.Timestamptz
+	CursorID   pgtype.UUID
+	NumRows    int32
+}
+
+type GetTransactionsByDateKeysetRow struct {
+	TransactionID    pgtype.UUID
+	PriceAtSaleCents int32
+	DateSold         pgtype.Timestamptz
+	Name             string
+}
+
+// Cursor-based pagination for date sort.
+// On the first page, pass cursor_date = NULL and cursor_id = NULL.
+// On subsequent pages, pass the date_sold and transaction_id of the LAST row
+// from the previous page as the cursor values.
+func (q *Queries) GetTransactionsByDateKeyset(ctx context.Context, arg GetTransactionsByDateKeysetParams) ([]GetTransactionsByDateKeysetRow, error) {
+	rows, err := q.db.Query(ctx, getTransactionsByDateKeyset,
+		arg.Search,
+		arg.CursorDate,
+		arg.CursorID,
+		arg.NumRows,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetTransactionsByDateKeysetRow
+	for rows.Next() {
+		var i GetTransactionsByDateKeysetRow
+		if err := rows.Scan(
+			&i.TransactionID,
+			&i.PriceAtSaleCents,
+			&i.DateSold,
+			&i.Name,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getTransactionsByPrice = `-- name: GetTransactionsByPrice :many
+SELECT
+    t.transaction_id,
+    t.price_at_sale_cents,
+    t.date_sold,
+    p.name
+FROM transactions t
+JOIN product_info p ON t.product_id = p.product_id
+WHERE $1::text = '' OR p.name ILIKE '%' || $1 || '%'
+ORDER BY
+    CASE WHEN $2::text = 'asc' THEN t.price_at_sale_cents END ASC,
+    CASE WHEN $2::text = 'desc' THEN t.price_at_sale_cents END DESC,
+    t.transaction_id ASC
+LIMIT $4::int
+OFFSET $3::int
+`
+
+type GetTransactionsByPriceParams struct {
+	Search     string
+	SortDir    string
+	PageOffset int32
+	NumRows    int32
+}
+
+type GetTransactionsByPriceRow struct {
+	TransactionID    pgtype.UUID
+	PriceAtSaleCents int32
+	DateSold         pgtype.Timestamptz
+	Name             string
+}
+
+func (q *Queries) GetTransactionsByPrice(ctx context.Context, arg GetTransactionsByPriceParams) ([]GetTransactionsByPriceRow, error) {
+	rows, err := q.db.Query(ctx, getTransactionsByPrice,
+		arg.Search,
+		arg.SortDir,
+		arg.PageOffset,
+		arg.NumRows,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetTransactionsByPriceRow
+	for rows.Next() {
+		var i GetTransactionsByPriceRow
+		if err := rows.Scan(
+			&i.TransactionID,
+			&i.PriceAtSaleCents,
+			&i.DateSold,
+			&i.Name,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getTransactionsByProduct = `-- name: GetTransactionsByProduct :many
+SELECT
+    t.transaction_id,
+    t.price_at_sale_cents,
+    t.date_sold,
+    p.name
+FROM transactions t
+JOIN product_info p ON t.product_id = p.product_id
+WHERE $1::text = '' OR p.name ILIKE '%' || $1 || '%'
+ORDER BY
+    CASE WHEN $2::text = 'asc' THEN LOWER(p.name) END ASC,
+    CASE WHEN $2::text = 'desc' THEN LOWER(p.name) END DESC,
+    t.transaction_id ASC
+LIMIT $4::int
+OFFSET $3::int
+`
+
+type GetTransactionsByProductParams struct {
+	Search     string
+	SortDir    string
+	PageOffset int32
+	NumRows    int32
+}
+
+type GetTransactionsByProductRow struct {
+	TransactionID    pgtype.UUID
+	PriceAtSaleCents int32
+	DateSold         pgtype.Timestamptz
+	Name             string
+}
+
+func (q *Queries) GetTransactionsByProduct(ctx context.Context, arg GetTransactionsByProductParams) ([]GetTransactionsByProductRow, error) {
+	rows, err := q.db.Query(ctx, getTransactionsByProduct,
+		arg.Search,
+		arg.SortDir,
+		arg.PageOffset,
+		arg.NumRows,
+	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetTransactionsByProductRow
+	for rows.Next() {
+		var i GetTransactionsByProductRow
 		if err := rows.Scan(
 			&i.TransactionID,
 			&i.PriceAtSaleCents,

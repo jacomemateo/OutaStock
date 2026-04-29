@@ -1,13 +1,19 @@
-import { requestJson, toCount } from '@/services/http';
+import { requestJson } from '@/services/http';
 import type { SortDirection, Transaction } from '@/services/types';
 
 export type TransactionSortField = 'product' | 'date' | 'price';
+
+export interface TransactionCursor {
+    date: string;
+    id: string;
+}
 
 export interface TransactionListOptions {
     search?: string;
     sortBy?: TransactionSortField;
     sortDir?: SortDirection;
     pageOffset?: number;
+    cursor?: TransactionCursor | null;
     numRows: number;
 }
 
@@ -19,6 +25,7 @@ export interface TransactionsResult {
 function buildListParams({
     numRows,
     pageOffset = 0,
+    cursor,
     search,
     sortBy = 'date',
     sortDir = 'desc',
@@ -34,32 +41,23 @@ function buildListParams({
         params.set('search', search);
     }
 
+    if (cursor) {
+        params.set('cursor_date', cursor.date);
+        params.set('cursor_id', cursor.id);
+    }
+
     return params;
 }
 
-export async function getTransactionCount(search = '') {
-    const params = new URLSearchParams();
-    if (search) {
-        params.set('search', search);
-    }
-
-    const response = await requestJson<unknown>(
-        `/transactions/count${params.size > 0 ? `?${params.toString()}` : ''}`,
-    );
-
-    return toCount(response);
-}
-
-export async function listTransactions(options: TransactionListOptions) {
+function buildTransactionsUrl(options: TransactionListOptions) {
     const params = buildListParams(options);
-    return requestJson<Transaction[]>(`/transactions/?${params.toString()}`);
+    return `/transactions/?${params.toString()}`;
 }
 
-export async function fetchTransactions(options: TransactionListOptions): Promise<TransactionsResult> {
-    const [total, items] = await Promise.all([
-        getTransactionCount(options.search),
-        listTransactions(options),
-    ]);
-
-    return { items, total };
+export async function fetchTransactions(
+    options: TransactionListOptions,
+): Promise<TransactionsResult> {
+    return requestJson<{ items: Transaction[]; total: number }>(
+        buildTransactionsUrl(options),
+    );
 }
