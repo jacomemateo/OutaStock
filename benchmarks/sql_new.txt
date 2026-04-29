@@ -1,0 +1,165 @@
+                                                                              QUERY PLAN                                                                               
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ Limit  (cost=0.58..2.52 rows=20 width=37) (actual time=0.032..0.090 rows=20.00 loops=1)
+   Buffers: shared hit=53
+   ->  Nested Loop  (cost=0.58..525493.35 rows=5425891 width=37) (actual time=0.031..0.088 rows=20.00 loops=1)
+         Buffers: shared hit=53
+         ->  Index Scan using idx_transactions_date_sold on transactions t  (cost=0.43..391532.72 rows=5425891 width=44) (actual time=0.012..0.055 rows=20.00 loops=1)
+               Index Searches: 1
+               Buffers: shared hit=23
+         ->  Memoize  (cost=0.15..0.17 rows=1 width=25) (actual time=0.001..0.001 rows=1.00 loops=20)
+               Cache Key: t.product_id
+               Cache Mode: logical
+               Hits: 5  Misses: 15  Evictions: 0  Overflows: 0  Memory Usage: 3kB
+               Buffers: shared hit=30
+               ->  Index Scan using product_info_pkey on product_info p  (cost=0.14..0.16 rows=1 width=25) (actual time=0.001..0.001 rows=1.00 loops=15)
+                     Index Cond: (product_id = t.product_id)
+                     Index Searches: 15
+                     Buffers: shared hit=30
+ Planning:
+   Buffers: shared hit=243 read=22
+ Planning Time: 1.304 ms
+ Execution Time: 0.112 ms
+(20 rows)
+
+                                                                               QUERY PLAN                                                                                
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ Limit  (cost=95.49..97.43 rows=20 width=37) (actual time=8.657..8.785 rows=20.00 loops=1)
+   Buffers: shared hit=423 read=676
+   ->  Nested Loop  (cost=0.58..525493.35 rows=5425891 width=37) (actual time=0.005..8.763 rows=1000.00 loops=1)
+         Buffers: shared hit=423 read=676
+         ->  Index Scan using idx_transactions_date_sold on transactions t  (cost=0.43..391532.72 rows=5425891 width=44) (actual time=0.003..8.433 rows=1000.00 loops=1)
+               Index Searches: 1
+               Buffers: shared hit=331 read=676
+         ->  Memoize  (cost=0.15..0.17 rows=1 width=25) (actual time=0.000..0.000 rows=1.00 loops=1000)
+               Cache Key: t.product_id
+               Cache Mode: logical
+               Hits: 954  Misses: 46  Evictions: 0  Overflows: 0  Memory Usage: 7kB
+               Buffers: shared hit=92
+               ->  Index Scan using product_info_pkey on product_info p  (cost=0.14..0.16 rows=1 width=25) (actual time=0.001..0.001 rows=1.00 loops=46)
+                     Index Cond: (product_id = t.product_id)
+                     Index Searches: 46
+                     Buffers: shared hit=92
+ Planning:
+   Buffers: shared hit=4
+ Planning Time: 0.065 ms
+ Execution Time: 8.793 ms
+(20 rows)
+
+                                                                               QUERY PLAN                                                                                
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ Limit  (cost=0.43..80.62 rows=20 width=37) (actual time=0.026..0.981 rows=20.00 loops=1)
+   Buffers: shared hit=1024 read=38
+   ->  Nested Loop  (cost=0.43..472922.66 rows=117954 width=37) (actual time=0.026..0.979 rows=20.00 loops=1)
+         Join Filter: (t.product_id = p.product_id)
+         Rows Removed by Join Filter: 1033
+         Buffers: shared hit=1024 read=38
+         ->  Index Scan using idx_transactions_date_sold on transactions t  (cost=0.43..391532.72 rows=5425891 width=44) (actual time=0.004..0.799 rows=1053.00 loops=1)
+               Index Searches: 1
+               Buffers: shared hit=1023 read=38
+         ->  Materialize  (cost=0.00..1.58 rows=1 width=25) (actual time=0.000..0.000 rows=1.00 loops=1053)
+               Storage: Memory  Maximum Storage: 17kB
+               Buffers: shared hit=1
+               ->  Seq Scan on product_info p  (cost=0.00..1.58 rows=1 width=25) (actual time=0.004..0.019 rows=1.00 loops=1)
+                     Filter: (name ~~* '%cola%'::text)
+                     Rows Removed by Filter: 45
+                     Buffers: shared hit=1
+ Planning:
+   Buffers: shared hit=13 read=3
+ Planning Time: 3.755 ms
+ Execution Time: 0.988 ms
+(20 rows)
+
+                                                                                              QUERY PLAN                                                                                               
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ Finalize Aggregate  (cost=81565.33..81565.34 rows=1 width=8) (actual time=281.271..282.600 rows=1.00 loops=1)
+   Buffers: shared hit=422 read=4540
+   ->  Gather  (cost=81565.11..81565.32 rows=2 width=8) (actual time=281.138..282.597 rows=3.00 loops=1)
+         Workers Planned: 2
+         Workers Launched: 2
+         Buffers: shared hit=422 read=4540
+         ->  Partial Aggregate  (cost=80565.11..80565.12 rows=1 width=8) (actual time=279.663..279.664 rows=1.00 loops=3)
+               Buffers: shared hit=422 read=4540
+               ->  Hash Join  (cost=2.47..74913.14 rows=2260788 width=0) (actual time=0.063..227.973 rows=1808630.33 loops=3)
+                     Hash Cond: (t.product_id = p.product_id)
+                     Buffers: shared hit=422 read=4540
+                     ->  Parallel Index Only Scan using idx_transactions_product_id on transactions t  (cost=0.43..68429.77 rows=2260788 width=16) (actual time=0.032..84.114 rows=1808630.33 loops=3)
+                           Heap Fetches: 0
+                           Index Searches: 1
+                           Buffers: shared hit=379 read=4540
+                     ->  Hash  (cost=1.46..1.46 rows=46 width=16) (actual time=0.025..0.025 rows=46.00 loops=3)
+                           Buckets: 1024  Batches: 1  Memory Usage: 11kB
+                           Buffers: shared hit=43
+                           ->  Seq Scan on product_info p  (cost=0.00..1.46 rows=46 width=16) (actual time=0.018..0.020 rows=46.00 loops=3)
+                                 Buffers: shared hit=43
+ Planning:
+   Buffers: shared hit=9 read=1
+ Planning Time: 0.073 ms
+ Execution Time: 282.617 ms
+(24 rows)
+
+                                                                              QUERY PLAN                                                                              
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ Limit  (cost=12358.63..12360.74 rows=20 width=69) (actual time=170.150..170.152 rows=20.00 loops=1)
+   Buffers: shared hit=410 read=45658
+   ->  Incremental Sort  (cost=12358.63..582935.08 rows=5425891 width=69) (actual time=170.148..170.150 rows=20.00 loops=1)
+         Sort Key: (lower(p.name)), t.transaction_id
+         Presorted Key: (lower(p.name))
+         Full-sort Groups: 1  Sort Method: top-N heapsort  Average Memory: 27kB  Peak Memory: 27kB
+         Pre-sorted Groups: 1  Sort Method: top-N heapsort  Average Memory: 27kB  Peak Memory: 27kB
+         Buffers: shared hit=410 read=45658
+         ->  Nested Loop  (cost=1186.37..370729.52 rows=5425891 width=69) (actual time=10.642..159.286 rows=117969.00 loops=1)
+               Buffers: shared hit=404 read=45658
+               ->  Index Scan using idx_product_name_lower on product_info p  (cost=0.14..12.83 rows=46 width=25) (actual time=0.006..0.009 rows=2.00 loops=1)
+                     Index Searches: 1
+                     Buffers: shared hit=1 read=1
+               ->  Bitmap Heap Scan on transactions t  (cost=1186.23..6584.63 rows=117954 width=44) (actual time=10.613..66.568 rows=58984.50 loops=2)
+                     Recheck Cond: (product_id = p.product_id)
+                     Heap Blocks: exact=45851
+                     Buffers: shared hit=403 read=45657
+                     ->  Bitmap Index Scan on idx_transactions_product_id  (cost=0.00..1156.74 rows=117954 width=0) (actual time=5.055..5.055 rows=117893.00 loops=2)
+                           Index Cond: (product_id = p.product_id)
+                           Index Searches: 2
+                           Buffers: shared hit=103 read=104
+ Planning:
+   Buffers: shared hit=11
+ Planning Time: 0.141 ms
+ Execution Time: 170.168 ms
+(25 rows)
+
+                                                                            QUERY PLAN                                                                             
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ Limit  (cost=0.71..2.64 rows=20 width=37) (actual time=0.074..0.104 rows=20.00 loops=1)
+   Buffers: shared hit=5 read=7
+   ->  Nested Loop  (cost=0.71..525613.16 rows=5425891 width=37) (actual time=0.074..0.102 rows=20.00 loops=1)
+         Buffers: shared hit=5 read=7
+         ->  Index Scan using idx_transactions_price on transactions t  (cost=0.56..391652.52 rows=5425891 width=44) (actual time=0.069..0.092 rows=20.00 loops=1)
+               Index Searches: 1
+               Buffers: shared hit=1 read=7
+         ->  Memoize  (cost=0.15..0.17 rows=1 width=25) (actual time=0.000..0.000 rows=1.00 loops=20)
+               Cache Key: t.product_id
+               Cache Mode: logical
+               Hits: 18  Misses: 2  Evictions: 0  Overflows: 0  Memory Usage: 1kB
+               Buffers: shared hit=4
+               ->  Index Scan using product_info_pkey on product_info p  (cost=0.14..0.16 rows=1 width=25) (actual time=0.001..0.001 rows=1.00 loops=2)
+                     Index Cond: (product_id = t.product_id)
+                     Index Searches: 2
+                     Buffers: shared hit=4
+ Planning:
+   Buffers: shared hit=3 read=5
+ Planning Time: 0.179 ms
+ Execution Time: 0.113 ms
+(20 rows)
+
+                                                               QUERY PLAN                                                               
+----------------------------------------------------------------------------------------------------------------------------------------
+ Index Scan using pg_class_relname_nsp_index on pg_class  (cost=0.27..8.29 rows=1 width=8) (actual time=0.018..0.019 rows=1.00 loops=1)
+   Index Cond: (relname = 'transactions'::name)
+   Index Searches: 1
+   Buffers: shared hit=1 read=2
+ Planning:
+   Buffers: shared hit=22 read=15
+ Planning Time: 0.197 ms
+ Execution Time: 0.023 ms
+(8 rows)
+

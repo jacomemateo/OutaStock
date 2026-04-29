@@ -1,0 +1,66 @@
+task: [bench] k6 run -e EMAIL="admin@example.com" -e PASSWORD="SecurePassword123!" ./src/benchmarks/transactions.ts
+
+         /\      Grafana   /‾‾/  
+    /\  /  \     |\  __   /  /   
+   /  \/    \    | |/ /  /   ‾‾\ 
+  /          \   |   (  |  (‾)  |
+ / __________ \  |_|\_\  \_____/ 
+
+
+     execution: local
+        script: ./src/benchmarks/transactions.ts
+        output: -
+
+     scenarios: (100.00%) 1 scenario, 10 max VUs, 1m0s max duration (incl. graceful stop):
+              * browse: Up to 10 looping VUs for 30s over 3 stages (gracefulRampDown: 30s, gracefulStop: 30s)
+
+
+
+  █ THRESHOLDS 
+
+    http_req_duration
+    ✓ 'p(95)<300' p(95)=88.88ms
+
+    http_req_failed
+    ✓ 'rate<0.01' rate=0.00%
+
+
+  █ TOTAL RESULTS 
+
+    checks_total.......: 1540    50.241376/s
+    checks_succeeded...: 100.00% 1540 out of 1540
+    checks_failed......: 0.00%   0 out of 1540
+
+    ✓ login status 200
+    ✓ status 200 (page 0)
+    ✓ page 0 has envelope
+    ✓ status 200 (page 10)
+    ✓ page 10 has envelope
+    ✓ status 200 (page 50)
+    ✓ page 50 has envelope
+    ✓ count status 200
+    ✓ count is number
+    ✓ search status 200
+    ✓ search returns envelope
+
+    HTTP
+    http_req_duration..............: avg=15.53ms min=309µs med=2.03ms max=101.45ms p(90)=77.86ms p(95)=88.88ms
+      { expected_response:true }...: avg=15.53ms min=309µs med=2.03ms max=101.45ms p(90)=77.86ms p(95)=88.88ms
+    http_req_failed................: 0.00%  0 out of 840
+    http_reqs......................: 840    27.404387/s
+
+    EXECUTION
+    iteration_duration.............: avg=1.09s   min=1.08s med=1.09s  max=1.12s    p(90)=1.1s    p(95)=1.11s  
+    iterations.....................: 140    4.567398/s
+    vus............................: 1      min=1        max=10
+    vus_max........................: 10     min=10       max=10
+
+    NETWORK
+    data_received..................: 1.4 MB 45 kB/s
+    data_sent......................: 351 kB 12 kB/s
+
+
+
+
+running (0m30.7s), 00/10 VUs, 140 complete and 0 interrupted iterations
+browse ✓ [======================================] 00/10 VUs  30s

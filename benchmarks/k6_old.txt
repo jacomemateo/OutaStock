@@ -1,0 +1,69 @@
+task bench
+task: [bench] k6 run -e EMAIL="admin@example.com" -e PASSWORD="SecurePassword123!" ./src/benchmarks/transactions.ts
+
+         /\      Grafana   /‾‾/  
+    /\  /  \     |\  __   /  /   
+   /  \/    \    | |/ /  /   ‾‾\ 
+  /          \   |   (  |  (‾)  |
+ / __________ \  |_|\_\  \_____/ 
+
+
+     execution: local
+        script: ./src/benchmarks/transactions.ts
+        output: -
+
+     scenarios: (100.00%) 1 scenario, 10 max VUs, 1m0s max duration (incl. graceful stop):
+              * browse: Up to 10 looping VUs for 30s over 3 stages (gracefulRampDown: 30s, gracefulStop: 30s)
+
+
+
+  █ THRESHOLDS 
+
+    http_req_duration
+    ✗ 'p(95)<300' p(95)=14.01s
+
+    http_req_failed
+    ✓ 'rate<0.01' rate=0.00%
+
+
+  █ TOTAL RESULTS 
+
+    checks_total.......: 220     4.102017/s
+    checks_succeeded...: 100.00% 220 out of 220
+    checks_failed......: 0.00%   0 out of 220
+
+    ✓ login status 200
+    ✓ status 200 (page 0)
+    ✓ page 0 is array
+    ✓ status 200 (page 10)
+    ✓ page 10 is array
+    ✓ status 200 (page 50)
+    ✓ page 50 is array
+    ✓ count status 200
+    ✓ count is number
+    ✓ search status 200
+    ✓ search returns array
+
+    HTTP
+    http_req_duration..............: avg=2.41s  min=1.02ms med=568.13ms max=14.81s p(90)=11.92s p(95)=14.01s
+      { expected_response:true }...: avg=2.41s  min=1.02ms med=568.13ms max=14.81s p(90)=11.92s p(95)=14.01s
+    http_req_failed................: 0.00%  0 out of 120
+    http_reqs......................: 120    2.237464/s
+
+    EXECUTION
+    iteration_duration.............: avg=15.46s min=2.91s  med=12.57s   max=30.55s p(90)=29.97s p(95)=30.34s
+    iterations.....................: 20     0.372911/s
+    vus............................: 1      min=1        max=10
+    vus_max........................: 10     min=10       max=10
+
+    NETWORK
+    data_received..................: 194 kB 3.6 kB/s
+    data_sent......................: 50 kB  936 B/s
+
+
+
+
+running (0m53.6s), 00/10 VUs, 20 complete and 0 interrupted iterations
+browse ✓ [======================================] 00/10 VUs  30s
+ERRO[0053] thresholds on metrics 'http_req_duration' have been crossed 
+task: Failed to run task "bench": exit status 99
