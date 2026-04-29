@@ -80,12 +80,18 @@ tasks:
           docker exec -i vending-db-dev psql -U $APP_DB_USER -d $APP_DB_NAME < $file
         done
       
-  bench:
+  bench-k6:
     desc: Run k6 load tests against the local Go backend
     dotenv: [.env.dev]
     dir: web
     cmds:
       - k6 run -e EMAIL="admin@example.com" -e PASSWORD="SecurePassword123!" ./src/benchmarks/transactions.ts
+  
+  bench-sql:
+    desc: Run the SQL benchmark script and save results to results.txt
+    dotenv: [.env.dev]
+    cmds:
+      - docker exec -i vending-db-dev psql -U $APP_DB_USER -d $APP_DB_NAME < db/benchmark/bench.sql > results.txt
 
   dev-clear:
     desc: Clear all data from the development database
