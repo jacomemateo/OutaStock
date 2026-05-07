@@ -1,4 +1,6 @@
 repomix-output.*
+.devenv/
+.direnv/
 
 tmp/
 out/
